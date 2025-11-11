@@ -7,7 +7,7 @@ import { LineChart } from 'react-native-chart-kit';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import GlassCard from '@/components/GlassCard';
 import { Colors, Spacing, Typography } from '@/constants/theme';
-import { formatCurrency } from '@/constants/isaData';
+import { formatCurrency, ISA_INFO } from '@/constants/isaData';
 import { Dimensions } from 'react-native';
 
 const { width } = Dimensions.get('window');
