@@ -114,14 +114,9 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
 
       {/* Logo */}
       <Animated.View style={[styles.logoContainer, logoAnimatedStyle]}>
-        <LinearGradient
-          colors={[Colors.mediumNavy, Colors.deepNavy]}
-          style={styles.logoCircle}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
+        <View style={styles.logoCircle}>
           <Image source={require('@/assets/logo.png')} style={styles.logoImage} resizeMode="contain" />
-        </LinearGradient>
+        </View>
       </Animated.View>
 
       {/* Title */}
@@ -192,24 +187,22 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   logoCircle: {
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: Colors.gold + '50',
-    shadowColor: Colors.gold,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.5,
-    shadowRadius: 30,
-    elevation: 15,
-    padding: 20,
-  },
-  logoImage: {
     width: 140,
     height: 140,
-    tintColor: Colors.gold,
+    borderRadius: 70,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  logoImage: {
+    width: 120,
+    height: 120,
+    opacity: 0.9,
   },
   titleContainer: {
     alignItems: 'center',
