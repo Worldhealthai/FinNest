@@ -30,50 +30,112 @@ export default function ProfileScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.title}>Profile</Text>
-            <TouchableOpacity style={styles.editButton}>
-              <Ionicons name="create-outline" size={24} color={Colors.gold} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Profile Card */}
-          <GlassCard style={styles.profileCard} intensity="dark">
-            <View style={styles.avatarContainer}>
-              <LinearGradient
-                colors={Colors.goldGradient}
-                style={styles.avatarGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <View style={styles.avatar}>
-                  <Ionicons name="person" size={40} color={Colors.white} />
+          {/* Creative Header with Logo */}
+          <GlassCard style={styles.headerCard} intensity="dark">
+            <LinearGradient
+              colors={[Colors.deepNavy + 'DD', Colors.mediumNavy + 'AA']}
+              style={styles.headerGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <View style={styles.headerTop}>
+                <View style={styles.logoRow}>
+                  <Image
+                    source={require('@/assets/logo.png')}
+                    style={styles.headerLogo}
+                    resizeMode="contain"
+                  />
+                  <View>
+                    <Text style={styles.greeting}>Good Evening, Alex! 👋</Text>
+                    <Text style={styles.subGreeting}>Your ISA journey is looking great</Text>
+                  </View>
                 </View>
-              </LinearGradient>
-              <TouchableOpacity style={styles.avatarBadge}>
-                <Ionicons name="camera" size={16} color={Colors.deepNavy} />
-              </TouchableOpacity>
-            </View>
+                <TouchableOpacity style={styles.editButton}>
+                  <Ionicons name="create-outline" size={24} color={Colors.gold} />
+                </TouchableOpacity>
+              </View>
 
-            <Text style={styles.userName}>Alex Johnson</Text>
-            <Text style={styles.userEmail}>alex.johnson@email.com</Text>
+              <View style={styles.achievementRow}>
+                <View style={styles.achievementBadge}>
+                  <Ionicons name="trophy" size={16} color={Colors.gold} />
+                  <Text style={styles.achievementText}>ISA Pro</Text>
+                </View>
+                <View style={[styles.achievementBadge, { backgroundColor: Colors.info + '30', borderColor: Colors.info }]}>
+                  <Ionicons name="flash" size={16} color={Colors.info} />
+                  <Text style={styles.achievementText}>3 Year Streak</Text>
+                </View>
+                <View style={[styles.achievementBadge, { backgroundColor: Colors.success + '30', borderColor: Colors.success }]}>
+                  <Ionicons name="checkmark-circle" size={16} color={Colors.success} />
+                  <Text style={styles.achievementText}>Max Saver</Text>
+                </View>
+              </View>
+            </LinearGradient>
+          </GlassCard>
+
+          {/* Enhanced Profile Card */}
+          <GlassCard style={styles.profileCard} intensity="dark">
+            <View style={styles.profileHeader}>
+              <View style={styles.avatarContainer}>
+                <LinearGradient
+                  colors={Colors.goldGradient}
+                  style={styles.avatarGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <View style={styles.avatar}>
+                    <Ionicons name="person" size={40} color={Colors.white} />
+                  </View>
+                </LinearGradient>
+                <TouchableOpacity style={styles.avatarBadge}>
+                  <Ionicons name="camera" size={16} color={Colors.deepNavy} />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.userInfo}>
+                <Text style={styles.userName}>Alex Johnson</Text>
+                <Text style={styles.userEmail}>alex.johnson@email.com</Text>
+                <View style={styles.memberSince}>
+                  <Ionicons name="calendar-outline" size={14} color={Colors.lightGray} />
+                  <Text style={styles.memberText}>ISA Saver since April 2022</Text>
+                </View>
+              </View>
+            </View>
 
             <View style={styles.statsRow}>
               <View style={styles.stat}>
-                <Text style={styles.statValue}>124</Text>
-                <Text style={styles.statLabel}>Transactions</Text>
+                <Ionicons name="wallet" size={20} color={Colors.gold} />
+                <Text style={styles.statValue}>3</Text>
+                <Text style={styles.statLabel}>ISA Accounts</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.stat}>
-                <Text style={styles.statValue}>$124K</Text>
-                <Text style={styles.statLabel}>Net Worth</Text>
+                <Ionicons name="trending-up" size={20} color={Colors.success} />
+                <Text style={styles.statValue}>£16K</Text>
+                <Text style={styles.statLabel}>Total Saved</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.stat}>
-                <Text style={styles.statValue}>8</Text>
-                <Text style={styles.statLabel}>Investments</Text>
+                <Ionicons name="shield-checkmark" size={20} color={Colors.info} />
+                <Text style={styles.statValue}>£1.2K</Text>
+                <Text style={styles.statLabel}>Tax Saved</Text>
               </View>
+            </View>
+
+            {/* Progress Indicator */}
+            <View style={styles.progressSection}>
+              <View style={styles.progressHeader}>
+                <Text style={styles.progressTitle}>ISA Journey Progress</Text>
+                <Text style={styles.progressPercent}>80%</Text>
+              </View>
+              <View style={styles.progressBar}>
+                <LinearGradient
+                  colors={Colors.goldGradient}
+                  style={styles.progressFill}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                />
+              </View>
+              <Text style={styles.progressSubtext}>You're using your allowance better than 78% of UK savers!</Text>
             </View>
           </GlassCard>
 
@@ -293,28 +355,93 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: Spacing.md,
   },
-  header: {
+  headerCard: {
+    marginBottom: Spacing.md,
+    padding: 0,
+    overflow: 'hidden',
+  },
+  headerGradient: {
+    padding: Spacing.lg,
+  },
+  headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.lg,
+    alignItems: 'flex-start',
+    marginBottom: Spacing.md,
   },
-  title: {
-    fontSize: Typography.sizes.xxl,
+  logoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    flex: 1,
+  },
+  headerLogo: {
+    width: 50,
+    height: 50,
+    tintColor: Colors.gold,
+  },
+  greeting: {
+    fontSize: Typography.sizes.lg,
     color: Colors.white,
     fontWeight: Typography.weights.bold,
+  },
+  subGreeting: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.lightGray,
+    marginTop: 2,
+  },
+  achievementRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    flexWrap: 'wrap',
+  },
+  achievementBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: Colors.gold + '30',
+    borderWidth: 1,
+    borderColor: Colors.gold,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  achievementText: {
+    fontSize: Typography.sizes.xs,
+    color: Colors.white,
+    fontWeight: Typography.weights.semibold,
   },
   editButton: {
     padding: Spacing.sm,
   },
   profileCard: {
-    alignItems: 'center',
     padding: Spacing.lg,
     marginBottom: Spacing.lg,
   },
+  profileHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
+    paddingBottom: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.glassLight,
+  },
   avatarContainer: {
     position: 'relative',
-    marginBottom: Spacing.md,
+    marginRight: Spacing.md,
+  },
+  userInfo: {
+    flex: 1,
+  },
+  memberSince: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 6,
+  },
+  memberText: {
+    fontSize: Typography.sizes.xs,
+    color: Colors.lightGray,
   },
   avatarGradient: {
     width: 100,
@@ -357,17 +484,17 @@ const styles = StyleSheet.create({
   statsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '100%',
     justifyContent: 'space-around',
+    marginBottom: Spacing.lg,
   },
   stat: {
     alignItems: 'center',
+    gap: 4,
   },
   statValue: {
     fontSize: Typography.sizes.lg,
     color: Colors.gold,
     fontWeight: Typography.weights.bold,
-    marginBottom: Spacing.xs,
   },
   statLabel: {
     fontSize: Typography.sizes.xs,
@@ -375,8 +502,46 @@ const styles = StyleSheet.create({
   },
   statDivider: {
     width: 1,
-    height: 30,
+    height: 40,
     backgroundColor: Colors.glassLight,
+  },
+  progressSection: {
+    paddingTop: Spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: Colors.glassLight,
+  },
+  progressHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  progressTitle: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.white,
+    fontWeight: Typography.weights.semibold,
+  },
+  progressPercent: {
+    fontSize: Typography.sizes.md,
+    color: Colors.gold,
+    fontWeight: Typography.weights.bold,
+  },
+  progressBar: {
+    height: 8,
+    backgroundColor: Colors.glassLight,
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: Spacing.sm,
+  },
+  progressFill: {
+    width: '80%',
+    height: '100%',
+    borderRadius: 4,
+  },
+  progressSubtext: {
+    fontSize: Typography.sizes.xs,
+    color: Colors.lightGray,
+    lineHeight: 18,
   },
   section: {
     marginBottom: Spacing.lg,
