@@ -271,3 +271,98 @@ export function formatCurrency(amount: number): string {
     maximumFractionDigits: 0,
   }).format(amount);
 }
+
+// Flexible ISA Calculator Types
+export interface FlexibleISAState {
+  annualAllowance: number; // A
+  contributionsThisYear: number; // C
+  withdrawalsThisYear: number; // W
+}
+
+export interface FlexibleISAResult {
+  allowed: boolean;
+  errorMessage?: string;
+  updatedContributions?: number; // Updated C
+  unusedAllowance?: number; // Updated U
+  replacementAllowance?: number; // Updated R
+  totalRemainingCapacity?: number; // Updated T
+  amountAllocatedToReplacement?: number;
+  amountAllocatedToUnused?: number;
+}
+
+/**
+ * Flexible ISA Calculator
+ *
+ * Calculates whether a deposit is allowed and how it affects allowances.
+ *
+ * Rules:
+ * 1. UnusedAllowance (U) = A - C
+ * 2. ReplacementAllowance (R) = W
+ * 3. TotalPossible (T) = U + R
+ * 4. User may deposit up to TotalPossible
+ * 5. Deposits reduce ReplacementAllowance first, then UnusedAllowance
+ * 6. Prevent deposits that exceed TotalPossible
+ *
+ * @param state - Current ISA state (A, C, W)
+ * @param depositAmount - Amount user wants to deposit
+ * @returns Result showing if deposit is allowed and updated values
+ */
+export function calculateFlexibleISA(
+  state: FlexibleISAState,
+  depositAmount: number
+): FlexibleISAResult {
+  const { annualAllowance, contributionsThisYear, withdrawalsThisYear } = state;
+
+  // Calculate current allowances
+  const unusedAllowance = annualAllowance - contributionsThisYear; // U = A - C
+  const replacementAllowance = withdrawalsThisYear; // R = W
+  const totalPossible = unusedAllowance + replacementAllowance; // T = U + R
+
+  // Check if deposit exceeds total possible
+  if (depositAmount > totalPossible) {
+    return {
+      allowed: false,
+      errorMessage: `Deposit of ${formatCurrency(depositAmount)} exceeds available capacity of ${formatCurrency(totalPossible)}. You have ${formatCurrency(unusedAllowance)} unused allowance and ${formatCurrency(replacementAllowance)} replacement allowance.`,
+    };
+  }
+
+  // Check for invalid deposit amount
+  if (depositAmount <= 0) {
+    return {
+      allowed: false,
+      errorMessage: 'Deposit amount must be greater than £0.',
+    };
+  }
+
+  // Allocate deposit: Replacement allowance first, then unused allowance
+  let remainingDeposit = depositAmount;
+  let amountAllocatedToReplacement = 0;
+  let amountAllocatedToUnused = 0;
+
+  // Use replacement allowance first
+  if (replacementAllowance > 0) {
+    amountAllocatedToReplacement = Math.min(remainingDeposit, replacementAllowance);
+    remainingDeposit -= amountAllocatedToReplacement;
+  }
+
+  // Use unused allowance for any remainder
+  if (remainingDeposit > 0) {
+    amountAllocatedToUnused = Math.min(remainingDeposit, unusedAllowance);
+  }
+
+  // Calculate updated values
+  const updatedContributions = contributionsThisYear + depositAmount;
+  const updatedReplacementAllowance = replacementAllowance - amountAllocatedToReplacement;
+  const updatedUnusedAllowance = unusedAllowance - amountAllocatedToUnused;
+  const updatedTotalCapacity = updatedUnusedAllowance + updatedReplacementAllowance;
+
+  return {
+    allowed: true,
+    updatedContributions,
+    unusedAllowance: updatedUnusedAllowance,
+    replacementAllowance: updatedReplacementAllowance,
+    totalRemainingCapacity: updatedTotalCapacity,
+    amountAllocatedToReplacement,
+    amountAllocatedToUnused,
+  };
+}
