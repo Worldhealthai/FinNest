@@ -376,6 +376,7 @@ const styles = StyleSheet.create({
   logoImage: {
     width: 120,
     height: 120,
+    opacity: 1,
   },
   // Title
   titleContainer: {

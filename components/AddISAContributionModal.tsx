@@ -242,34 +242,49 @@ export default function AddISAContributionModal({
           </View>
         </GlassCard>
 
-        {/* Contribution Amount */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Contribution Amount (£) *</Text>
-          <Text style={styles.helperText}>
-            Maximum: {formatCurrency(maxContribution)} per tax year
-          </Text>
-          <GlassCard style={styles.inputCard} intensity="medium">
-            <View style={styles.amountInputContainer}>
-              <Text style={styles.currencySymbol}>£</Text>
-              <TextInput
-                style={styles.amountInput}
-                placeholder="0.00"
-                placeholderTextColor={Colors.mediumGray}
-                value={amount}
-                onChangeText={setAmount}
-                keyboardType="decimal-pad"
-              />
-            </View>
-          </GlassCard>
+        {/* Contribution Amount - PROMINENT */}
+        <GlassCard style={styles.amountSection} intensity="dark">
+          <View style={styles.amountHeader}>
+            <Ionicons name="cash-outline" size={28} color={Colors.gold} />
+            <Text style={styles.amountHeaderText}>How much are you contributing?</Text>
+          </View>
+
+          <View style={styles.amountInputWrapper}>
+            <Text style={styles.amountLabel}>CONTRIBUTION AMOUNT *</Text>
+            <GlassCard style={styles.amountInputCard} intensity="medium">
+              <View style={styles.amountInputContainer}>
+                <Text style={styles.currencySymbol}>£</Text>
+                <TextInput
+                  style={styles.amountInput}
+                  placeholder="0.00"
+                  placeholderTextColor={Colors.mediumGray}
+                  value={amount}
+                  onChangeText={setAmount}
+                  keyboardType="decimal-pad"
+                  autoFocus={false}
+                />
+              </View>
+            </GlassCard>
+          </View>
+
           {parseFloat(amount) > 0 && (
             <View style={styles.amountPreview}>
-              <Text style={styles.amountPreviewLabel}>You're contributing:</Text>
+              <Text style={styles.amountPreviewLabel}>You're adding:</Text>
               <Text style={styles.amountPreviewValue}>
                 {formatCurrency(parseFloat(amount))}
               </Text>
             </View>
           )}
-        </View>
+
+          <View style={styles.amountInfo}>
+            <View style={styles.amountInfoRow}>
+              <Ionicons name="information-circle-outline" size={16} color={Colors.info} />
+              <Text style={styles.amountInfoText}>
+                Maximum: {formatCurrency(maxContribution)} per tax year
+              </Text>
+            </View>
+          </View>
+        </GlassCard>
 
         {/* Account Number (Optional) */}
         <View style={styles.inputGroup}>
@@ -361,8 +376,8 @@ export default function AddISAContributionModal({
 
 const styles = StyleSheet.create({
   infoCard: {
-    padding: Spacing.md,
-    marginBottom: Spacing.lg,
+    padding: Spacing.lg,
+    marginBottom: Spacing.xl,
   },
   infoRow: {
     flexDirection: 'row',
@@ -377,24 +392,25 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: Typography.sizes.sm,
     color: Colors.lightGray,
-    lineHeight: 18,
+    lineHeight: 20,
   },
   inputGroup: {
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.xl,
   },
   label: {
     fontSize: Typography.sizes.sm,
     color: Colors.white,
     fontWeight: Typography.weights.semibold,
-    marginBottom: Spacing.xs,
+    marginBottom: Spacing.sm,
   },
   helperText: {
     fontSize: Typography.sizes.xs,
     color: Colors.lightGray,
     marginBottom: Spacing.sm,
+    lineHeight: 16,
   },
   inputCard: {
-    padding: Spacing.md,
+    padding: Spacing.lg,
   },
   input: {
     fontSize: Typography.sizes.md,
@@ -404,52 +420,100 @@ const styles = StyleSheet.create({
   notesInput: {
     minHeight: 80,
   },
+  // Enhanced Amount Section
+  amountSection: {
+    padding: Spacing.xl,
+    marginBottom: Spacing.xl,
+  },
+  amountHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
+    gap: Spacing.md,
+  },
+  amountHeaderText: {
+    fontSize: Typography.sizes.lg,
+    color: Colors.white,
+    fontWeight: Typography.weights.bold,
+    flex: 1,
+  },
+  amountInputWrapper: {
+    marginBottom: Spacing.md,
+  },
+  amountLabel: {
+    fontSize: Typography.sizes.xs,
+    color: Colors.gold,
+    fontWeight: Typography.weights.bold,
+    letterSpacing: 1.5,
+    marginBottom: Spacing.md,
+  },
+  amountInputCard: {
+    padding: Spacing.lg,
+    borderWidth: 2,
+    borderColor: Colors.gold + '40',
+  },
   amountInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   currencySymbol: {
-    fontSize: Typography.sizes.xl,
+    fontSize: Typography.sizes.xxxl,
     color: Colors.gold,
-    fontWeight: Typography.weights.bold,
-    marginRight: Spacing.sm,
+    fontWeight: Typography.weights.extrabold,
+    marginRight: Spacing.md,
   },
   amountInput: {
     flex: 1,
-    fontSize: Typography.sizes.xl,
+    fontSize: Typography.sizes.xxxl,
     color: Colors.white,
-    fontWeight: Typography.weights.bold,
+    fontWeight: Typography.weights.extrabold,
   },
   amountPreview: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: Spacing.sm,
-    padding: Spacing.sm,
+    marginTop: Spacing.md,
+    padding: Spacing.lg,
     backgroundColor: Colors.gold + '20',
-    borderRadius: BorderRadius.sm,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.gold + '40',
   },
   amountPreviewLabel: {
-    fontSize: Typography.sizes.sm,
+    fontSize: Typography.sizes.md,
     color: Colors.lightGray,
+    fontWeight: Typography.weights.semibold,
   },
   amountPreviewValue: {
-    fontSize: Typography.sizes.lg,
+    fontSize: Typography.sizes.xxl,
     color: Colors.gold,
-    fontWeight: Typography.weights.bold,
+    fontWeight: Typography.weights.extrabold,
+  },
+  amountInfo: {
+    marginTop: Spacing.md,
+  },
+  amountInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  amountInfoText: {
+    fontSize: Typography.sizes.xs,
+    color: Colors.lightGray,
+    flex: 1,
   },
   typeGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: Spacing.sm,
+    gap: Spacing.md,
   },
   typeCardWrapper: {
     width: '48%',
   },
   typeCard: {
-    padding: Spacing.md,
+    padding: Spacing.lg,
     alignItems: 'center',
-    gap: Spacing.xs,
+    gap: Spacing.sm,
     position: 'relative',
   },
   typeCardSelected: {
