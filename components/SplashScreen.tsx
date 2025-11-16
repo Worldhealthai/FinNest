@@ -372,9 +372,6 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     zIndex: 10,
-    backgroundColor: Colors.deepNavy + 'CC',
-    borderRadius: 80,
-    padding: 10,
   },
   logoImage: {
     width: 140,
