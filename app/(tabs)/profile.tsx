@@ -13,12 +13,22 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import GlassCard from '@/components/GlassCard';
+import PersonalInfoModal from '@/components/PersonalInfoModal';
+import PaymentMethodsModal from '@/components/PaymentMethodsModal';
+import ISAAccountsModal from '@/components/ISAAccountsModal';
+import SecurityModal from '@/components/SecurityModal';
 import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
 
 export default function ProfileScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
   const [biometricsEnabled, setBiometricsEnabled] = React.useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = React.useState(true);
+
+  // Modal states
+  const [personalInfoVisible, setPersonalInfoVisible] = React.useState(false);
+  const [paymentMethodsVisible, setPaymentMethodsVisible] = React.useState(false);
+  const [isaAccountsVisible, setIsaAccountsVisible] = React.useState(false);
+  const [securityVisible, setSecurityVisible] = React.useState(false);
 
   return (
     <View style={styles.container}>
@@ -144,7 +154,7 @@ export default function ProfileScreen() {
             <Text style={styles.sectionTitle}>Account</Text>
 
             <GlassCard style={styles.menuCard} intensity="medium">
-              <TouchableOpacity style={styles.menuItem}>
+              <TouchableOpacity style={styles.menuItem} onPress={() => setPersonalInfoVisible(true)}>
                 <View style={styles.menuLeft}>
                   <View style={[styles.menuIcon, { backgroundColor: Colors.gold + '30' }]}>
                     <Ionicons name="person-outline" size={20} color={Colors.gold} />
@@ -156,7 +166,7 @@ export default function ProfileScreen() {
             </GlassCard>
 
             <GlassCard style={styles.menuCard} intensity="medium">
-              <TouchableOpacity style={styles.menuItem}>
+              <TouchableOpacity style={styles.menuItem} onPress={() => setPaymentMethodsVisible(true)}>
                 <View style={styles.menuLeft}>
                   <View style={[styles.menuIcon, { backgroundColor: Colors.info + '30' }]}>
                     <Ionicons name="card-outline" size={20} color={Colors.info} />
@@ -168,7 +178,7 @@ export default function ProfileScreen() {
             </GlassCard>
 
             <GlassCard style={styles.menuCard} intensity="medium">
-              <TouchableOpacity style={styles.menuItem}>
+              <TouchableOpacity style={styles.menuItem} onPress={() => setIsaAccountsVisible(true)}>
                 <View style={styles.menuLeft}>
                   <View style={[styles.menuIcon, { backgroundColor: Colors.success + '30' }]}>
                     <Ionicons name="wallet-outline" size={20} color={Colors.success} />
@@ -185,7 +195,7 @@ export default function ProfileScreen() {
             </GlassCard>
 
             <GlassCard style={styles.menuCard} intensity="medium">
-              <TouchableOpacity style={styles.menuItem}>
+              <TouchableOpacity style={styles.menuItem} onPress={() => setSecurityVisible(true)}>
                 <View style={styles.menuLeft}>
                   <View style={[styles.menuIcon, { backgroundColor: Colors.warning + '30' }]}>
                     <Ionicons name="shield-checkmark-outline" size={20} color={Colors.warning} />
@@ -338,6 +348,24 @@ export default function ProfileScreen() {
           <View style={{ height: 100 }} />
         </ScrollView>
       </SafeAreaView>
+
+      {/* Modals */}
+      <PersonalInfoModal
+        visible={personalInfoVisible}
+        onClose={() => setPersonalInfoVisible(false)}
+      />
+      <PaymentMethodsModal
+        visible={paymentMethodsVisible}
+        onClose={() => setPaymentMethodsVisible(false)}
+      />
+      <ISAAccountsModal
+        visible={isaAccountsVisible}
+        onClose={() => setIsaAccountsVisible(false)}
+      />
+      <SecurityModal
+        visible={securityVisible}
+        onClose={() => setSecurityVisible(false)}
+      />
     </View>
   );
 }
