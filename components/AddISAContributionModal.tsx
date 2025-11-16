@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -247,37 +248,43 @@ export default function AddISAContributionModal({
                   {provider.trim().length > 0 ? "Suggested Providers" : "Popular Providers"}
                 </Text>
               </View>
-              {filteredProviders.map((providerData, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.suggestionItem,
-                    index === filteredProviders.length - 1 && styles.suggestionItemLast,
-                  ]}
-                  onPress={() => selectProvider(providerData)}
-                >
-                  <View style={styles.suggestionLeft}>
-                    <View style={[
-                      styles.providerCategoryBadge,
-                      { backgroundColor: getCategoryColor(providerData.category) + '30' }
-                    ]}>
-                      <Ionicons
-                        name={getCategoryIcon(providerData.category)}
-                        size={16}
-                        color={getCategoryColor(providerData.category)}
-                      />
+              <ScrollView
+                style={styles.suggestionsList}
+                nestedScrollEnabled={true}
+                showsVerticalScrollIndicator={true}
+              >
+                {filteredProviders.map((providerData, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.suggestionItem,
+                      index === filteredProviders.length - 1 && styles.suggestionItemLast,
+                    ]}
+                    onPress={() => selectProvider(providerData)}
+                  >
+                    <View style={styles.suggestionLeft}>
+                      <View style={[
+                        styles.providerCategoryBadge,
+                        { backgroundColor: getCategoryColor(providerData.category) + '30' }
+                      ]}>
+                        <Ionicons
+                          name={getCategoryIcon(providerData.category)}
+                          size={16}
+                          color={getCategoryColor(providerData.category)}
+                        />
+                      </View>
+                      <View style={styles.suggestionText}>
+                        <Text style={styles.suggestionName}>{providerData.name}</Text>
+                        <Text style={styles.suggestionTypes}>
+                          {providerData.types.slice(0, 2).join(', ')}
+                          {providerData.types.length > 2 ? ` +${providerData.types.length - 2}` : ''}
+                        </Text>
+                      </View>
                     </View>
-                    <View style={styles.suggestionText}>
-                      <Text style={styles.suggestionName}>{providerData.name}</Text>
-                      <Text style={styles.suggestionTypes}>
-                        {providerData.types.slice(0, 2).join(', ')}
-                        {providerData.types.length > 2 ? ` +${providerData.types.length - 2}` : ''}
-                      </Text>
-                    </View>
-                  </View>
-                  <Ionicons name="chevron-forward" size={16} color={Colors.lightGray} />
-                </TouchableOpacity>
-              ))}
+                    <Ionicons name="chevron-forward" size={16} color={Colors.lightGray} />
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
             </GlassCard>
           )}
         </View>
@@ -537,7 +544,7 @@ const styles = StyleSheet.create({
   suggestionsCard: {
     marginTop: Spacing.sm,
     padding: Spacing.md,
-    maxHeight: 400,
+    maxHeight: 350,
   },
   suggestionsHeader: {
     flexDirection: 'row',
@@ -547,6 +554,9 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: Colors.glassLight,
+  },
+  suggestionsList: {
+    maxHeight: 280,
   },
   suggestionsTitle: {
     fontSize: Typography.sizes.xs,

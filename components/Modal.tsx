@@ -45,11 +45,7 @@ export default function Modal({
       <View style={styles.overlay}>
         <BlurView intensity={50} style={StyleSheet.absoluteFill} tint="dark" />
 
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.modalContainer}
-          keyboardVerticalOffset={0}
-        >
+        <View style={styles.modalContainer}>
           <GlassCard style={styles.modalContent} intensity="dark">
             {/* Header */}
             <LinearGradient
@@ -74,17 +70,25 @@ export default function Modal({
             </LinearGradient>
 
             {/* Content */}
-            <ScrollView
-              style={styles.scrollView}
-              contentContainerStyle={styles.scrollContent}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-              nestedScrollEnabled={true}
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+              style={styles.keyboardView}
+              keyboardVerticalOffset={0}
             >
-              {children}
-            </ScrollView>
+              <ScrollView
+                style={styles.scrollView}
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={true}
+                keyboardShouldPersistTaps="handled"
+                nestedScrollEnabled={true}
+                scrollEnabled={true}
+                bounces={true}
+              >
+                {children}
+              </ScrollView>
+            </KeyboardAvoidingView>
           </GlassCard>
-        </KeyboardAvoidingView>
+        </View>
       </View>
     </RNModal>
   );
@@ -137,11 +141,15 @@ const styles = StyleSheet.create({
   closeButton: {
     padding: Spacing.xs,
   },
+  keyboardView: {
+    flex: 1,
+  },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
+    flexGrow: 1,
     padding: Spacing.lg,
-    paddingBottom: 120,
+    paddingBottom: 150,
   },
 });
