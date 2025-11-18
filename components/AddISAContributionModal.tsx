@@ -267,7 +267,7 @@ export default function AddISAContributionModal({
               <View style={styles.providerInfo}>
                 <Text style={styles.providerName}>{providerData.name}</Text>
                 <Text style={styles.providerTypes}>
-                  {providerData.types.slice(0, 2).join(' • ')}
+                  {providerData.types.join(' • ')}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={24} color={Colors.lightGray} />
