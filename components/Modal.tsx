@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   modalCard: {
-    height: MODAL_HEIGHT,
+    flex: 1,
     padding: 0,
     borderRadius: 0,
   },
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: Spacing.lg,
-    paddingBottom: 200,
+    paddingBottom: 250,
     flexGrow: 1,
   },
 });
