@@ -467,10 +467,10 @@ export default function AddISAContributionModal({
         <View style={styles.navigationButtons}>
           {step > 1 && (
             <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-              <GlassCard style={styles.backButtonCard} intensity="dark">
+              <View style={styles.backButtonCard}>
                 <Ionicons name="arrow-back" size={24} color={Colors.white} />
                 <Text style={styles.backButtonText}>Back</Text>
-              </GlassCard>
+              </View>
             </TouchableOpacity>
           )}
 
@@ -889,6 +889,9 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     gap: Spacing.sm,
     borderRadius: BorderRadius.lg,
+    backgroundColor: Colors.glassDark,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   backButtonText: {
     fontSize: Typography.sizes.md,
