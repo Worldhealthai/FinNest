@@ -427,7 +427,7 @@ Waystone Management (UK) Limited	Stocks and Shares
 Wealth at Work Limited	Stocks and Shares
 Wealth Club Asset Management Limited	Innovative Finance ISA
 Wealthify Limited	Cash, Cash Junior ISA, Stocks and Shares
-Wealthkernel Limited	Cash, Cash Junior ISA, Stocks and Shares
+Wealthkernel Limited	Cash, Cash Junior ISA, Stocks and Shares, Stocks and Shares Junior ISA
 WealthTek LLP	Stocks and Shares, Stocks and Shares Junior ISA
 Wealthtime Limited	Stocks and Shares
 Webull Securities (UK) Limited (trading as Webull UK)	Stocks and Shares
@@ -449,18 +449,37 @@ function parseComponentsToTypes(components) {
   const types = [];
   const comp = components.toLowerCase();
 
-  if (comp.includes('cash')) {
-    types.push('Cash ISA');
-  }
-  if (comp.includes('stocks and shares') || comp.includes('stocks & shares')) {
-    types.push('Stocks & Shares');
-  }
-  if (comp.includes('lifetime')) {
-    types.push('Lifetime ISA');
-  }
-  if (comp.includes('innovative finance')) {
-    types.push('Innovative Finance');
-  }
+  // Split by comma to check each component separately
+  const parts = comp.split(',').map(p => p.trim());
+
+  parts.forEach(part => {
+    // Check for specific ISA types
+    if (part === 'cash' || part === 'cash isa') {
+      if (!types.includes('Cash ISA')) {
+        types.push('Cash ISA');
+      }
+    } else if (part === 'cash junior isa') {
+      if (!types.includes('Cash Junior ISA')) {
+        types.push('Cash Junior ISA');
+      }
+    } else if (part === 'stocks and shares' || part === 'stocks and shares isa' || part === 'stocks & shares') {
+      if (!types.includes('Stocks & Shares ISA')) {
+        types.push('Stocks & Shares ISA');
+      }
+    } else if (part === 'stocks and shares junior isa' || part === 'stocks & shares junior isa') {
+      if (!types.includes('Stocks & Shares Junior ISA')) {
+        types.push('Stocks & Shares Junior ISA');
+      }
+    } else if (part === 'lifetime isa' || part === 'lifetime') {
+      if (!types.includes('Lifetime ISA')) {
+        types.push('Lifetime ISA');
+      }
+    } else if (part === 'innovative finance isa' || part === 'innovative finance') {
+      if (!types.includes('Innovative Finance ISA')) {
+        types.push('Innovative Finance ISA');
+      }
+    }
+  });
 
   return types;
 }
@@ -521,5 +540,8 @@ lines.forEach(line => {
 // Sort by name
 providers.sort((a, b) => a.name.localeCompare(b.name));
 
-console.log(`Parsed ${providers.length} providers`);
+// Output JSON to stdout for file redirection
 console.log(JSON.stringify(providers, null, 2));
+
+// Log count to stderr so it doesn't interfere with JSON output
+console.error(`Parsed ${providers.length} providers`);

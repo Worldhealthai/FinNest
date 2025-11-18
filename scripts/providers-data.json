@@ -2,36 +2,36 @@
   {
     "name": "25 Bank Street",
     "types": [
-      "Stocks & Shares",
-      "Lifetime ISA"
+      "Lifetime ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
   {
     "name": "4 Northumberland Buildings",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "40 Bank Street",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
   {
     "name": "40 Bank Street",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "bank"
   },
   {
     "name": "5 Bank Street",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
@@ -45,7 +45,7 @@
   {
     "name": "Abrdn Fund Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -53,15 +53,15 @@
     "name": "Abundance Investment Limited (trading as",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Innovative Finance ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Aegon Asset Management UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -75,7 +75,7 @@
   {
     "name": "AJ Bell Securities",
     "types": [
-      "Stocks & Shares",
+      "Stocks & Shares ISA",
       "Lifetime ISA"
     ],
     "category": "investment-platform"
@@ -83,14 +83,16 @@
   {
     "name": "Al Rayan Bank",
     "types": [
-      "Cash ISA"
+      "Cash ISA",
+      "Cash Junior ISA"
     ],
     "category": "bank"
   },
   {
     "name": "Alder Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -105,35 +107,35 @@
     "name": "Alexandra Buildings",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Allianz Global Investors UK Limited (trading as Allianz",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Alpha Real property Investment Advisers LLP (trading",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "APM Capital Markets",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Apollo Multi Asset Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -141,28 +143,28 @@
     "name": "Arbuthnot Latham & Co",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "ArchOver",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Artemis Fund Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Assetz SME Capital",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
@@ -176,14 +178,15 @@
   {
     "name": "Atomos Investments",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Aviation and Tech Capital",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
@@ -191,7 +194,7 @@
     "name": "Aviva Investment Solutions UK",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -199,35 +202,37 @@
     "name": "Aviva Investors UK Fund Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Aviva Life & Pensions UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Aviva Wrap UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "AXA Investment Managers UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Bank J. Safra Sarasin (Gibraltar)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "bank"
   },
@@ -248,14 +253,16 @@
   {
     "name": "Bank of Scotland",
     "types": [
-      "Cash ISA"
+      "Cash ISA",
+      "Cash Junior ISA"
     ],
     "category": "bank"
   },
   {
     "name": "Bank Pictet & Cie (Europe) AG London Branch",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "bank"
   },
@@ -263,7 +270,7 @@
     "name": "Barclays Bank",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
@@ -278,7 +285,7 @@
     "name": "Barclays Investment Solutions",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -286,7 +293,7 @@
     "name": "Barratt & Cooke",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -301,7 +308,7 @@
   {
     "name": "Bayonet Ventures",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -322,7 +329,7 @@
   {
     "name": "Blackfinch Investments",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -330,7 +337,7 @@
     "name": "Blackrock Investment Management (UK)",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -338,14 +345,14 @@
     "name": "BNY Mellon Fund Managers",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Bordier & Cie (UK)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -353,8 +360,8 @@
     "name": "Bramdean Asset Management",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Stocks & Shares ISA",
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
@@ -362,37 +369,39 @@
     "name": "Brewin Dolphin",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Brewin Dolphin Wealth Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "British Pearl",
     "types": [
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Innovative Finance ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Brooks MacDonald Asset Management",
     "types": [
-      "Stocks & Shares",
-      "Lifetime ISA"
+      "Lifetime ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Brown Advisory",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -400,7 +409,7 @@
     "name": "Brown Shipley & Co",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -421,14 +430,14 @@
   {
     "name": "Canaccord Genuity Wealth",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Capel Court Public Limited Company",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -442,14 +451,15 @@
   {
     "name": "Carne Global Fund Managers (UK)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "CASFS",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -463,7 +473,7 @@
   {
     "name": "Castlefield Investment Partners",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -471,14 +481,15 @@
     "name": "Causeway Securities Limited (trading as Causeway",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Central Liverpool Credit Union",
     "types": [
-      "Cash ISA"
+      "Cash ISA",
+      "Cash Junior ISA"
     ],
     "category": "fintech"
   },
@@ -492,7 +503,7 @@
   {
     "name": "Charteris Treasury Portfolio Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -506,14 +517,14 @@
   {
     "name": "Citibank UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
   {
     "name": "City Asset Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -549,28 +560,31 @@
     "name": "CMC Markets Investments",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Cofunds",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Columbia Threadneedle Fund Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Columbia Threadneedle Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -584,7 +598,8 @@
   {
     "name": "ConBrio Fund Partners",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -592,14 +607,15 @@
     "name": "Connor Broadley",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Consistent Unit Trust Management Company",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -607,7 +623,7 @@
     "name": "Courtiers Investment Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -615,28 +631,29 @@
     "name": "Coventry Building Society",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "building-society"
   },
   {
     "name": "Credo Capital",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Crowd for Angels (UK)",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Crowd2Fund",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
@@ -644,8 +661,8 @@
     "name": "Crowdstacker",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Innovative Finance ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -660,7 +677,8 @@
     "name": "Cushon Money",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Cash Junior ISA"
     ],
     "category": "fintech"
   },
@@ -675,7 +693,7 @@
     "name": "Danske Bank",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
@@ -689,35 +707,36 @@
   {
     "name": "DB UK Bank",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
   {
     "name": "Denmark Square",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Digital Moneybox",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Dolfin Financial (UK)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Downing",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -725,14 +744,14 @@
     "name": "Dura Capital",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "E-Money Capital",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
@@ -753,28 +772,28 @@
   {
     "name": "Edaid",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "EdenTree Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Edinburgh Alternative Finance Ltd (trading as Lending",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "EFG Private Bank",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
@@ -782,14 +801,14 @@
     "name": "Elevate Portfolio Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Elfin Market",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -797,22 +816,23 @@
     "name": "Embark Investment Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Emoneyhub",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Equiniti Financial Services",
     "types": [
-      "Stocks & Shares",
-      "Lifetime ISA"
+      "Lifetime ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -827,7 +847,8 @@
     "name": "eToro (UK)",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -835,21 +856,23 @@
     "name": "Evelyn Partners Asset Management",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Cash Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Evelyn Partners Fund Solutions",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Evelyn Partners Investment Services",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -857,14 +880,15 @@
     "name": "Exchange Buildings",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Family Assurance Friendly Society",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -872,14 +896,14 @@
     "name": "Family Equity Plan",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Farley & Thompson",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -894,7 +918,7 @@
     "name": "Financial Administration Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
+      "Stocks & Shares ISA",
       "Lifetime ISA"
     ],
     "category": "fintech"
@@ -903,21 +927,21 @@
     "name": "First Sentier Investors (UK) Funds",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Fiske",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Fluro Platform",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -925,63 +949,64 @@
     "name": "FNZ Securities",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Focus 2020",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Folk2Folk",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Forester Life",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Franklin Templeton Fund Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Freetrade",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Fund Ourselves",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Funding Circle",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "FundingSecure",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
@@ -989,21 +1014,22 @@
     "name": "Fundment",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "FundRock Partners",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Fundsmith",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1017,7 +1043,7 @@
   {
     "name": "Fusion Wealth",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1025,7 +1051,8 @@
     "name": "Gallium P E Depositary",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1040,7 +1067,7 @@
     "name": "GHC Capital Markets",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1055,14 +1082,14 @@
     "name": "Global Investment Strategy UK",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Goji Financial Services",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -1070,14 +1097,15 @@
     "name": "Goldman Sachs International Bank",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
   {
     "name": "Graphene Platforms",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -1091,21 +1119,22 @@
   {
     "name": "Growth Capital Ventures",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Halifax Share Dealing",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Halo Invest",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -1134,7 +1163,7 @@
     "name": "Handelsbanken Wealth and Asset Management",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
@@ -1149,8 +1178,8 @@
     "name": "Hargreaves Lansdown Asset Management",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Lifetime ISA"
+      "Lifetime ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1171,7 +1200,7 @@
   {
     "name": "Hathaway Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1179,7 +1208,7 @@
     "name": "Haw Bank House",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
+      "Stocks & Shares ISA",
       "Lifetime ISA"
     ],
     "category": "bank"
@@ -1187,7 +1216,7 @@
   {
     "name": "HBOS Investment Fund Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1195,7 +1224,7 @@
     "name": "Hedley & Company Stockbrokers",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1203,7 +1232,7 @@
     "name": "Henderson Rowe",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1211,7 +1240,7 @@
     "name": "Hilbert Investment Solutions",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1225,14 +1254,14 @@
   {
     "name": "HNW Lending",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Housemartin Property",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -1240,14 +1269,15 @@
     "name": "HSBC UK Bank",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
   {
     "name": "Hubwise Securities",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -1255,7 +1285,8 @@
     "name": "IBP Markets",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1263,8 +1294,8 @@
     "name": "iDealing.Com",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Stocks & Shares ISA",
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -1278,14 +1309,14 @@
   {
     "name": "IFG.VC",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "IG Trading & Investments",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1293,7 +1324,7 @@
     "name": "IM Asset Management",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1301,7 +1332,7 @@
     "name": "Independent Order of Odd Fellows Friendly Society",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
+      "Stocks & Shares ISA",
       "Lifetime ISA"
     ],
     "category": "fintech"
@@ -1310,15 +1341,15 @@
     "name": "Integrated Financial Arrangements",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Lifetime ISA"
+      "Lifetime ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Interactive Brokers (U.K.)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1326,7 +1357,7 @@
     "name": "Interactive Investor Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1334,7 +1365,7 @@
     "name": "Invesco Fund Managers",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1342,7 +1373,7 @@
     "name": "Investec Bank",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
@@ -1350,14 +1381,14 @@
     "name": "Investec Wealth & Investment",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Investengine (UK)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1365,49 +1396,51 @@
     "name": "Investment Fund Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Investment Funds Direct",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Investment HCP Building",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Invinitive Financial UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "ITI Capital",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "J & E Davy (UK)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "J M Finn & Co",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1415,7 +1448,7 @@
     "name": "J. Edward Sellars & Partners",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1423,7 +1456,7 @@
     "name": "James Brearley & Sons",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1431,7 +1464,7 @@
     "name": "James Hambro & Partners",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1439,21 +1472,22 @@
     "name": "James Hay Wrap Managers",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Janus Henderson Fund Management UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Jarvis Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -1467,7 +1501,8 @@
   {
     "name": "Kidstart",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -1475,7 +1510,7 @@
     "name": "Killik & Co",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
+      "Stocks & Shares ISA",
       "Lifetime ISA"
     ],
     "category": "fintech"
@@ -1483,7 +1518,7 @@
   {
     "name": "King & Shaxson Asset Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1504,14 +1539,14 @@
   {
     "name": "Kuflink",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Landlordinvest",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -1533,14 +1568,14 @@
     "name": "Legal & General (Unit Trust Managers)",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Lendwise",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -1554,7 +1589,7 @@
   {
     "name": "LGT Wealth Management UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1562,28 +1597,29 @@
     "name": "Lightyear U.K.",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Link Fund Solutions",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Liontrust Fund Partners",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Liverpool Victoria Financial Services",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1591,14 +1627,15 @@
     "name": "Lloyds Bank",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
   {
     "name": "Loanpad",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -1606,15 +1643,15 @@
     "name": "Logic Investments",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "London House Exchange",
     "types": [
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Innovative Finance ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1628,7 +1665,8 @@
   {
     "name": "London Plus Credit Union",
     "types": [
-      "Cash ISA"
+      "Cash ISA",
+      "Cash Junior ISA"
     ],
     "category": "fintech"
   },
@@ -1642,28 +1680,28 @@
   {
     "name": "M & G Securities",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Maitland Institutional Services",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Man Fund Management UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Margetts Fund Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1678,14 +1716,14 @@
     "name": "Marks & Spencer Financial Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Marks and Spencer Unit Trust Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1699,28 +1737,31 @@
   {
     "name": "Match the Cash",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Maunby Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "McInroy & Wood",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "McInroy & Wood Portfolios",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -1734,14 +1775,15 @@
   {
     "name": "Mercer",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "MES Financial Services",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -1749,7 +1791,7 @@
     "name": "Meteor Asset Management",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1757,14 +1799,14 @@
     "name": "Methodist Chapel Aid",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Metlife UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1779,8 +1821,8 @@
     "name": "Metropolitan Police Friendly Society",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Lifetime ISA"
+      "Lifetime ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1788,7 +1830,7 @@
     "name": "MFM Investment",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1796,29 +1838,29 @@
     "name": "MHA Wealth",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Miller & Co Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Moai Wealth",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Mole Valley Asset Management",
     "types": [
-      "Stocks & Shares",
-      "Lifetime ISA"
+      "Lifetime ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1840,14 +1882,15 @@
     "name": "Monzo Bank",
     "types": [
       "Cash ISA",
-      "Innovative Finance"
+      "Cash Junior ISA",
+      "Innovative Finance ISA"
     ],
     "category": "bank"
   },
   {
     "name": "Moorfields Advisory",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -1855,21 +1898,23 @@
     "name": "Morgan Stanley & Co. International",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Morningstar Wealth Administration",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Multrees Investor Services",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -1883,7 +1928,7 @@
   {
     "name": "National Deposit Friendly Society",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1891,7 +1936,7 @@
     "name": "National Westminster Bank",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
@@ -1905,7 +1950,7 @@
   {
     "name": "Navera Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1927,7 +1972,8 @@
   {
     "name": "NFU Mutual Select Investments",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -1935,7 +1981,7 @@
     "name": "Ninety One Fund Managers UK",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1958,14 +2004,14 @@
     "name": "Novia Financial",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Novia Global",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1973,7 +2019,7 @@
     "name": "Nucleus Financial Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1987,7 +2033,8 @@
   {
     "name": "Oakglen Wealth",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -2001,14 +2048,14 @@
   {
     "name": "Oberon Investments",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Octopus Investments",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2016,7 +2063,8 @@
     "name": "One Bank Street",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
@@ -2030,14 +2078,15 @@
   {
     "name": "Open Access Finance",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Orbis Investments (U.K.)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -2045,7 +2094,8 @@
     "name": "P1 Investment Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2060,7 +2110,8 @@
   {
     "name": "Parmenion Capital Partners",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -2081,14 +2132,16 @@
   {
     "name": "Penrith Building Society",
     "types": [
-      "Cash ISA"
+      "Cash ISA",
+      "Cash Junior ISA"
     ],
     "category": "building-society"
   },
   {
     "name": "Pershing Securities",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -2096,7 +2149,7 @@
     "name": "Philip J Milton & Company",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
+      "Stocks & Shares ISA",
       "Lifetime ISA"
     ],
     "category": "fintech"
@@ -2104,7 +2157,7 @@
   {
     "name": "Phoenix Life",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2112,7 +2165,7 @@
     "name": "Pilling & Co Stockbrokers",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2126,23 +2179,23 @@
   {
     "name": "Plata Finance",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Platform One",
     "types": [
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Innovative Finance ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Platform Securities",
     "types": [
-      "Stocks & Shares",
-      "Lifetime ISA"
+      "Lifetime ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2156,14 +2209,14 @@
   {
     "name": "Premier Fund Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Premier Portfolio Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2184,14 +2237,14 @@
   {
     "name": "Proplend",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Prosper Capital",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
@@ -2199,7 +2252,8 @@
     "name": "Prosper Savings",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2214,14 +2268,15 @@
     "name": "Quai Investment Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Quilter Cheviot",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2229,42 +2284,43 @@
     "name": "Quilter Investment Platform",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "R C Brown Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Rathbones Asset Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Rathbones Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Ravenscroft Investments (UK)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Raymond James Investment Services",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2272,14 +2328,14 @@
     "name": "Raymond James Wealth Management",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "RBC Europe",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2287,28 +2343,28 @@
     "name": "RBS Collective Investment Funds",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Rebuildingsociety.com",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Redmayne-Bentley",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Relendex",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -2316,15 +2372,15 @@
     "name": "Resolution Compliance",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Innovative Finance ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Revolut Trading",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2332,36 +2388,36 @@
     "name": "Reyker Securities",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Innovative Finance ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "RLUM",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Rockpool Investments",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Rossie House Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Rothschild & Co Wealth Management UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2369,7 +2425,7 @@
     "name": "Rowan Dartington & Co",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2377,35 +2433,35 @@
     "name": "Royal London Savings",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Royal London Unit Trust Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Ruffer",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "RW Blears",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "S&T Asset Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2420,7 +2476,8 @@
     "name": "Saltus Partners LLP (trading as Saltus Investment",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
+      "Cash Junior ISA",
+      "Stocks & Shares ISA",
       "Lifetime ISA"
     ],
     "category": "investment-platform"
@@ -2436,7 +2493,7 @@
     "name": "Santander ISA Managers",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2450,21 +2507,21 @@
   {
     "name": "Sarasin & Partners",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Sarasin Asset Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Sarasin Investment Funds",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2472,29 +2529,31 @@
     "name": "Saveable",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Lifetime ISA"
+      "Cash Junior ISA",
+      "Lifetime ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Schroder & Co",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Schroder Unit Trusts",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Schroders Personal Wealth",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -2509,35 +2568,36 @@
     "name": "Scottish Friendly Asset Managers",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Scottish Provident Buildings",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Scottish Widows Administration Services",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Scottish Widows Unit Trust Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Seccl Custody",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -2551,14 +2611,14 @@
   {
     "name": "Seven Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Shard Capital Partners",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2566,8 +2626,8 @@
     "name": "Share In",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Stocks & Shares ISA",
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -2582,14 +2642,14 @@
     "name": "Sheffield Mutual Friendly Society",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Shore Capital Stockbrokers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2597,21 +2657,23 @@
     "name": "Skipton Building Society",
     "types": [
       "Cash ISA",
-      "Lifetime ISA"
+      "Lifetime ISA",
+      "Cash Junior ISA"
     ],
     "category": "building-society"
   },
   {
     "name": "Slater Investments",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "St James's Place Investment Administration",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2619,7 +2681,7 @@
     "name": "Standard Life Savings",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2633,14 +2695,15 @@
   {
     "name": "State Bank of India (UK)",
     "types": [
-      "Cash ISA"
+      "Cash ISA",
+      "Cash Junior ISA"
     ],
     "category": "bank"
   },
   {
     "name": "Stratiphy",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2669,7 +2732,7 @@
     "name": "Synergy Financial Products",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2677,7 +2740,7 @@
     "name": "TAM Asset Management",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2699,7 +2762,7 @@
     "name": "Tembo Savings",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
+      "Stocks & Shares ISA",
       "Lifetime ISA"
     ],
     "category": "fintech"
@@ -2708,15 +2771,16 @@
     "name": "The Ancient Order of Foresters Friendly Society",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Lifetime ISA"
+      "Lifetime ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "The Bloomsbury Building",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -2751,7 +2815,7 @@
   {
     "name": "The Exeter Practice",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2766,14 +2830,14 @@
     "name": "The Rechabite Friendly Society",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "The Red Rose Friendly Society",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2781,14 +2845,14 @@
     "name": "The Royal Bank of Scotland",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
   {
     "name": "The Royal London Mutual Insurance Society",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2802,7 +2866,8 @@
   {
     "name": "The Walbrook Building",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -2810,7 +2875,8 @@
     "name": "Third Platform Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2818,28 +2884,29 @@
     "name": "Thomas Grant and Company",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Threadneedle Investment Services",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Tifosy",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Tilney Discretionary Portfolio Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -2853,21 +2920,23 @@
   {
     "name": "Titan Pensions & Investments Ltd (trading as Titan",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Titan Private Wealth",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Titan Settlement & Custody",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -2875,7 +2944,7 @@
     "name": "Trading 212 UK",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2883,7 +2952,7 @@
     "name": "Transport Friendly Society",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2891,14 +2960,14 @@
     "name": "TrinityBridge",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "TrinityBridge Fund Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2906,43 +2975,44 @@
     "name": "Triodos Bank UK",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
   {
     "name": "Triple Point Investment Management",
     "types": [
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Innovative Finance ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "True Potential Investments",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "TSB Bank",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
   {
     "name": "UBS Asset Management Funds",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Unicorn Asset Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2957,7 +3027,7 @@
     "name": "United Trust Bank",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
@@ -2965,7 +3035,8 @@
     "name": "Upvest Securities",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2973,7 +3044,7 @@
     "name": "Valu-Trac Investment Management",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
+      "Stocks & Shares ISA",
       "Lifetime ISA"
     ],
     "category": "investment-platform"
@@ -2988,7 +3059,8 @@
   {
     "name": "VCAP Capital",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -3002,22 +3074,23 @@
   {
     "name": "Verso Investment Management LLP (trading as Verso",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Verso Wealth Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Verus Financial Services",
     "types": [
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Innovative Finance ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -3031,7 +3104,7 @@
   {
     "name": "Virgin Money Unit Trust Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -3039,14 +3112,15 @@
     "name": "W H Ireland",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "W1M Wealth Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -3054,49 +3128,49 @@
     "name": "Walker Crips Investment Management",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Waverton Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Way Fund Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Waystone Financial Investments",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Waystone Management (UK)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Wealth at Work",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Wealth Club Asset Management",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
@@ -3104,7 +3178,8 @@
     "name": "Wealthify",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -3112,42 +3187,45 @@
     "name": "Wealthkernel",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "WealthTek",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Wealthtime",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Webull Securities (UK)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Wesleyan Assurance Society",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Wesleyan Unit Trust Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -3176,14 +3254,14 @@
     "name": "Whitechurch Securities",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Williams Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -3191,14 +3269,14 @@
     "name": "Winterflood Securities",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "WiseAlpha Technologies",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -3206,14 +3284,15 @@
     "name": "XTB",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Yealand Fund Services",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -3227,14 +3306,15 @@
   {
     "name": "Zeus Capital",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Zig Zag Building",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -3242,7 +3322,7 @@
     "name": "Zopa Bank",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   }

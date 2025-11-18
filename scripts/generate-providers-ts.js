@@ -12,7 +12,7 @@ const header = `/**
 
 export interface ISAProvider {
   name: string;
-  types: string[]; // Cash ISA, Stocks & Shares, Lifetime ISA, Innovative Finance
+  types: string[]; // Cash ISA, Cash Junior ISA, Stocks & Shares ISA, Stocks & Shares Junior ISA, Lifetime ISA, Innovative Finance ISA
   category: 'bank' | 'investment-platform' | 'fintech' | 'building-society';
 }
 

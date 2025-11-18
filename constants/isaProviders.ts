@@ -7,7 +7,7 @@
 
 export interface ISAProvider {
   name: string;
-  types: string[]; // Cash ISA, Stocks & Shares, Lifetime ISA, Innovative Finance
+  types: string[]; // Cash ISA, Cash Junior ISA, Stocks & Shares ISA, Stocks & Shares Junior ISA, Lifetime ISA, Innovative Finance ISA
   category: 'bank' | 'investment-platform' | 'fintech' | 'building-society';
 }
 
@@ -15,36 +15,36 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "25 Bank Street",
     "types": [
-      "Stocks & Shares",
-      "Lifetime ISA"
+      "Lifetime ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
   {
     "name": "4 Northumberland Buildings",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "40 Bank Street",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
   {
     "name": "40 Bank Street",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "bank"
   },
   {
     "name": "5 Bank Street",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
@@ -58,7 +58,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Abrdn Fund Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -66,15 +66,15 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Abundance Investment Limited (trading as",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Innovative Finance ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Aegon Asset Management UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -88,7 +88,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "AJ Bell Securities",
     "types": [
-      "Stocks & Shares",
+      "Stocks & Shares ISA",
       "Lifetime ISA"
     ],
     "category": "investment-platform"
@@ -96,14 +96,16 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Al Rayan Bank",
     "types": [
-      "Cash ISA"
+      "Cash ISA",
+      "Cash Junior ISA"
     ],
     "category": "bank"
   },
   {
     "name": "Alder Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -118,35 +120,35 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Alexandra Buildings",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Allianz Global Investors UK Limited (trading as Allianz",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Alpha Real property Investment Advisers LLP (trading",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "APM Capital Markets",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Apollo Multi Asset Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -154,28 +156,28 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Arbuthnot Latham & Co",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "ArchOver",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Artemis Fund Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Assetz SME Capital",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
@@ -189,14 +191,15 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Atomos Investments",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Aviation and Tech Capital",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
@@ -204,7 +207,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Aviva Investment Solutions UK",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -212,35 +215,37 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Aviva Investors UK Fund Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Aviva Life & Pensions UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Aviva Wrap UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "AXA Investment Managers UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Bank J. Safra Sarasin (Gibraltar)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "bank"
   },
@@ -261,14 +266,16 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Bank of Scotland",
     "types": [
-      "Cash ISA"
+      "Cash ISA",
+      "Cash Junior ISA"
     ],
     "category": "bank"
   },
   {
     "name": "Bank Pictet & Cie (Europe) AG London Branch",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "bank"
   },
@@ -276,7 +283,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Barclays Bank",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
@@ -291,7 +298,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Barclays Investment Solutions",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -299,7 +306,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Barratt & Cooke",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -314,7 +321,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Bayonet Ventures",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -335,7 +342,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Blackfinch Investments",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -343,7 +350,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Blackrock Investment Management (UK)",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -351,14 +358,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "BNY Mellon Fund Managers",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Bordier & Cie (UK)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -366,8 +373,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Bramdean Asset Management",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Stocks & Shares ISA",
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
@@ -375,37 +382,39 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Brewin Dolphin",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Brewin Dolphin Wealth Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "British Pearl",
     "types": [
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Innovative Finance ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Brooks MacDonald Asset Management",
     "types": [
-      "Stocks & Shares",
-      "Lifetime ISA"
+      "Lifetime ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Brown Advisory",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -413,7 +422,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Brown Shipley & Co",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -434,14 +443,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Canaccord Genuity Wealth",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Capel Court Public Limited Company",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -455,14 +464,15 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Carne Global Fund Managers (UK)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "CASFS",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -476,7 +486,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Castlefield Investment Partners",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -484,14 +494,15 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Causeway Securities Limited (trading as Causeway",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Central Liverpool Credit Union",
     "types": [
-      "Cash ISA"
+      "Cash ISA",
+      "Cash Junior ISA"
     ],
     "category": "fintech"
   },
@@ -505,7 +516,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Charteris Treasury Portfolio Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -519,14 +530,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Citibank UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
   {
     "name": "City Asset Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -562,28 +573,31 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "CMC Markets Investments",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Cofunds",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Columbia Threadneedle Fund Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Columbia Threadneedle Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -597,7 +611,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "ConBrio Fund Partners",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -605,14 +620,15 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Connor Broadley",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Consistent Unit Trust Management Company",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -620,7 +636,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Courtiers Investment Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -628,28 +644,29 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Coventry Building Society",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "building-society"
   },
   {
     "name": "Credo Capital",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Crowd for Angels (UK)",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Crowd2Fund",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
@@ -657,8 +674,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Crowdstacker",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Innovative Finance ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -673,7 +690,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Cushon Money",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Cash Junior ISA"
     ],
     "category": "fintech"
   },
@@ -688,7 +706,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Danske Bank",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
@@ -702,35 +720,36 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "DB UK Bank",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
   {
     "name": "Denmark Square",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Digital Moneybox",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Dolfin Financial (UK)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Downing",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -738,14 +757,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Dura Capital",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "E-Money Capital",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
@@ -766,28 +785,28 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Edaid",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "EdenTree Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Edinburgh Alternative Finance Ltd (trading as Lending",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "EFG Private Bank",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
@@ -795,14 +814,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Elevate Portfolio Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Elfin Market",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -810,22 +829,23 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Embark Investment Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Emoneyhub",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Equiniti Financial Services",
     "types": [
-      "Stocks & Shares",
-      "Lifetime ISA"
+      "Lifetime ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -840,7 +860,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "eToro (UK)",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -848,21 +869,23 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Evelyn Partners Asset Management",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Cash Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Evelyn Partners Fund Solutions",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Evelyn Partners Investment Services",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -870,14 +893,15 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Exchange Buildings",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Family Assurance Friendly Society",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -885,14 +909,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Family Equity Plan",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Farley & Thompson",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -907,7 +931,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Financial Administration Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
+      "Stocks & Shares ISA",
       "Lifetime ISA"
     ],
     "category": "fintech"
@@ -916,21 +940,21 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "First Sentier Investors (UK) Funds",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Fiske",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Fluro Platform",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -938,63 +962,64 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "FNZ Securities",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Focus 2020",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Folk2Folk",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Forester Life",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Franklin Templeton Fund Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Freetrade",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Fund Ourselves",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Funding Circle",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "FundingSecure",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
@@ -1002,21 +1027,22 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Fundment",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "FundRock Partners",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Fundsmith",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1030,7 +1056,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Fusion Wealth",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1038,7 +1064,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Gallium P E Depositary",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1053,7 +1080,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "GHC Capital Markets",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1068,14 +1095,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Global Investment Strategy UK",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Goji Financial Services",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -1083,14 +1110,15 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Goldman Sachs International Bank",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
   {
     "name": "Graphene Platforms",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -1104,21 +1132,22 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Growth Capital Ventures",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Halifax Share Dealing",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Halo Invest",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -1147,7 +1176,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Handelsbanken Wealth and Asset Management",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
@@ -1162,8 +1191,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Hargreaves Lansdown Asset Management",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Lifetime ISA"
+      "Lifetime ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1184,7 +1213,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Hathaway Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1192,7 +1221,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Haw Bank House",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
+      "Stocks & Shares ISA",
       "Lifetime ISA"
     ],
     "category": "bank"
@@ -1200,7 +1229,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "HBOS Investment Fund Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1208,7 +1237,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Hedley & Company Stockbrokers",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1216,7 +1245,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Henderson Rowe",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1224,7 +1253,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Hilbert Investment Solutions",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1238,14 +1267,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "HNW Lending",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Housemartin Property",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -1253,14 +1282,15 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "HSBC UK Bank",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
   {
     "name": "Hubwise Securities",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -1268,7 +1298,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "IBP Markets",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1276,8 +1307,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "iDealing.Com",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Stocks & Shares ISA",
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -1291,14 +1322,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "IFG.VC",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "IG Trading & Investments",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1306,7 +1337,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "IM Asset Management",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1314,7 +1345,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Independent Order of Odd Fellows Friendly Society",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
+      "Stocks & Shares ISA",
       "Lifetime ISA"
     ],
     "category": "fintech"
@@ -1323,15 +1354,15 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Integrated Financial Arrangements",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Lifetime ISA"
+      "Lifetime ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Interactive Brokers (U.K.)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1339,7 +1370,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Interactive Investor Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1347,7 +1378,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Invesco Fund Managers",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1355,7 +1386,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Investec Bank",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
@@ -1363,14 +1394,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Investec Wealth & Investment",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Investengine (UK)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1378,49 +1409,51 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Investment Fund Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Investment Funds Direct",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Investment HCP Building",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Invinitive Financial UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "ITI Capital",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "J & E Davy (UK)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "J M Finn & Co",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1428,7 +1461,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "J. Edward Sellars & Partners",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1436,7 +1469,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "James Brearley & Sons",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1444,7 +1477,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "James Hambro & Partners",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1452,21 +1485,22 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "James Hay Wrap Managers",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Janus Henderson Fund Management UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Jarvis Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -1480,7 +1514,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Kidstart",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -1488,7 +1523,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Killik & Co",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
+      "Stocks & Shares ISA",
       "Lifetime ISA"
     ],
     "category": "fintech"
@@ -1496,7 +1531,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "King & Shaxson Asset Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1517,14 +1552,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Kuflink",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Landlordinvest",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -1546,14 +1581,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Legal & General (Unit Trust Managers)",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Lendwise",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -1567,7 +1602,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "LGT Wealth Management UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1575,28 +1610,29 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Lightyear U.K.",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Link Fund Solutions",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Liontrust Fund Partners",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Liverpool Victoria Financial Services",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1604,14 +1640,15 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Lloyds Bank",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
   {
     "name": "Loanpad",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -1619,15 +1656,15 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Logic Investments",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "London House Exchange",
     "types": [
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Innovative Finance ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1641,7 +1678,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "London Plus Credit Union",
     "types": [
-      "Cash ISA"
+      "Cash ISA",
+      "Cash Junior ISA"
     ],
     "category": "fintech"
   },
@@ -1655,28 +1693,28 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "M & G Securities",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Maitland Institutional Services",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Man Fund Management UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Margetts Fund Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1691,14 +1729,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Marks & Spencer Financial Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Marks and Spencer Unit Trust Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1712,28 +1750,31 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Match the Cash",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Maunby Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "McInroy & Wood",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "McInroy & Wood Portfolios",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -1747,14 +1788,15 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Mercer",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "MES Financial Services",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -1762,7 +1804,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Meteor Asset Management",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1770,14 +1812,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Methodist Chapel Aid",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Metlife UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1792,8 +1834,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Metropolitan Police Friendly Society",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Lifetime ISA"
+      "Lifetime ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1801,7 +1843,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "MFM Investment",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1809,29 +1851,29 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "MHA Wealth",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Miller & Co Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Moai Wealth",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Mole Valley Asset Management",
     "types": [
-      "Stocks & Shares",
-      "Lifetime ISA"
+      "Lifetime ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1853,14 +1895,15 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Monzo Bank",
     "types": [
       "Cash ISA",
-      "Innovative Finance"
+      "Cash Junior ISA",
+      "Innovative Finance ISA"
     ],
     "category": "bank"
   },
   {
     "name": "Moorfields Advisory",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -1868,21 +1911,23 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Morgan Stanley & Co. International",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Morningstar Wealth Administration",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Multrees Investor Services",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -1896,7 +1941,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "National Deposit Friendly Society",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1904,7 +1949,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "National Westminster Bank",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
@@ -1918,7 +1963,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Navera Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1940,7 +1985,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "NFU Mutual Select Investments",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -1948,7 +1994,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Ninety One Fund Managers UK",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -1971,14 +2017,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Novia Financial",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Novia Global",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -1986,7 +2032,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Nucleus Financial Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2000,7 +2046,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Oakglen Wealth",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -2014,14 +2061,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Oberon Investments",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Octopus Investments",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2029,7 +2076,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "One Bank Street",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
@@ -2043,14 +2091,15 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Open Access Finance",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Orbis Investments (U.K.)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -2058,7 +2107,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "P1 Investment Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2073,7 +2123,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Parmenion Capital Partners",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -2094,14 +2145,16 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Penrith Building Society",
     "types": [
-      "Cash ISA"
+      "Cash ISA",
+      "Cash Junior ISA"
     ],
     "category": "building-society"
   },
   {
     "name": "Pershing Securities",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -2109,7 +2162,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Philip J Milton & Company",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
+      "Stocks & Shares ISA",
       "Lifetime ISA"
     ],
     "category": "fintech"
@@ -2117,7 +2170,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Phoenix Life",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2125,7 +2178,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Pilling & Co Stockbrokers",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2139,23 +2192,23 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Plata Finance",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Platform One",
     "types": [
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Innovative Finance ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Platform Securities",
     "types": [
-      "Stocks & Shares",
-      "Lifetime ISA"
+      "Lifetime ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2169,14 +2222,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Premier Fund Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Premier Portfolio Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2197,14 +2250,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Proplend",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Prosper Capital",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
@@ -2212,7 +2265,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Prosper Savings",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2227,14 +2281,15 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Quai Investment Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Quilter Cheviot",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2242,42 +2297,43 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Quilter Investment Platform",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "R C Brown Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Rathbones Asset Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Rathbones Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Ravenscroft Investments (UK)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Raymond James Investment Services",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2285,14 +2341,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Raymond James Wealth Management",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "RBC Europe",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2300,28 +2356,28 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "RBS Collective Investment Funds",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Rebuildingsociety.com",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Redmayne-Bentley",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Relendex",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -2329,15 +2385,15 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Resolution Compliance",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Innovative Finance ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Revolut Trading",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2345,36 +2401,36 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Reyker Securities",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Innovative Finance ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "RLUM",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Rockpool Investments",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Rossie House Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Rothschild & Co Wealth Management UK",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2382,7 +2438,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Rowan Dartington & Co",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2390,35 +2446,35 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Royal London Savings",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Royal London Unit Trust Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Ruffer",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "RW Blears",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "S&T Asset Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2433,7 +2489,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Saltus Partners LLP (trading as Saltus Investment",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
+      "Cash Junior ISA",
+      "Stocks & Shares ISA",
       "Lifetime ISA"
     ],
     "category": "investment-platform"
@@ -2449,7 +2506,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Santander ISA Managers",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2463,21 +2520,21 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Sarasin & Partners",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Sarasin Asset Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Sarasin Investment Funds",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2485,29 +2542,31 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Saveable",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Lifetime ISA"
+      "Cash Junior ISA",
+      "Lifetime ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Schroder & Co",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Schroder Unit Trusts",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Schroders Personal Wealth",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -2522,35 +2581,36 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Scottish Friendly Asset Managers",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Scottish Provident Buildings",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Scottish Widows Administration Services",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Scottish Widows Unit Trust Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Seccl Custody",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -2564,14 +2624,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Seven Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Shard Capital Partners",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2579,8 +2639,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Share In",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Stocks & Shares ISA",
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -2595,14 +2655,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Sheffield Mutual Friendly Society",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Shore Capital Stockbrokers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2610,21 +2670,23 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Skipton Building Society",
     "types": [
       "Cash ISA",
-      "Lifetime ISA"
+      "Lifetime ISA",
+      "Cash Junior ISA"
     ],
     "category": "building-society"
   },
   {
     "name": "Slater Investments",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "St James's Place Investment Administration",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2632,7 +2694,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Standard Life Savings",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2646,14 +2708,15 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "State Bank of India (UK)",
     "types": [
-      "Cash ISA"
+      "Cash ISA",
+      "Cash Junior ISA"
     ],
     "category": "bank"
   },
   {
     "name": "Stratiphy",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2682,7 +2745,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Synergy Financial Products",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2690,7 +2753,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "TAM Asset Management",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2712,7 +2775,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Tembo Savings",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
+      "Stocks & Shares ISA",
       "Lifetime ISA"
     ],
     "category": "fintech"
@@ -2721,15 +2784,16 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "The Ancient Order of Foresters Friendly Society",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
-      "Lifetime ISA"
+      "Lifetime ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "The Bloomsbury Building",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -2764,7 +2828,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "The Exeter Practice",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2779,14 +2843,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "The Rechabite Friendly Society",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "The Red Rose Friendly Society",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2794,14 +2858,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "The Royal Bank of Scotland",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
   {
     "name": "The Royal London Mutual Insurance Society",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2815,7 +2879,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "The Walbrook Building",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -2823,7 +2888,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Third Platform Services",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2831,28 +2897,29 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Thomas Grant and Company",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Threadneedle Investment Services",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Tifosy",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Tilney Discretionary Portfolio Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -2866,21 +2933,23 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Titan Pensions & Investments Ltd (trading as Titan",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Titan Private Wealth",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Titan Settlement & Custody",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "fintech"
   },
@@ -2888,7 +2957,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Trading 212 UK",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2896,7 +2965,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Transport Friendly Society",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -2904,14 +2973,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "TrinityBridge",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "TrinityBridge Fund Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2919,43 +2988,44 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Triodos Bank UK",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
   {
     "name": "Triple Point Investment Management",
     "types": [
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Innovative Finance ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "True Potential Investments",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "TSB Bank",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
   {
     "name": "UBS Asset Management Funds",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Unicorn Asset Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2970,7 +3040,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "United Trust Bank",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   },
@@ -2978,7 +3048,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Upvest Securities",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -2986,7 +3057,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Valu-Trac Investment Management",
     "types": [
       "Cash ISA",
-      "Stocks & Shares",
+      "Stocks & Shares ISA",
       "Lifetime ISA"
     ],
     "category": "investment-platform"
@@ -3001,7 +3072,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "VCAP Capital",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -3015,22 +3087,23 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Verso Investment Management LLP (trading as Verso",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Verso Wealth Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Verus Financial Services",
     "types": [
-      "Stocks & Shares",
-      "Innovative Finance"
+      "Innovative Finance ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -3044,7 +3117,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Virgin Money Unit Trust Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -3052,14 +3125,15 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "W H Ireland",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "W1M Wealth Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
@@ -3067,49 +3141,49 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Walker Crips Investment Management",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Waverton Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Way Fund Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Waystone Financial Investments",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Waystone Management (UK)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Wealth at Work",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Wealth Club Asset Management",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "investment-platform"
   },
@@ -3117,7 +3191,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Wealthify",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -3125,42 +3200,45 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Wealthkernel",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "WealthTek",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Wealthtime",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Webull Securities (UK)",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Wesleyan Assurance Society",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Wesleyan Unit Trust Managers",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -3189,14 +3267,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Whitechurch Securities",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Williams Investment Management",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -3204,14 +3282,14 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Winterflood Securities",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "WiseAlpha Technologies",
     "types": [
-      "Innovative Finance"
+      "Innovative Finance ISA"
     ],
     "category": "fintech"
   },
@@ -3219,14 +3297,15 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "XTB",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
     "name": "Yealand Fund Services",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
   },
@@ -3240,14 +3319,15 @@ export const ISA_PROVIDERS: ISAProvider[] = [
   {
     "name": "Zeus Capital",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA",
+      "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
   },
   {
     "name": "Zig Zag Building",
     "types": [
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -3255,7 +3335,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Zopa Bank",
     "types": [
       "Cash ISA",
-      "Stocks & Shares"
+      "Stocks & Shares ISA"
     ],
     "category": "bank"
   }
