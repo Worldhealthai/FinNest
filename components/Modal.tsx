@@ -12,7 +12,6 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import GlassCard from './GlassCard';
 import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
 
 interface ModalProps {
@@ -47,7 +46,7 @@ export default function Modal({
         <BlurView intensity={50} style={StyleSheet.absoluteFill} tint="dark" />
 
         <View style={styles.modalContainer}>
-          <GlassCard style={styles.modalCard} intensity="dark">
+          <View style={styles.modalContent}>
             {/* Fixed Header */}
             <LinearGradient
               colors={[Colors.deepNavy + 'DD', Colors.mediumNavy + 'AA']}
@@ -82,7 +81,7 @@ export default function Modal({
             >
               {children}
             </ScrollView>
-          </GlassCard>
+          </View>
         </View>
       </View>
     </RNModal>
@@ -101,10 +100,11 @@ const styles = StyleSheet.create({
     borderTopRightRadius: BorderRadius.xl,
     overflow: 'hidden',
   },
-  modalCard: {
+  modalContent: {
     flex: 1,
-    padding: 0,
-    borderRadius: 0,
+    backgroundColor: Colors.deepNavy + 'F0',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 215, 0, 0.3)',
   },
   header: {
     flexDirection: 'row',
