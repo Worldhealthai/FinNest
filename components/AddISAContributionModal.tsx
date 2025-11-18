@@ -332,23 +332,6 @@ export default function AddISAContributionModal({
           );
         })}
       </View>
-
-      {/* ISA Type Info */}
-      <GlassCard style={styles.isaInfoCard} intensity="dark">
-        <Text style={styles.isaInfoTitle}>{ISA_INFO[selectedType].name}</Text>
-        <Text style={styles.isaInfoDescription}>
-          {ISA_INFO[selectedType].description}
-        </Text>
-        <View style={styles.isaInfoStats}>
-          <View style={styles.isaInfoStat}>
-            <Ionicons name="cash-outline" size={20} color={Colors.gold} />
-            <Text style={styles.isaInfoStatLabel}>Max Contribution</Text>
-            <Text style={styles.isaInfoStatValue}>
-              {formatCurrency(maxContribution)}
-            </Text>
-          </View>
-        </View>
-      </GlassCard>
     </View>
   );
 
@@ -908,7 +891,7 @@ const styles = StyleSheet.create({
     fontWeight: Typography.weights.semibold,
   },
   nextButton: {
-    flex: 2,
+    flex: 1,
   },
   nextButtonFull: {
     flex: 1,
