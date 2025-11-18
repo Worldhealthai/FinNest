@@ -315,13 +315,13 @@ export default function AddISAContributionModal({
               >
                 {isSelected && (
                   <View style={styles.selectedBadgeCorner}>
-                    <Ionicons name="checkmark-circle" size={28} color={Colors.gold} />
+                    <Ionicons name="checkmark-circle" size={24} color={Colors.gold} />
                   </View>
                 )}
                 <View style={[styles.isaTypeIcon, { backgroundColor: info.color + '30' }]}>
                   <Ionicons
                     name={getISAIcon(type)}
-                    size={40}
+                    size={32}
                     color={info.color}
                   />
                 </View>
@@ -649,20 +649,24 @@ const styles = StyleSheet.create({
   isaTypeGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
     gap: Spacing.lg,
     marginBottom: Spacing.xl,
-    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.sm,
   },
   isaTypeButton: {
-    width: (width - Spacing.lg * 3) / 2,
+    width: (width - Spacing.lg * 4) / 2,
+    maxWidth: 180,
   },
   isaTypeCard: {
-    padding: Spacing.xl,
-    paddingVertical: Spacing.xxl,
+    padding: Spacing.lg,
+    paddingVertical: Spacing.xl,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
-    minHeight: 160,
+    minHeight: 170,
+    aspectRatio: 1,
     borderRadius: BorderRadius.xl,
   },
   isaTypeCardSelected: {
@@ -672,30 +676,30 @@ const styles = StyleSheet.create({
   },
   selectedBadgeCorner: {
     position: 'absolute',
-    top: Spacing.md,
-    right: Spacing.md,
+    top: Spacing.sm,
+    right: Spacing.sm,
   },
   isaTypeIcon: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.md,
   },
   isaTypeName: {
-    fontSize: Typography.sizes.lg,
+    fontSize: Typography.sizes.md,
     color: Colors.white,
     fontWeight: Typography.weights.bold,
     textAlign: 'center',
-    marginBottom: Spacing.sm,
-    lineHeight: 22,
+    marginBottom: Spacing.xs,
+    lineHeight: 20,
   },
   isaTypeDescription: {
-    fontSize: Typography.sizes.sm,
+    fontSize: Typography.sizes.xs,
     color: Colors.lightGray,
     textAlign: 'center',
-    fontWeight: Typography.weights.medium,
+    fontWeight: Typography.weights.semibold,
   },
   isaInfoCard: {
     padding: Spacing.xl,
