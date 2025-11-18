@@ -1,28 +1,32 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import GlassCard from '@/components/GlassCard';
 import AddISAContributionModal, { ISAContribution } from '@/components/AddISAContributionModal';
 import { Colors, Spacing, Typography } from '@/constants/theme';
 import { ISA_INFO, ISA_ANNUAL_ALLOWANCE, LIFETIME_ISA_MAX, getDaysUntilTaxYearEnd, formatCurrency, getTaxYearDates, calculateFlexibleISA } from '@/constants/isaData';
 
-const USER_ISAS = {
+const INITIAL_USER_ISAS = {
   cash: { contributed: 5000, balance: 5150, provider: 'NatWest' },
   stocks_shares: { contributed: 8000, balance: 9200, provider: 'Vanguard' },
   lifetime: { contributed: 3000, balance: 3750, provider: 'Moneybox' },
   innovative_finance: { contributed: 0, balance: 0, provider: 'None' },
 };
 
+const STORAGE_KEY = '@finnest_isa_data';
+
 export default function DashboardScreen() {
-  const total = Object.values(USER_ISAS).reduce((s, i) => s + i.contributed, 0);
+  const [userISAs, setUserISAs] = useState(INITIAL_USER_ISAS);
+  const total = Object.values(userISAs).reduce((s, i) => s + i.contributed, 0);
   const remaining = ISA_ANNUAL_ALLOWANCE - total;
   const days = getDaysUntilTaxYearEnd();
   const taxYear = getTaxYearDates();
   const percent = (total / ISA_ANNUAL_ALLOWANCE) * 100;
-  const lisaBonus = USER_ISAS.lifetime.contributed * 0.25;
+  const lisaBonus = userISAs.lifetime.contributed * 0.25;
 
   // Modal state
   const [addContributionVisible, setAddContributionVisible] = useState(false);
@@ -31,6 +35,30 @@ export default function DashboardScreen() {
   const [withdrawals, setWithdrawals] = useState('2000');
   const [depositAmount, setDepositAmount] = useState('5000');
   const [calcResult, setCalcResult] = useState<any>(null);
+
+  // Load saved ISA data on mount
+  useEffect(() => {
+    loadISAData();
+  }, []);
+
+  const loadISAData = async () => {
+    try {
+      const savedData = await AsyncStorage.getItem(STORAGE_KEY);
+      if (savedData) {
+        setUserISAs(JSON.parse(savedData));
+      }
+    } catch (error) {
+      console.error('Error loading ISA data:', error);
+    }
+  };
+
+  const saveISAData = async (data: typeof INITIAL_USER_ISAS) => {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (error) {
+      console.error('Error saving ISA data:', error);
+    }
+  };
 
   const handleCalculate = () => {
     const result = calculateFlexibleISA(
@@ -45,9 +73,23 @@ export default function DashboardScreen() {
   };
 
   const handleAddContribution = (contribution: ISAContribution) => {
-    // In a real app, this would save to state/database
-    console.log('New contribution added:', contribution);
-    // You could update the USER_ISAS state here if it was managed state
+    const isaKey = contribution.isaType as keyof typeof userISAs;
+
+    // Update the ISA data
+    const updatedISAs = {
+      ...userISAs,
+      [isaKey]: {
+        ...userISAs[isaKey],
+        contributed: userISAs[isaKey].contributed + contribution.amount,
+        balance: userISAs[isaKey].balance + contribution.amount,
+        provider: contribution.provider,
+      },
+    };
+
+    setUserISAs(updatedISAs);
+    saveISAData(updatedISAs);
+
+    console.log('Contribution added successfully:', contribution);
   };
 
   return (
@@ -111,17 +153,17 @@ export default function DashboardScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.name}>Cash ISA</Text>
-                <Text style={styles.sub}>{USER_ISAS.cash.provider} • Low Risk</Text>
+                <Text style={styles.sub}>{userISAs.cash.provider} • Low Risk</Text>
               </View>
             </View>
             <View style={[styles.row, { marginTop: 12 }]}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.sub}>Contributed</Text>
-                <Text style={styles.val}>{formatCurrency(USER_ISAS.cash.contributed)}</Text>
+                <Text style={styles.val}>{formatCurrency(userISAs.cash.contributed)}</Text>
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.sub}>Balance</Text>
-                <Text style={[styles.val, { color: Colors.success }]}>{formatCurrency(USER_ISAS.cash.balance)}</Text>
+                <Text style={[styles.val, { color: Colors.success }]}>{formatCurrency(userISAs.cash.balance)}</Text>
               </View>
             </View>
           </GlassCard>
@@ -133,17 +175,17 @@ export default function DashboardScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.name}>Stocks & Shares ISA</Text>
-                <Text style={styles.sub}>{USER_ISAS.stocks_shares.provider} • Medium Risk</Text>
+                <Text style={styles.sub}>{userISAs.stocks_shares.provider} • Medium Risk</Text>
               </View>
             </View>
             <View style={[styles.row, { marginTop: 12 }]}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.sub}>Contributed</Text>
-                <Text style={styles.val}>{formatCurrency(USER_ISAS.stocks_shares.contributed)}</Text>
+                <Text style={styles.val}>{formatCurrency(userISAs.stocks_shares.contributed)}</Text>
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.sub}>Balance</Text>
-                <Text style={[styles.val, { color: Colors.success }]}>{formatCurrency(USER_ISAS.stocks_shares.balance)}</Text>
+                <Text style={[styles.val, { color: Colors.success }]}>{formatCurrency(userISAs.stocks_shares.balance)}</Text>
               </View>
             </View>
           </GlassCard>
@@ -155,13 +197,13 @@ export default function DashboardScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.name}>Lifetime ISA</Text>
-                <Text style={styles.sub}>{USER_ISAS.lifetime.provider} • 25% Gov Bonus</Text>
+                <Text style={styles.sub}>{userISAs.lifetime.provider} • 25% Gov Bonus</Text>
               </View>
             </View>
             <View style={[styles.row, { marginTop: 12 }]}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.sub}>Contributed</Text>
-                <Text style={styles.val}>{formatCurrency(USER_ISAS.lifetime.contributed)}</Text>
+                <Text style={styles.val}>{formatCurrency(userISAs.lifetime.contributed)}</Text>
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.sub}>Gov Bonus</Text>
@@ -169,9 +211,9 @@ export default function DashboardScreen() {
               </View>
             </View>
             <View style={[styles.bar, { marginTop: 12, height: 4 }]}>
-              <View style={{ width: `${(USER_ISAS.lifetime.contributed / LIFETIME_ISA_MAX) * 100}%`, height: '100%', backgroundColor: ISA_INFO.lifetime.color, borderRadius: 2 }} />
+              <View style={{ width: `${(userISAs.lifetime.contributed / LIFETIME_ISA_MAX) * 100}%`, height: '100%', backgroundColor: ISA_INFO.lifetime.color, borderRadius: 2 }} />
             </View>
-            <Text style={[styles.sub, { marginTop: 4 }]}>{formatCurrency(LIFETIME_ISA_MAX - USER_ISAS.lifetime.contributed)} left for max bonus</Text>
+            <Text style={[styles.sub, { marginTop: 4 }]}>{formatCurrency(LIFETIME_ISA_MAX - userISAs.lifetime.contributed)} left for max bonus</Text>
           </GlassCard>
 
           <TouchableOpacity onPress={() => setAddContributionVisible(true)}>
@@ -190,7 +232,7 @@ export default function DashboardScreen() {
               <Text style={[styles.name, { marginLeft: 12 }]}>Quick Tip</Text>
             </View>
             <Text style={[styles.sub, { marginTop: 8, lineHeight: 20 }]}>
-              Contribute the remaining {formatCurrency(LIFETIME_ISA_MAX - USER_ISAS.lifetime.contributed)} to your LISA before tax year end to get {formatCurrency((LIFETIME_ISA_MAX - USER_ISAS.lifetime.contributed) * 0.25)} free government bonus!
+              Contribute the remaining {formatCurrency(LIFETIME_ISA_MAX - userISAs.lifetime.contributed)} to your LISA before tax year end to get {formatCurrency((LIFETIME_ISA_MAX - userISAs.lifetime.contributed) * 0.25)} free government bonus!
             </Text>
           </GlassCard>
 
