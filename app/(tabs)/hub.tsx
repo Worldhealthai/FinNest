@@ -45,7 +45,113 @@ export default function HubScreen() {
       <SafeAreaView style={styles.safe} edges={['top']}>
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           <Text style={styles.title}>ISA Hub</Text>
-          <Text style={styles.subtitle}>Learn, engage, and level up your ISA knowledge</Text>
+          <Text style={styles.subtitle}>Essential ISA knowledge and resources</Text>
+
+          {/* The 4 ISA Types */}
+          <Text style={styles.section}>ISA Types</Text>
+
+          {Object.values(ISA_INFO).map((isa) => (
+            <Pressable
+              key={isa.id}
+              onPress={() => setExpandedISA(expandedISA === isa.id ? null : isa.id)}
+              style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
+            >
+              <View style={styles.card}>
+                <View style={styles.row}>
+                  <View style={[styles.icon, { backgroundColor: isa.color + '20' }]}>
+                    <Ionicons name={isa.icon as any} size={24} color={isa.color} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.name}>{isa.name}</Text>
+                    <Text style={styles.sub}>{isa.riskLevel} Risk • {isa.potentialReturn}</Text>
+                  </View>
+                  <Ionicons name={expandedISA === isa.id ? "chevron-up" : "chevron-down"} size={20} color={Colors.lightGray} />
+                </View>
+
+                {expandedISA === isa.id && (
+                  <View style={{ marginTop: 16 }}>
+                    <Text style={styles.desc}>{isa.description}</Text>
+
+                    <Text style={[styles.sub, { marginTop: 12, fontWeight: Typography.weights.semibold }]}>Benefits:</Text>
+                    {isa.benefits.map((benefit, i) => (
+                      <View key={i} style={styles.listRow}>
+                        <Text style={styles.bullet}>✓</Text>
+                        <Text style={styles.listText}>{benefit}</Text>
+                      </View>
+                    ))}
+
+                    <Text style={[styles.sub, { marginTop: 8, fontWeight: Typography.weights.semibold }]}>Best For:</Text>
+                    {isa.bestFor.map((item, i) => (
+                      <View key={i} style={styles.listRow}>
+                        <Text style={styles.bullet}>→</Text>
+                        <Text style={styles.listText}>{item}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
+            </Pressable>
+          ))}
+
+          <Text style={styles.section}>Key Rules</Text>
+
+          <View style={styles.card}>
+            <View style={styles.ruleRow}>
+              <Ionicons name="cash" size={20} color={Colors.gold} />
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={styles.ruleName}>Annual Allowance</Text>
+                <Text style={styles.sub}>{formatCurrency(ISA_ANNUAL_ALLOWANCE)} per tax year (6 April - 5 April)</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.card}>
+            <View style={styles.ruleRow}>
+              <Ionicons name="home" size={20} color={ISA_INFO.lifetime.color} />
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={styles.ruleName}>Lifetime ISA Limit</Text>
+                <Text style={styles.sub}>{formatCurrency(LIFETIME_ISA_MAX)} max per year + 25% government bonus</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.card}>
+            <View style={styles.ruleRow}>
+              <Ionicons name="calendar" size={20} color={Colors.info} />
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={styles.ruleName}>Use It or Lose It</Text>
+                <Text style={styles.sub}>Unused allowance doesn't carry over</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.card}>
+            <View style={styles.ruleRow}>
+              <Ionicons name="checkmark-circle" size={20} color={Colors.success} />
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={styles.ruleName}>2024 Update</Text>
+                <Text style={styles.sub}>Multiple ISAs of the same type allowed per year</Text>
+              </View>
+            </View>
+          </View>
+
+          <Text style={styles.section}>Quick Tips</Text>
+
+          {EDUCATIONAL_CONTENT.BEGINNER.slice(0, 2).map((item, i) => (
+            <View key={i} style={styles.card}>
+              <Text style={styles.eduTitle}>{item.title}</Text>
+              <Text style={[styles.sub, { marginTop: 8, lineHeight: 20 }]}>{item.content}</Text>
+            </View>
+          ))}
+
+          {EDUCATIONAL_CONTENT.INTERMEDIATE.slice(0, 1).map((item, i) => (
+            <View key={i} style={styles.card}>
+              <Text style={styles.eduTitle}>{item.title}</Text>
+              <Text style={[styles.sub, { marginTop: 8, lineHeight: 20 }]}>{item.content}</Text>
+            </View>
+          ))}
+
+          <Text style={styles.section}>Progress & Rewards</Text>
 
           {/* Level & Progress Section */}
           <View style={styles.levelCard}>
@@ -89,85 +195,7 @@ export default function HubScreen() {
             </LinearGradient>
           </View>
 
-          {/* Streak Section */}
-          <View style={styles.streakCard}>
-            <View style={styles.streakHeader}>
-              <View style={styles.streakIconWrapper}>
-                <LinearGradient
-                  colors={[Colors.warning, Colors.error]}
-                  style={styles.streakIconGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                >
-                  <Ionicons name="flame" size={28} color={Colors.white} />
-                </LinearGradient>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.streakTitle}>Daily Streak</Text>
-                <Text style={styles.streakSubtitle}>Keep it going! Check in daily</Text>
-              </View>
-            </View>
-
-            <View style={styles.streakStats}>
-              <View style={styles.streakStat}>
-                <Text style={styles.streakNumber}>{STREAK_DATA.currentStreak}</Text>
-                <Text style={styles.streakLabel}>Current Streak</Text>
-              </View>
-              <View style={styles.streakDivider} />
-              <View style={styles.streakStat}>
-                <Text style={styles.streakNumber}>{STREAK_DATA.longestStreak}</Text>
-                <Text style={styles.streakLabel}>Best Streak</Text>
-              </View>
-              <View style={styles.streakDivider} />
-              <View style={styles.streakStat}>
-                <Ionicons name="checkmark-circle" size={28} color={Colors.success} />
-                <Text style={styles.streakLabel}>Checked In</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Daily Tasks */}
-          <Text style={styles.section}>Daily Tasks</Text>
-          {DAILY_TASKS.map((task) => (
-            <View key={task.id} style={styles.taskCard}>
-              <View style={styles.taskRow}>
-                <View
-                  style={[
-                    styles.taskIcon,
-                    { backgroundColor: task.completed ? Colors.success + '30' : Colors.gold + '30' },
-                  ]}
-                >
-                  <Ionicons
-                    name={task.completed ? 'checkmark-circle' : (task.icon as any)}
-                    size={24}
-                    color={task.completed ? Colors.success : Colors.gold}
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={[
-                      styles.taskTitle,
-                      task.completed && { textDecorationLine: 'line-through', opacity: 0.6 },
-                    ]}
-                  >
-                    {task.title}
-                  </Text>
-                  <View style={styles.taskXP}>
-                    <Ionicons name="star-outline" size={14} color={Colors.gold} />
-                    <Text style={styles.taskXPText}>+{task.xp} XP</Text>
-                  </View>
-                </View>
-                {task.completed && (
-                  <View style={styles.completedBadge}>
-                    <Text style={styles.completedText}>Done!</Text>
-                  </View>
-                )}
-              </View>
-            </View>
-          ))}
-
           {/* Achievements */}
-          <Text style={styles.section}>Achievements</Text>
           <View style={styles.achievementGrid}>
             {ACHIEVEMENTS.map((achievement) => (
               <Pressable
@@ -217,123 +245,67 @@ export default function HubScreen() {
             ))}
           </View>
 
-          <Text style={styles.section}>The 4 ISA Types</Text>
-
-          {Object.values(ISA_INFO).map((isa) => (
-            <Pressable
-              key={isa.id}
-              onPress={() => setExpandedISA(expandedISA === isa.id ? null : isa.id)}
-              style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
-            >
-              <View style={styles.card}>
-                <View style={styles.row}>
-                  <View style={[styles.icon, { backgroundColor: isa.color + '20' }]}>
-                    <Ionicons name={isa.icon as any} size={24} color={isa.color} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.name}>{isa.name}</Text>
-                    <Text style={styles.sub}>{isa.riskLevel} Risk • {isa.potentialReturn}</Text>
-                  </View>
-                  <Ionicons name={expandedISA === isa.id ? "chevron-up" : "chevron-down"} size={20} color={Colors.lightGray} />
+          {/* Daily Tasks */}
+          {DAILY_TASKS.map((task) => (
+            <View key={task.id} style={styles.taskCard}>
+              <View style={styles.taskRow}>
+                <View
+                  style={[
+                    styles.taskIcon,
+                    { backgroundColor: task.completed ? Colors.success + '30' : Colors.gold + '30' },
+                  ]}
+                >
+                  <Ionicons
+                    name={task.completed ? 'checkmark-circle' : (task.icon as any)}
+                    size={24}
+                    color={task.completed ? Colors.success : Colors.gold}
+                  />
                 </View>
-
-                {expandedISA === isa.id && (
-                  <View style={{ marginTop: 16 }}>
-                    <Text style={styles.desc}>{isa.description}</Text>
-
-                    <Text style={[styles.sub, { marginTop: 12, fontWeight: Typography.weights.semibold }]}>Benefits:</Text>
-                    {isa.benefits.map((benefit, i) => (
-                      <View key={i} style={styles.listRow}>
-                        <Text style={styles.bullet}>✓</Text>
-                        <Text style={styles.listText}>{benefit}</Text>
-                      </View>
-                    ))}
-
-                    <Text style={[styles.sub, { marginTop: 8, fontWeight: Typography.weights.semibold }]}>Best For:</Text>
-                    {isa.bestFor.map((item, i) => (
-                      <View key={i} style={styles.listRow}>
-                        <Text style={styles.bullet}>→</Text>
-                        <Text style={styles.listText}>{item}</Text>
-                      </View>
-                    ))}
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={[
+                      styles.taskTitle,
+                      task.completed && { textDecorationLine: 'line-through', opacity: 0.6 },
+                    ]}
+                  >
+                    {task.title}
+                  </Text>
+                  <View style={styles.taskXP}>
+                    <Ionicons name="star-outline" size={14} color={Colors.gold} />
+                    <Text style={styles.taskXPText}>+{task.xp} XP</Text>
+                  </View>
+                </View>
+                {task.completed && (
+                  <View style={styles.completedBadge}>
+                    <Text style={styles.completedText}>Done!</Text>
                   </View>
                 )}
               </View>
-            </Pressable>
-          ))}
-
-          <Text style={styles.section}>Key Rules & Limits</Text>
-
-          <View style={styles.card}>
-            <View style={styles.ruleRow}>
-              <Ionicons name="cash" size={20} color={Colors.gold} />
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={styles.ruleName}>Annual Allowance</Text>
-                <Text style={styles.sub}>{formatCurrency(ISA_ANNUAL_ALLOWANCE)} per tax year (6 April - 5 April)</Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.card}>
-            <View style={styles.ruleRow}>
-              <Ionicons name="home" size={20} color={ISA_INFO.lifetime.color} />
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={styles.ruleName}>Lifetime ISA Limit</Text>
-                <Text style={styles.sub}>{formatCurrency(LIFETIME_ISA_MAX)} max per year + 25% government bonus</Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.card}>
-            <View style={styles.ruleRow}>
-              <Ionicons name="calendar" size={20} color={Colors.info} />
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={styles.ruleName}>Use It or Lose It</Text>
-                <Text style={styles.sub}>Unused allowance doesn't carry over to next year</Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.card}>
-            <View style={styles.ruleRow}>
-              <Ionicons name="checkmark-circle" size={20} color={Colors.success} />
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={styles.ruleName}>New 2024 Rule</Text>
-                <Text style={styles.sub}>You can now open multiple ISAs of the same type per year!</Text>
-              </View>
-            </View>
-          </View>
-
-          <Text style={styles.section}>Learn More</Text>
-
-          {EDUCATIONAL_CONTENT.BEGINNER.map((item, i) => (
-            <View key={i} style={styles.card}>
-              <Text style={styles.eduTitle}>{item.title}</Text>
-              <Text style={[styles.sub, { marginTop: 8, lineHeight: 20 }]}>{item.content}</Text>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{item.category}</Text>
-              </View>
             </View>
           ))}
 
-          {EDUCATIONAL_CONTENT.INTERMEDIATE.slice(0, 2).map((item, i) => (
-            <View key={i} style={styles.card}>
-              <Text style={styles.eduTitle}>{item.title}</Text>
-              <Text style={[styles.sub, { marginTop: 8, lineHeight: 20 }]}>{item.content}</Text>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{item.category}</Text>
+          {/* Streak Section */}
+          <View style={styles.streakCard}>
+            <View style={styles.streakHeader}>
+              <View style={styles.streakIconWrapper}>
+                <LinearGradient
+                  colors={[Colors.warning, Colors.error]}
+                  style={styles.streakIconGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <Ionicons name="flame" size={28} color={Colors.white} />
+                </LinearGradient>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.streakTitle}>Daily Streak</Text>
+                <Text style={styles.streakSubtitle}>{STREAK_DATA.currentStreak} days</Text>
+              </View>
+              <View style={{ alignItems: 'flex-end' }}>
+                <Text style={styles.streakNumber}>{STREAK_DATA.currentStreak}</Text>
+                <Text style={styles.streakLabel}>Current</Text>
               </View>
             </View>
-          ))}
-
-          <View style={styles.card}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Ionicons name="school" size={24} color={Colors.gold} />
-              <Text style={[styles.name, { marginLeft: 12 }]}>Want to Learn More?</Text>
-            </View>
-            <Text style={[styles.sub, { marginTop: 8, lineHeight: 20 }]}>
-              FinNest provides comprehensive ISA education to help you make informed decisions about your financial future.
-            </Text>
           </View>
 
           <View style={{ height: 100 }} />
@@ -398,20 +370,20 @@ const styles = StyleSheet.create({
 
   streakCard: {
     marginBottom: Spacing.md,
-    padding: Spacing.lg,
+    padding: Spacing.md,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-  streakHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.md },
+  streakHeader: { flexDirection: 'row', alignItems: 'center' },
   streakIconWrapper: { marginRight: Spacing.md },
-  streakIconGradient: { width: 60, height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center' },
-  streakTitle: { fontSize: Typography.sizes.lg, color: Colors.white, fontWeight: Typography.weights.bold },
-  streakSubtitle: { fontSize: Typography.sizes.sm, color: Colors.lightGray, marginTop: 2 },
+  streakIconGradient: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
+  streakTitle: { fontSize: Typography.sizes.md, color: Colors.white, fontWeight: Typography.weights.bold },
+  streakSubtitle: { fontSize: Typography.sizes.xs, color: Colors.lightGray, marginTop: 2 },
   streakStats: { flexDirection: 'row', justifyContent: 'space-around', paddingTop: Spacing.md, borderTopWidth: 1, borderTopColor: Colors.glassLight },
   streakStat: { alignItems: 'center', gap: 4 },
-  streakNumber: { fontSize: Typography.sizes.xxl, color: Colors.gold, fontWeight: Typography.weights.extrabold },
+  streakNumber: { fontSize: Typography.sizes.xl, color: Colors.gold, fontWeight: Typography.weights.extrabold },
   streakLabel: { fontSize: Typography.sizes.xs, color: Colors.lightGray },
   streakDivider: { width: 1, backgroundColor: Colors.glassLight },
 
