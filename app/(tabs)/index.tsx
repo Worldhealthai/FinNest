@@ -10,23 +10,41 @@ import AddISAContributionModal, { ISAContribution } from '@/components/AddISACon
 import { Colors, Spacing, Typography } from '@/constants/theme';
 import { ISA_INFO, ISA_ANNUAL_ALLOWANCE, LIFETIME_ISA_MAX, getDaysUntilTaxYearEnd, formatCurrency, getTaxYearDates, calculateFlexibleISA } from '@/constants/isaData';
 
-const INITIAL_USER_ISAS = {
-  cash: { contributed: 5000, balance: 5150, provider: 'NatWest' },
-  stocks_shares: { contributed: 8000, balance: 9200, provider: 'Vanguard' },
-  lifetime: { contributed: 3000, balance: 3750, provider: 'Moneybox' },
-  innovative_finance: { contributed: 0, balance: 0, provider: 'None' },
+const CONTRIBUTIONS_STORAGE_KEY = '@finnest_contributions';
+
+// Helper to group contributions by ISA type and provider
+const groupContributions = (contributions: ISAContribution[]) => {
+  const grouped: Record<string, { providers: Record<string, { contributed: number; balance: number }>, total: number }> = {
+    cash: { providers: {}, total: 0 },
+    stocks_shares: { providers: {}, total: 0 },
+    lifetime: { providers: {}, total: 0 },
+    innovative_finance: { providers: {}, total: 0 },
+  };
+
+  contributions.forEach(contribution => {
+    const type = contribution.isaType;
+    if (!grouped[type].providers[contribution.provider]) {
+      grouped[type].providers[contribution.provider] = { contributed: 0, balance: 0 };
+    }
+    grouped[type].providers[contribution.provider].contributed += contribution.amount;
+    grouped[type].providers[contribution.provider].balance += contribution.amount;
+    grouped[type].total += contribution.amount;
+  });
+
+  return grouped;
 };
 
-const STORAGE_KEY = '@finnest_isa_data';
-
 export default function DashboardScreen() {
-  const [userISAs, setUserISAs] = useState(INITIAL_USER_ISAS);
-  const total = Object.values(userISAs).reduce((s, i) => s + i.contributed, 0);
+  const [contributions, setContributions] = useState<ISAContribution[]>([]);
+  const [expandedISA, setExpandedISA] = useState<string | null>(null);
+
+  const groupedISAs = groupContributions(contributions);
+  const total = Object.values(groupedISAs).reduce((s, i) => s + i.total, 0);
   const remaining = ISA_ANNUAL_ALLOWANCE - total;
   const days = getDaysUntilTaxYearEnd();
   const taxYear = getTaxYearDates();
   const percent = (total / ISA_ANNUAL_ALLOWANCE) * 100;
-  const lisaBonus = userISAs.lifetime.contributed * 0.25;
+  const lisaBonus = groupedISAs.lifetime.total * 0.25;
 
   // Modal state
   const [addContributionVisible, setAddContributionVisible] = useState(false);
@@ -43,29 +61,29 @@ export default function DashboardScreen() {
 
   const loadISAData = async () => {
     try {
-      console.log('Loading ISA data from AsyncStorage...');
-      const savedData = await AsyncStorage.getItem(STORAGE_KEY);
+      console.log('Loading contributions from AsyncStorage...');
+      const savedData = await AsyncStorage.getItem(CONTRIBUTIONS_STORAGE_KEY);
       console.log('Saved data:', savedData);
       if (savedData) {
         const parsed = JSON.parse(savedData);
-        console.log('Parsed data:', parsed);
-        setUserISAs(parsed);
-        console.log('ISA data loaded successfully');
+        console.log('Parsed contributions:', parsed);
+        setContributions(parsed);
+        console.log('Contributions loaded successfully');
       } else {
-        console.log('No saved data found, using initial values');
+        console.log('No saved contributions found');
       }
     } catch (error) {
-      console.error('Error loading ISA data:', error);
+      console.error('Error loading contributions:', error);
     }
   };
 
-  const saveISAData = async (data: typeof INITIAL_USER_ISAS) => {
+  const saveContributions = async (contributionsData: ISAContribution[]) => {
     try {
-      console.log('Saving ISA data to AsyncStorage:', data);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      console.log('ISA data saved successfully');
+      console.log('Saving contributions to AsyncStorage:', contributionsData);
+      await AsyncStorage.setItem(CONTRIBUTIONS_STORAGE_KEY, JSON.stringify(contributionsData));
+      console.log('Contributions saved successfully');
     } catch (error) {
-      console.error('Error saving ISA data:', error);
+      console.error('Error saving contributions:', error);
     }
   };
 
@@ -84,32 +102,21 @@ export default function DashboardScreen() {
   const handleAddContribution = (contribution: ISAContribution) => {
     console.log('=== handleAddContribution called ===');
     console.log('Contribution received:', contribution);
-    console.log('Current userISAs:', userISAs);
 
-    const isaKey = contribution.isaType as keyof typeof userISAs;
-    console.log('ISA Key:', isaKey);
-    console.log('Current ISA value:', userISAs[isaKey]);
+    // Add new contribution to the array
+    const updatedContributions = [...contributions, contribution];
 
-    // Update the ISA data
-    const updatedISAs = {
-      ...userISAs,
-      [isaKey]: {
-        ...userISAs[isaKey],
-        contributed: userISAs[isaKey].contributed + contribution.amount,
-        balance: userISAs[isaKey].balance + contribution.amount,
-        provider: contribution.provider,
-      },
-    };
+    setContributions(updatedContributions);
+    saveContributions(updatedContributions);
 
-    console.log('Updated ISAs:', updatedISAs);
-
-    setUserISAs(updatedISAs);
-    saveISAData(updatedISAs);
+    // Calculate new total for this ISA type
+    const newGrouped = groupContributions(updatedContributions);
+    const newTotal = newGrouped[contribution.isaType].total;
 
     // Show alert to confirm
     Alert.alert(
       'Contribution Added!',
-      `${formatCurrency(contribution.amount)} added to ${ISA_INFO[isaKey].name}\n\nNew total: ${formatCurrency(updatedISAs[isaKey].contributed)}`,
+      `${formatCurrency(contribution.amount)} added to ${ISA_INFO[contribution.isaType].name} with ${contribution.provider}\n\nNew ${ISA_INFO[contribution.isaType].shortName} total: ${formatCurrency(newTotal)}`,
       [{ text: 'OK' }]
     );
 
@@ -170,75 +177,135 @@ export default function DashboardScreen() {
 
           <Text style={styles.section}>My ISAs</Text>
 
-          <GlassCard style={styles.card} intensity="medium">
-            <View style={styles.row}>
-              <View style={[styles.icon, { backgroundColor: ISA_INFO.cash.color + '30' }]}>
-                <Ionicons name="cash" size={24} color={ISA_INFO.cash.color} />
+          {/* Cash ISA */}
+          <Pressable onPress={() => setExpandedISA(expandedISA === 'cash' ? null : 'cash')} style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}>
+            <GlassCard style={styles.card} intensity="medium">
+              <View style={styles.row}>
+                <View style={[styles.icon, { backgroundColor: ISA_INFO.cash.color + '30' }]}>
+                  <Ionicons name="cash" size={24} color={ISA_INFO.cash.color} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.name}>Cash ISA</Text>
+                  <Text style={styles.sub}>
+                    {Object.keys(groupedISAs.cash.providers).length > 0
+                      ? `${Object.keys(groupedISAs.cash.providers).length} provider${Object.keys(groupedISAs.cash.providers).length > 1 ? 's' : ''} • Low Risk`
+                      : 'No contributions yet'}
+                  </Text>
+                </View>
+                <Ionicons name={expandedISA === 'cash' ? "chevron-up" : "chevron-down"} size={20} color={Colors.lightGray} />
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.name}>Cash ISA</Text>
-                <Text style={styles.sub}>{userISAs.cash.provider} • Low Risk</Text>
+              <View style={[styles.row, { marginTop: 12 }]}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.sub}>Total Contributed</Text>
+                  <Text style={styles.val}>{formatCurrency(groupedISAs.cash.total)}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.sub}>Balance</Text>
+                  <Text style={[styles.val, { color: Colors.success }]}>{formatCurrency(groupedISAs.cash.total)}</Text>
+                </View>
               </View>
-            </View>
-            <View style={[styles.row, { marginTop: 12 }]}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.sub}>Contributed</Text>
-                <Text style={styles.val}>{formatCurrency(userISAs.cash.contributed)}</Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.sub}>Balance</Text>
-                <Text style={[styles.val, { color: Colors.success }]}>{formatCurrency(userISAs.cash.balance)}</Text>
-              </View>
-            </View>
-          </GlassCard>
 
-          <GlassCard style={styles.card} intensity="medium">
-            <View style={styles.row}>
-              <View style={[styles.icon, { backgroundColor: ISA_INFO.stocks_shares.color + '30' }]}>
-                <Ionicons name="trending-up" size={24} color={ISA_INFO.stocks_shares.color} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.name}>Stocks & Shares ISA</Text>
-                <Text style={styles.sub}>{userISAs.stocks_shares.provider} • Medium Risk</Text>
-              </View>
-            </View>
-            <View style={[styles.row, { marginTop: 12 }]}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.sub}>Contributed</Text>
-                <Text style={styles.val}>{formatCurrency(userISAs.stocks_shares.contributed)}</Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.sub}>Balance</Text>
-                <Text style={[styles.val, { color: Colors.success }]}>{formatCurrency(userISAs.stocks_shares.balance)}</Text>
-              </View>
-            </View>
-          </GlassCard>
+              {expandedISA === 'cash' && Object.keys(groupedISAs.cash.providers).length > 0 && (
+                <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.glassLight }}>
+                  <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Providers:</Text>
+                  {Object.entries(groupedISAs.cash.providers).map(([provider, data]) => (
+                    <View key={provider} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8, paddingLeft: 12 }}>
+                      <Text style={styles.sub}>• {provider}</Text>
+                      <Text style={styles.val}>{formatCurrency(data.contributed)}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </GlassCard>
+          </Pressable>
 
-          <GlassCard style={styles.card} intensity="dark">
-            <View style={styles.row}>
-              <View style={[styles.icon, { backgroundColor: ISA_INFO.lifetime.color + '30' }]}>
-                <Ionicons name="home" size={24} color={ISA_INFO.lifetime.color} />
+          {/* Stocks & Shares ISA */}
+          <Pressable onPress={() => setExpandedISA(expandedISA === 'stocks_shares' ? null : 'stocks_shares')} style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}>
+            <GlassCard style={styles.card} intensity="medium">
+              <View style={styles.row}>
+                <View style={[styles.icon, { backgroundColor: ISA_INFO.stocks_shares.color + '30' }]}>
+                  <Ionicons name="trending-up" size={24} color={ISA_INFO.stocks_shares.color} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.name}>Stocks & Shares ISA</Text>
+                  <Text style={styles.sub}>
+                    {Object.keys(groupedISAs.stocks_shares.providers).length > 0
+                      ? `${Object.keys(groupedISAs.stocks_shares.providers).length} provider${Object.keys(groupedISAs.stocks_shares.providers).length > 1 ? 's' : ''} • Medium Risk`
+                      : 'No contributions yet'}
+                  </Text>
+                </View>
+                <Ionicons name={expandedISA === 'stocks_shares' ? "chevron-up" : "chevron-down"} size={20} color={Colors.lightGray} />
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.name}>Lifetime ISA</Text>
-                <Text style={styles.sub}>{userISAs.lifetime.provider} • 25% Gov Bonus</Text>
+              <View style={[styles.row, { marginTop: 12 }]}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.sub}>Total Contributed</Text>
+                  <Text style={styles.val}>{formatCurrency(groupedISAs.stocks_shares.total)}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.sub}>Balance</Text>
+                  <Text style={[styles.val, { color: Colors.success }]}>{formatCurrency(groupedISAs.stocks_shares.total)}</Text>
+                </View>
               </View>
-            </View>
-            <View style={[styles.row, { marginTop: 12 }]}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.sub}>Contributed</Text>
-                <Text style={styles.val}>{formatCurrency(userISAs.lifetime.contributed)}</Text>
+
+              {expandedISA === 'stocks_shares' && Object.keys(groupedISAs.stocks_shares.providers).length > 0 && (
+                <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.glassLight }}>
+                  <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Providers:</Text>
+                  {Object.entries(groupedISAs.stocks_shares.providers).map(([provider, data]) => (
+                    <View key={provider} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8, paddingLeft: 12 }}>
+                      <Text style={styles.sub}>• {provider}</Text>
+                      <Text style={styles.val}>{formatCurrency(data.contributed)}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </GlassCard>
+          </Pressable>
+
+          {/* Lifetime ISA */}
+          <Pressable onPress={() => setExpandedISA(expandedISA === 'lifetime' ? null : 'lifetime')} style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}>
+            <GlassCard style={styles.card} intensity="dark">
+              <View style={styles.row}>
+                <View style={[styles.icon, { backgroundColor: ISA_INFO.lifetime.color + '30' }]}>
+                  <Ionicons name="home" size={24} color={ISA_INFO.lifetime.color} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.name}>Lifetime ISA</Text>
+                  <Text style={styles.sub}>
+                    {Object.keys(groupedISAs.lifetime.providers).length > 0
+                      ? `${Object.keys(groupedISAs.lifetime.providers).length} provider${Object.keys(groupedISAs.lifetime.providers).length > 1 ? 's' : ''} • 25% Gov Bonus`
+                      : 'No contributions yet'}
+                  </Text>
+                </View>
+                <Ionicons name={expandedISA === 'lifetime' ? "chevron-up" : "chevron-down"} size={20} color={Colors.lightGray} />
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.sub}>Gov Bonus</Text>
-                <Text style={[styles.val, { color: ISA_INFO.lifetime.color }]}>+{formatCurrency(lisaBonus)}</Text>
+              <View style={[styles.row, { marginTop: 12 }]}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.sub}>Total Contributed</Text>
+                  <Text style={styles.val}>{formatCurrency(groupedISAs.lifetime.total)}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.sub}>Gov Bonus</Text>
+                  <Text style={[styles.val, { color: ISA_INFO.lifetime.color }]}>+{formatCurrency(lisaBonus)}</Text>
+                </View>
               </View>
-            </View>
-            <View style={[styles.bar, { marginTop: 12, height: 4 }]}>
-              <View style={{ width: `${(userISAs.lifetime.contributed / LIFETIME_ISA_MAX) * 100}%`, height: '100%', backgroundColor: ISA_INFO.lifetime.color, borderRadius: 2 }} />
-            </View>
-            <Text style={[styles.sub, { marginTop: 4 }]}>{formatCurrency(LIFETIME_ISA_MAX - userISAs.lifetime.contributed)} left for max bonus</Text>
-          </GlassCard>
+              <View style={[styles.bar, { marginTop: 12, height: 4 }]}>
+                <View style={{ width: `${(groupedISAs.lifetime.total / LIFETIME_ISA_MAX) * 100}%`, height: '100%', backgroundColor: ISA_INFO.lifetime.color, borderRadius: 2 }} />
+              </View>
+              <Text style={[styles.sub, { marginTop: 4 }]}>{formatCurrency(LIFETIME_ISA_MAX - groupedISAs.lifetime.total)} left for max bonus</Text>
+
+              {expandedISA === 'lifetime' && Object.keys(groupedISAs.lifetime.providers).length > 0 && (
+                <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.glassLight }}>
+                  <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Providers:</Text>
+                  {Object.entries(groupedISAs.lifetime.providers).map(([provider, data]) => (
+                    <View key={provider} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8, paddingLeft: 12 }}>
+                      <Text style={styles.sub}>• {provider}</Text>
+                      <Text style={styles.val}>{formatCurrency(data.contributed)}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </GlassCard>
+          </Pressable>
 
           <Pressable
             onPress={() => setAddContributionVisible(true)}
@@ -259,7 +326,7 @@ export default function DashboardScreen() {
               <Text style={[styles.name, { marginLeft: 12 }]}>Quick Tip</Text>
             </View>
             <Text style={[styles.sub, { marginTop: 8, lineHeight: 20 }]}>
-              Contribute the remaining {formatCurrency(LIFETIME_ISA_MAX - userISAs.lifetime.contributed)} to your LISA before tax year end to get {formatCurrency((LIFETIME_ISA_MAX - userISAs.lifetime.contributed) * 0.25)} free government bonus!
+              Contribute the remaining {formatCurrency(LIFETIME_ISA_MAX - groupedISAs.lifetime.total)} to your LISA before tax year end to get {formatCurrency((LIFETIME_ISA_MAX - groupedISAs.lifetime.total) * 0.25)} free government bonus!
             </Text>
           </GlassCard>
 
@@ -396,7 +463,28 @@ export default function DashboardScreen() {
         visible={addContributionVisible}
         onClose={() => setAddContributionVisible(false)}
         onAdd={handleAddContribution}
-        currentISAs={userISAs}
+        currentISAs={{
+          cash: {
+            contributed: groupedISAs.cash.total,
+            balance: groupedISAs.cash.total,
+            provider: Object.keys(groupedISAs.cash.providers)[0] || 'None',
+          },
+          stocks_shares: {
+            contributed: groupedISAs.stocks_shares.total,
+            balance: groupedISAs.stocks_shares.total,
+            provider: Object.keys(groupedISAs.stocks_shares.providers)[0] || 'None',
+          },
+          lifetime: {
+            contributed: groupedISAs.lifetime.total,
+            balance: groupedISAs.lifetime.total,
+            provider: Object.keys(groupedISAs.lifetime.providers)[0] || 'None',
+          },
+          innovative_finance: {
+            contributed: groupedISAs.innovative_finance.total,
+            balance: groupedISAs.innovative_finance.total,
+            provider: Object.keys(groupedISAs.innovative_finance.providers)[0] || 'None',
+          },
+        }}
       />
     </View>
   );
