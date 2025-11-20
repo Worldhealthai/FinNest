@@ -314,18 +314,22 @@ export default function AddISAContributionModal({
       </View>
 
       {/* Selected Provider Display */}
-      <GlassCard style={styles.selectedProviderCard} intensity="dark">
-        <Text style={styles.selectedProviderLabel}>Provider</Text>
+      <View style={styles.selectedProviderCard}>
+        <Text style={styles.selectedProviderLabel}>Selected Provider</Text>
         <Text style={styles.selectedProviderName}>{provider}</Text>
         {selectedProviderData && (
           <View style={styles.providerTypesList}>
-            <Text style={styles.providerTypesLabel}>Available ISA Types:</Text>
-            <Text style={styles.providerTypesText}>
-              {selectedProviderData.types.join(' • ')}
-            </Text>
+            <Text style={styles.providerTypesLabel}>Available ISA Types</Text>
+            <View style={styles.providerTypesChips}>
+              {selectedProviderData.types.map((type, idx) => (
+                <View key={idx} style={styles.providerTypeChip}>
+                  <Text style={styles.providerTypeChipText}>{type}</Text>
+                </View>
+              ))}
+            </View>
           </View>
         )}
-      </GlassCard>
+      </View>
 
       {/* ISA Type Grid */}
       <View style={styles.isaTypeGrid}>
@@ -341,16 +345,15 @@ export default function AddISAContributionModal({
               disabled={!isAvailable}
               style={({ pressed }) => [
                 styles.isaTypeButton,
-                { opacity: pressed && isAvailable ? 0.7 : 1 }
+                { opacity: pressed && isAvailable ? 0.8 : 1 }
               ]}
             >
-              <GlassCard
+              <View
                 style={[
                   styles.isaTypeCard,
                   isSelected && styles.isaTypeCardSelected,
                   !isAvailable && styles.isaTypeCardDisabled,
                 ]}
-                intensity={isSelected ? 'dark' : 'medium'}
               >
                 {isSelected && isAvailable && (
                   <View style={styles.selectedBadgeCorner}>
@@ -364,7 +367,7 @@ export default function AddISAContributionModal({
                 )}
                 <View style={[
                   styles.isaTypeIcon,
-                  { backgroundColor: (isAvailable ? info.color : Colors.mediumGray) + '30' }
+                  { backgroundColor: (isAvailable ? info.color : Colors.mediumGray) + '20' }
                 ]}>
                   <Ionicons
                     name={getISAIcon(type)}
@@ -384,7 +387,7 @@ export default function AddISAContributionModal({
                 ]}>
                   {isAvailable ? `${info.riskLevel} Risk` : 'Not Available'}
                 </Text>
-              </GlassCard>
+              </View>
             </Pressable>
           );
         })}
@@ -702,36 +705,55 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
     alignItems: 'center',
     borderRadius: BorderRadius.xl,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   selectedProviderLabel: {
-    fontSize: Typography.sizes.sm,
+    fontSize: Typography.sizes.xs,
     color: Colors.lightGray,
     marginBottom: Spacing.sm,
-    fontWeight: Typography.weights.medium,
+    fontWeight: Typography.weights.semibold,
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 1.5,
   },
   selectedProviderName: {
-    fontSize: Typography.sizes.xxl,
+    fontSize: Typography.sizes.xxxl,
     color: Colors.gold,
     fontWeight: Typography.weights.extrabold,
+    textAlign: 'center',
   },
   providerTypesList: {
-    marginTop: Spacing.md,
+    marginTop: Spacing.lg,
     alignItems: 'center',
+    width: '100%',
   },
   providerTypesLabel: {
     fontSize: Typography.sizes.xs,
     color: Colors.lightGray,
-    marginBottom: Spacing.xs,
+    marginBottom: Spacing.md,
+    fontWeight: Typography.weights.semibold,
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 1.5,
   },
-  providerTypesText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.white,
-    textAlign: 'center',
-    lineHeight: 20,
+  providerTypesChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+  },
+  providerTypeChip: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    backgroundColor: 'rgba(255, 215, 0, 0.15)',
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 215, 0, 0.3)',
+  },
+  providerTypeChipText: {
+    fontSize: Typography.sizes.xs,
+    color: Colors.gold,
+    fontWeight: Typography.weights.semibold,
   },
   isaTypeGrid: {
     flexDirection: 'row',
@@ -755,15 +777,24 @@ const styles = StyleSheet.create({
     minHeight: 170,
     aspectRatio: 1,
     borderRadius: BorderRadius.xl,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   isaTypeCardSelected: {
-    borderWidth: 3,
+    borderWidth: 2.5,
     borderColor: Colors.gold,
-    backgroundColor: Colors.gold + '10',
+    backgroundColor: 'rgba(255, 215, 0, 0.12)',
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   isaTypeCardDisabled: {
-    opacity: 0.5,
-    backgroundColor: Colors.glassLight + '50',
+    opacity: 0.4,
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   selectedBadgeCorner: {
     position: 'absolute',
@@ -774,9 +805,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: Spacing.sm,
     right: Spacing.sm,
-    backgroundColor: Colors.error + '30',
-    borderRadius: 12,
-    padding: 4,
+    backgroundColor: 'rgba(220, 53, 69, 0.2)',
+    borderRadius: 20,
+    padding: 6,
   },
   isaTypeIcon: {
     width: 56,
