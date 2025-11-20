@@ -47,6 +47,7 @@ export default function AddISAContributionModal({
 }: AddISAContributionModalProps) {
   const [step, setStep] = useState(1);
   const [provider, setProvider] = useState('');
+  const [selectedProviderData, setSelectedProviderData] = useState<ISAProvider | null>(null);
   const [selectedType, setSelectedType] = useState(ISA_TYPES.CASH);
   const [amount, setAmount] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
@@ -59,6 +60,7 @@ export default function AddISAContributionModal({
   const resetForm = () => {
     setStep(1);
     setProvider('');
+    setSelectedProviderData(null);
     setSelectedType(ISA_TYPES.CASH);
     setAmount('');
     setAccountNumber('');
@@ -79,6 +81,7 @@ export default function AddISAContributionModal({
 
   const selectProvider = (providerData: ISAProvider) => {
     setProvider(providerData.name);
+    setSelectedProviderData(providerData);
     setProviderSearch(providerData.name);
     // Auto-advance to next step
     setTimeout(() => setStep(2), 300);
@@ -187,6 +190,22 @@ export default function AddISAContributionModal({
     return colorMap[category] || Colors.info;
   };
 
+  // Helper function to check if selected provider offers a specific ISA type
+  const isISATypeAvailable = (isaType: string): boolean => {
+    if (!selectedProviderData) return true; // If no provider selected, show all types
+
+    // Map ISA_TYPES constants to the format used in provider data
+    const typeMap: Record<string, string> = {
+      [ISA_TYPES.CASH]: 'Cash ISA',
+      [ISA_TYPES.STOCKS_SHARES]: 'Stocks & Shares ISA',
+      [ISA_TYPES.LIFETIME]: 'Lifetime ISA',
+      [ISA_TYPES.INNOVATIVE_FINANCE]: 'Innovative Finance ISA',
+    };
+
+    const mappedType = typeMap[isaType];
+    return selectedProviderData.types.includes(mappedType);
+  };
+
   const maxContribution =
     selectedType === ISA_TYPES.LIFETIME ? LIFETIME_ISA_MAX : ISA_ANNUAL_ALLOWANCE;
 
@@ -292,6 +311,14 @@ export default function AddISAContributionModal({
       <GlassCard style={styles.selectedProviderCard} intensity="dark">
         <Text style={styles.selectedProviderLabel}>Provider</Text>
         <Text style={styles.selectedProviderName}>{provider}</Text>
+        {selectedProviderData && (
+          <View style={styles.providerTypesList}>
+            <Text style={styles.providerTypesLabel}>Available ISA Types:</Text>
+            <Text style={styles.providerTypesText}>
+              {selectedProviderData.types.join(' • ')}
+            </Text>
+          </View>
+        )}
       </GlassCard>
 
       {/* ISA Type Grid */}
@@ -299,34 +326,56 @@ export default function AddISAContributionModal({
         {Object.values(ISA_TYPES).map((type) => {
           const info = ISA_INFO[type];
           const isSelected = selectedType === type;
+          const isAvailable = isISATypeAvailable(type);
+
           return (
             <TouchableOpacity
               key={type}
-              onPress={() => setSelectedType(type)}
-              activeOpacity={0.7}
+              onPress={() => isAvailable && setSelectedType(type)}
+              activeOpacity={isAvailable ? 0.7 : 1}
+              disabled={!isAvailable}
               style={styles.isaTypeButton}
             >
               <GlassCard
                 style={[
                   styles.isaTypeCard,
                   isSelected && styles.isaTypeCardSelected,
+                  !isAvailable && styles.isaTypeCardDisabled,
                 ]}
                 intensity={isSelected ? 'dark' : 'medium'}
               >
-                {isSelected && (
+                {isSelected && isAvailable && (
                   <View style={styles.selectedBadgeCorner}>
                     <Ionicons name="checkmark-circle" size={24} color={Colors.gold} />
                   </View>
                 )}
-                <View style={[styles.isaTypeIcon, { backgroundColor: info.color + '30' }]}>
+                {!isAvailable && (
+                  <View style={styles.unavailableBadge}>
+                    <Ionicons name="close-circle" size={20} color={Colors.error} />
+                  </View>
+                )}
+                <View style={[
+                  styles.isaTypeIcon,
+                  { backgroundColor: (isAvailable ? info.color : Colors.mediumGray) + '30' }
+                ]}>
                   <Ionicons
                     name={getISAIcon(type)}
                     size={32}
-                    color={info.color}
+                    color={isAvailable ? info.color : Colors.mediumGray}
                   />
                 </View>
-                <Text style={styles.isaTypeName}>{info.shortName}</Text>
-                <Text style={styles.isaTypeDescription}>{info.riskLevel} Risk</Text>
+                <Text style={[
+                  styles.isaTypeName,
+                  !isAvailable && styles.isaTypeNameDisabled
+                ]}>
+                  {info.shortName}
+                </Text>
+                <Text style={[
+                  styles.isaTypeDescription,
+                  !isAvailable && styles.isaTypeDescriptionDisabled
+                ]}>
+                  {isAvailable ? `${info.riskLevel} Risk` : 'Not Available'}
+                </Text>
               </GlassCard>
             </TouchableOpacity>
           );
@@ -646,6 +695,23 @@ const styles = StyleSheet.create({
     color: Colors.gold,
     fontWeight: Typography.weights.extrabold,
   },
+  providerTypesList: {
+    marginTop: Spacing.md,
+    alignItems: 'center',
+  },
+  providerTypesLabel: {
+    fontSize: Typography.sizes.xs,
+    color: Colors.lightGray,
+    marginBottom: Spacing.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  providerTypesText: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.white,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
   isaTypeGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -674,10 +740,22 @@ const styles = StyleSheet.create({
     borderColor: Colors.gold,
     backgroundColor: Colors.gold + '10',
   },
+  isaTypeCardDisabled: {
+    opacity: 0.5,
+    backgroundColor: Colors.glassLight + '50',
+  },
   selectedBadgeCorner: {
     position: 'absolute',
     top: Spacing.sm,
     right: Spacing.sm,
+  },
+  unavailableBadge: {
+    position: 'absolute',
+    top: Spacing.sm,
+    right: Spacing.sm,
+    backgroundColor: Colors.error + '30',
+    borderRadius: 12,
+    padding: 4,
   },
   isaTypeIcon: {
     width: 56,
@@ -695,11 +773,17 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
     lineHeight: 20,
   },
+  isaTypeNameDisabled: {
+    color: Colors.mediumGray,
+  },
   isaTypeDescription: {
     fontSize: Typography.sizes.xs,
     color: Colors.lightGray,
     textAlign: 'center',
     fontWeight: Typography.weights.semibold,
+  },
+  isaTypeDescriptionDisabled: {
+    color: Colors.mediumGray,
   },
   isaInfoCard: {
     padding: Spacing.xl,
