@@ -19,10 +19,10 @@ export const Colors = {
   glassDark: 'rgba(10, 37, 64, 0.7)',
 
   // Accent Colors
-  success: '#00FF87',
+  success: '#5B9BD5',
   warning: '#FFB800',
   error: '#FF3B30',
-  info: '#5AC8FA',
+  info: '#4A90E2',
 
   // Neutral Colors
   white: '#FFFFFF',
