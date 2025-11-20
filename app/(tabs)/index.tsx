@@ -396,6 +396,7 @@ export default function DashboardScreen() {
         visible={addContributionVisible}
         onClose={() => setAddContributionVisible(false)}
         onAdd={handleAddContribution}
+        currentISAs={userISAs}
       />
     </View>
   );

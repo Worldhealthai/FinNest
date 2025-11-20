@@ -29,6 +29,13 @@ interface AddISAContributionModalProps {
   visible: boolean;
   onClose: () => void;
   onAdd?: (contribution: ISAContribution) => void;
+  currentISAs?: {
+    [key: string]: {
+      contributed: number;
+      balance: number;
+      provider: string;
+    };
+  };
 }
 
 export interface ISAContribution {
@@ -37,7 +44,6 @@ export interface ISAContribution {
   isaType: string;
   amount: number;
   date: string;
-  accountNumber?: string;
   notes?: string;
 }
 
@@ -45,13 +51,13 @@ export default function AddISAContributionModal({
   visible,
   onClose,
   onAdd,
+  currentISAs,
 }: AddISAContributionModalProps) {
   const [step, setStep] = useState(1);
   const [provider, setProvider] = useState('');
   const [selectedProviderData, setSelectedProviderData] = useState<ISAProvider | null>(null);
   const [selectedType, setSelectedType] = useState(ISA_TYPES.CASH);
   const [amount, setAmount] = useState('');
-  const [accountNumber, setAccountNumber] = useState('');
   const [notes, setNotes] = useState('');
   const [providerSearch, setProviderSearch] = useState('');
   const [filteredProviders, setFilteredProviders] = useState<ISAProvider[]>(getPopularProviders());
@@ -64,7 +70,6 @@ export default function AddISAContributionModal({
     setSelectedProviderData(null);
     setSelectedType(ISA_TYPES.CASH);
     setAmount('');
-    setAccountNumber('');
     setNotes('');
     setProviderSearch('');
     setFilteredProviders(getPopularProviders());
@@ -138,7 +143,6 @@ export default function AddISAContributionModal({
       isaType: selectedType,
       amount: contributionAmount,
       date: new Date().toISOString(),
-      accountNumber: accountNumber.trim() || undefined,
       notes: notes.trim() || undefined,
     };
 
@@ -195,7 +199,7 @@ export default function AddISAContributionModal({
   const isISATypeAvailable = (isaType: string): boolean => {
     if (!selectedProviderData) return true; // If no provider selected, show all types
 
-    // Map ISA_TYPES constants to the format used in provider data
+    // Check if provider offers this ISA type
     const typeMap: Record<string, string> = {
       [ISA_TYPES.CASH]: 'Cash ISA',
       [ISA_TYPES.STOCKS_SHARES]: 'Stocks & Shares ISA',
@@ -204,7 +208,19 @@ export default function AddISAContributionModal({
     };
 
     const mappedType = typeMap[isaType];
-    return selectedProviderData.types.includes(mappedType);
+    const providerOffersType = selectedProviderData.types.includes(mappedType);
+
+    // Additional check for Lifetime ISA - only one provider allowed
+    if (isaType === ISA_TYPES.LIFETIME && currentISAs) {
+      const currentLifetimeISA = currentISAs.lifetime;
+      if (currentLifetimeISA && currentLifetimeISA.provider &&
+          currentLifetimeISA.provider !== 'None' &&
+          currentLifetimeISA.provider !== selectedProviderData.name) {
+        return false; // Different provider already exists for Lifetime ISA
+      }
+    }
+
+    return providerOffersType;
   };
 
   const maxContribution =
@@ -338,11 +354,31 @@ export default function AddISAContributionModal({
           const isSelected = selectedType === type;
           const isAvailable = isISATypeAvailable(type);
 
+          // Check if Lifetime ISA is unavailable due to different provider
+          const isLifetimeWithDifferentProvider =
+            type === ISA_TYPES.LIFETIME &&
+            currentISAs?.lifetime?.provider &&
+            currentISAs.lifetime.provider !== 'None' &&
+            selectedProviderData &&
+            currentISAs.lifetime.provider !== selectedProviderData.name;
+
+          const handleISATypePress = () => {
+            if (isAvailable) {
+              setSelectedType(type);
+            } else if (isLifetimeWithDifferentProvider) {
+              Alert.alert(
+                'Lifetime ISA Rule',
+                `You can only have one Lifetime ISA provider at a time.\n\nYou currently have a Lifetime ISA with ${currentISAs?.lifetime?.provider}.\n\nTo add contributions from ${selectedProviderData?.name}, you would need to transfer your Lifetime ISA to them first.`,
+                [{ text: 'OK' }]
+              );
+            }
+          };
+
           return (
             <Pressable
               key={type}
-              onPress={() => isAvailable && setSelectedType(type)}
-              disabled={!isAvailable}
+              onPress={handleISATypePress}
+              disabled={!isAvailable && !isLifetimeWithDifferentProvider}
               style={({ pressed }) => [
                 styles.isaTypeButton,
                 { opacity: pressed && isAvailable ? 0.8 : 1 }
@@ -472,19 +508,6 @@ export default function AddISAContributionModal({
       {/* Optional Details */}
       <View style={styles.optionalSection}>
         <Text style={styles.optionalTitle}>Optional Details</Text>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Account Number</Text>
-          <View style={styles.inputCard}>
-            <TextInput
-              style={styles.input}
-              placeholder="Last 4 digits or full account number"
-              placeholderTextColor={Colors.mediumGray}
-              value={accountNumber}
-              onChangeText={setAccountNumber}
-            />
-          </View>
-        </View>
 
         <View style={styles.inputGroup}>
           <Text style={styles.inputLabel}>Notes</Text>

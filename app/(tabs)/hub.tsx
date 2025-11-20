@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AnimatedBackground from '@/components/AnimatedBackground';
-import GlassCard from '@/components/GlassCard';
 import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
 import { ISA_INFO, ISA_ANNUAL_ALLOWANCE, LIFETIME_ISA_MAX, EDUCATIONAL_CONTENT, formatCurrency } from '@/constants/isaData';
 
@@ -49,7 +48,7 @@ export default function HubScreen() {
           <Text style={styles.subtitle}>Learn, engage, and level up your ISA knowledge</Text>
 
           {/* Level & Progress Section */}
-          <GlassCard style={styles.levelCard} intensity="dark">
+          <View style={styles.levelCard}>
             <LinearGradient
               colors={[Colors.gold + 'DD', Colors.gold + '88', Colors.warning + '66']}
               style={styles.levelGradient}
@@ -88,10 +87,10 @@ export default function HubScreen() {
                 </Text>
               </View>
             </LinearGradient>
-          </GlassCard>
+          </View>
 
           {/* Streak Section */}
-          <GlassCard style={styles.streakCard} intensity="medium">
+          <View style={styles.streakCard}>
             <View style={styles.streakHeader}>
               <View style={styles.streakIconWrapper}>
                 <LinearGradient
@@ -125,12 +124,12 @@ export default function HubScreen() {
                 <Text style={styles.streakLabel}>Checked In</Text>
               </View>
             </View>
-          </GlassCard>
+          </View>
 
           {/* Daily Tasks */}
           <Text style={styles.section}>Daily Tasks</Text>
           {DAILY_TASKS.map((task) => (
-            <GlassCard key={task.id} style={styles.taskCard} intensity="medium">
+            <View key={task.id} style={styles.taskCard}>
               <View style={styles.taskRow}>
                 <View
                   style={[
@@ -164,52 +163,71 @@ export default function HubScreen() {
                   </View>
                 )}
               </View>
-            </GlassCard>
+            </View>
           ))}
 
           {/* Achievements */}
           <Text style={styles.section}>Achievements</Text>
           <View style={styles.achievementGrid}>
             {ACHIEVEMENTS.map((achievement) => (
-              <TouchableOpacity key={achievement.id} style={styles.achievementWrapper}>
-                <GlassCard
+              <Pressable
+                key={achievement.id}
+                style={({ pressed }) => [
+                  styles.achievementWrapper,
+                  { opacity: pressed ? 0.8 : 1 }
+                ]}
+              >
+                <View
                   style={[
                     styles.achievementCard,
-                    !achievement.unlocked && { opacity: 0.5 },
+                    !achievement.unlocked && styles.achievementCardLocked,
                   ]}
-                  intensity="medium"
                 >
                   <View
                     style={[
                       styles.achievementIcon,
-                      { backgroundColor: achievement.color + '30' },
+                      { backgroundColor: achievement.color + '20' },
                     ]}
                   >
                     <Ionicons
                       name={achievement.icon as any}
                       size={28}
-                      color={achievement.color}
+                      color={achievement.unlocked ? achievement.color : Colors.mediumGray}
                     />
                   </View>
-                  <Text style={styles.achievementTitle}>{achievement.title}</Text>
-                  <Text style={styles.achievementDesc}>{achievement.description}</Text>
+                  <Text style={[
+                    styles.achievementTitle,
+                    !achievement.unlocked && styles.achievementTitleLocked
+                  ]}>
+                    {achievement.title}
+                  </Text>
+                  <Text style={[
+                    styles.achievementDesc,
+                    !achievement.unlocked && styles.achievementDescLocked
+                  ]}>
+                    {achievement.description}
+                  </Text>
                   {achievement.unlocked && (
                     <View style={styles.unlockedBadge}>
                       <Ionicons name="checkmark" size={12} color={Colors.white} />
                     </View>
                   )}
-                </GlassCard>
-              </TouchableOpacity>
+                </View>
+              </Pressable>
             ))}
           </View>
 
           <Text style={styles.section}>The 4 ISA Types</Text>
 
           {Object.values(ISA_INFO).map((isa) => (
-            <TouchableOpacity key={isa.id} onPress={() => setExpandedISA(expandedISA === isa.id ? null : isa.id)}>
-              <GlassCard style={styles.card} intensity="medium">
+            <Pressable
+              key={isa.id}
+              onPress={() => setExpandedISA(expandedISA === isa.id ? null : isa.id)}
+              style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
+            >
+              <View style={styles.card}>
                 <View style={styles.row}>
-                  <View style={[styles.icon, { backgroundColor: isa.color + '30' }]}>
+                  <View style={[styles.icon, { backgroundColor: isa.color + '20' }]}>
                     <Ionicons name={isa.icon as any} size={24} color={isa.color} />
                   </View>
                   <View style={{ flex: 1 }}>
@@ -240,13 +258,13 @@ export default function HubScreen() {
                     ))}
                   </View>
                 )}
-              </GlassCard>
-            </TouchableOpacity>
+              </View>
+            </Pressable>
           ))}
 
           <Text style={styles.section}>Key Rules & Limits</Text>
 
-          <GlassCard style={styles.card} intensity="dark">
+          <View style={styles.card}>
             <View style={styles.ruleRow}>
               <Ionicons name="cash" size={20} color={Colors.gold} />
               <View style={{ flex: 1, marginLeft: 12 }}>
@@ -254,9 +272,9 @@ export default function HubScreen() {
                 <Text style={styles.sub}>{formatCurrency(ISA_ANNUAL_ALLOWANCE)} per tax year (6 April - 5 April)</Text>
               </View>
             </View>
-          </GlassCard>
+          </View>
 
-          <GlassCard style={styles.card} intensity="dark">
+          <View style={styles.card}>
             <View style={styles.ruleRow}>
               <Ionicons name="home" size={20} color={ISA_INFO.lifetime.color} />
               <View style={{ flex: 1, marginLeft: 12 }}>
@@ -264,9 +282,9 @@ export default function HubScreen() {
                 <Text style={styles.sub}>{formatCurrency(LIFETIME_ISA_MAX)} max per year + 25% government bonus</Text>
               </View>
             </View>
-          </GlassCard>
+          </View>
 
-          <GlassCard style={styles.card} intensity="dark">
+          <View style={styles.card}>
             <View style={styles.ruleRow}>
               <Ionicons name="calendar" size={20} color={Colors.info} />
               <View style={{ flex: 1, marginLeft: 12 }}>
@@ -274,9 +292,9 @@ export default function HubScreen() {
                 <Text style={styles.sub}>Unused allowance doesn't carry over to next year</Text>
               </View>
             </View>
-          </GlassCard>
+          </View>
 
-          <GlassCard style={styles.card} intensity="dark">
+          <View style={styles.card}>
             <View style={styles.ruleRow}>
               <Ionicons name="checkmark-circle" size={20} color={Colors.success} />
               <View style={{ flex: 1, marginLeft: 12 }}>
@@ -284,31 +302,31 @@ export default function HubScreen() {
                 <Text style={styles.sub}>You can now open multiple ISAs of the same type per year!</Text>
               </View>
             </View>
-          </GlassCard>
+          </View>
 
           <Text style={styles.section}>Learn More</Text>
 
           {EDUCATIONAL_CONTENT.BEGINNER.map((item, i) => (
-            <GlassCard key={i} style={styles.card} intensity="medium">
+            <View key={i} style={styles.card}>
               <Text style={styles.eduTitle}>{item.title}</Text>
               <Text style={[styles.sub, { marginTop: 8, lineHeight: 20 }]}>{item.content}</Text>
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>{item.category}</Text>
               </View>
-            </GlassCard>
+            </View>
           ))}
 
           {EDUCATIONAL_CONTENT.INTERMEDIATE.slice(0, 2).map((item, i) => (
-            <GlassCard key={i} style={styles.card} intensity="medium">
+            <View key={i} style={styles.card}>
               <Text style={styles.eduTitle}>{item.title}</Text>
               <Text style={[styles.sub, { marginTop: 8, lineHeight: 20 }]}>{item.content}</Text>
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>{item.category}</Text>
               </View>
-            </GlassCard>
+            </View>
           ))}
 
-          <GlassCard style={styles.card} intensity="dark">
+          <View style={styles.card}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Ionicons name="school" size={24} color={Colors.gold} />
               <Text style={[styles.name, { marginLeft: 12 }]}>Want to Learn More?</Text>
@@ -316,7 +334,7 @@ export default function HubScreen() {
             <Text style={[styles.sub, { marginTop: 8, lineHeight: 20 }]}>
               FinNest provides comprehensive ISA education to help you make informed decisions about your financial future.
             </Text>
-          </GlassCard>
+          </View>
 
           <View style={{ height: 100 }} />
         </ScrollView>
@@ -332,7 +350,14 @@ const styles = StyleSheet.create({
   title: { fontSize: Typography.sizes.xxl, color: Colors.white, fontWeight: Typography.weights.bold },
   subtitle: { fontSize: Typography.sizes.sm, color: Colors.lightGray, marginTop: 4, marginBottom: Spacing.lg },
   section: { fontSize: Typography.sizes.lg, color: Colors.white, fontWeight: Typography.weights.bold, marginBottom: Spacing.md, marginTop: Spacing.lg },
-  card: { marginBottom: Spacing.sm, padding: Spacing.md },
+  card: {
+    marginBottom: Spacing.sm,
+    padding: Spacing.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
   row: { flexDirection: 'row', alignItems: 'center' },
   icon: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   name: { fontSize: Typography.sizes.md, color: Colors.white, fontWeight: Typography.weights.semibold },
@@ -348,7 +373,15 @@ const styles = StyleSheet.create({
   badgeText: { fontSize: Typography.sizes.xs, color: Colors.gold, fontWeight: Typography.weights.bold },
 
   // Gamification styles
-  levelCard: { marginBottom: Spacing.md, padding: 0, overflow: 'hidden' },
+  levelCard: {
+    marginBottom: Spacing.md,
+    padding: 0,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
   levelGradient: { padding: Spacing.lg },
   levelHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.md },
   levelBadge: { width: 70, height: 70, borderRadius: 35, backgroundColor: Colors.white, alignItems: 'center', justifyContent: 'center', marginRight: Spacing.md, position: 'relative' },
@@ -363,7 +396,14 @@ const styles = StyleSheet.create({
   xpInfo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 },
   xpInfoText: { fontSize: Typography.sizes.xs, color: Colors.deepNavy, fontWeight: Typography.weights.semibold },
 
-  streakCard: { marginBottom: Spacing.md, padding: Spacing.lg },
+  streakCard: {
+    marginBottom: Spacing.md,
+    padding: Spacing.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
   streakHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.md },
   streakIconWrapper: { marginRight: Spacing.md },
   streakIconGradient: { width: 60, height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center' },
@@ -375,7 +415,14 @@ const styles = StyleSheet.create({
   streakLabel: { fontSize: Typography.sizes.xs, color: Colors.lightGray },
   streakDivider: { width: 1, backgroundColor: Colors.glassLight },
 
-  taskCard: { marginBottom: Spacing.sm, padding: Spacing.md },
+  taskCard: {
+    marginBottom: Spacing.sm,
+    padding: Spacing.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
   taskRow: { flexDirection: 'row', alignItems: 'center' },
   taskIcon: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', marginRight: Spacing.md },
   taskTitle: { fontSize: Typography.sizes.md, color: Colors.white, fontWeight: Typography.weights.semibold },
@@ -386,9 +433,24 @@ const styles = StyleSheet.create({
 
   achievementGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm, marginBottom: Spacing.md },
   achievementWrapper: { width: '48%' },
-  achievementCard: { padding: Spacing.md, alignItems: 'center', position: 'relative' },
+  achievementCard: {
+    padding: Spacing.md,
+    alignItems: 'center',
+    position: 'relative',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: BorderRadius.xl,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  achievementCardLocked: {
+    opacity: 0.5,
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+  },
   achievementIcon: { width: 60, height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.sm },
   achievementTitle: { fontSize: Typography.sizes.sm, color: Colors.white, fontWeight: Typography.weights.bold, textAlign: 'center', marginBottom: 4 },
+  achievementTitleLocked: { color: Colors.mediumGray },
   achievementDesc: { fontSize: Typography.sizes.xs, color: Colors.lightGray, textAlign: 'center', lineHeight: 16 },
+  achievementDescLocked: { color: Colors.mediumGray },
   unlockedBadge: { position: 'absolute', top: Spacing.xs, right: Spacing.xs, width: 20, height: 20, borderRadius: 10, backgroundColor: Colors.success, alignItems: 'center', justifyContent: 'center' },
 });
