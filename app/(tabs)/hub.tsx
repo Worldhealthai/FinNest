@@ -47,6 +47,39 @@ export default function HubScreen() {
           <Text style={styles.title}>ISA Hub</Text>
           <Text style={styles.subtitle}>Essential ISA knowledge and resources</Text>
 
+          {/* ISA Essentials - Educational Content */}
+          <Text style={styles.section}>ISA Essentials</Text>
+
+          {EDUCATIONAL_CONTENT.BEGINNER.map((item, i) => (
+            <View key={i} style={styles.card}>
+              <Text style={styles.eduTitle}>{item.title}</Text>
+              <Text style={[styles.sub, { marginTop: 8, lineHeight: 20 }]}>{item.content}</Text>
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{item.category}</Text>
+              </View>
+            </View>
+          ))}
+
+          {EDUCATIONAL_CONTENT.INTERMEDIATE.slice(0, 2).map((item, i) => (
+            <View key={i} style={styles.card}>
+              <Text style={styles.eduTitle}>{item.title}</Text>
+              <Text style={[styles.sub, { marginTop: 8, lineHeight: 20 }]}>{item.content}</Text>
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{item.category}</Text>
+              </View>
+            </View>
+          ))}
+
+          <View style={styles.card}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Ionicons name="school" size={24} color={Colors.gold} />
+              <Text style={[styles.name, { marginLeft: 12 }]}>Want to Learn More?</Text>
+            </View>
+            <Text style={[styles.sub, { marginTop: 8, lineHeight: 20 }]}>
+              FinNest provides comprehensive ISA education to help you make informed decisions about your financial future.
+            </Text>
+          </View>
+
           {/* The 4 ISA Types */}
           <Text style={styles.section}>ISA Types</Text>
 
@@ -133,38 +166,6 @@ export default function HubScreen() {
                 <Text style={styles.sub}>Multiple ISAs of the same type allowed per year (except LISA & Junior ISAs)</Text>
               </View>
             </View>
-          </View>
-
-          <Text style={styles.section}>Learn More</Text>
-
-          {EDUCATIONAL_CONTENT.BEGINNER.map((item, i) => (
-            <View key={i} style={styles.card}>
-              <Text style={styles.eduTitle}>{item.title}</Text>
-              <Text style={[styles.sub, { marginTop: 8, lineHeight: 20 }]}>{item.content}</Text>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{item.category}</Text>
-              </View>
-            </View>
-          ))}
-
-          {EDUCATIONAL_CONTENT.INTERMEDIATE.slice(0, 2).map((item, i) => (
-            <View key={i} style={styles.card}>
-              <Text style={styles.eduTitle}>{item.title}</Text>
-              <Text style={[styles.sub, { marginTop: 8, lineHeight: 20 }]}>{item.content}</Text>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{item.category}</Text>
-              </View>
-            </View>
-          ))}
-
-          <View style={styles.card}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Ionicons name="school" size={24} color={Colors.gold} />
-              <Text style={[styles.name, { marginLeft: 12 }]}>Want to Learn More?</Text>
-            </View>
-            <Text style={[styles.sub, { marginTop: 8, lineHeight: 20 }]}>
-              FinNest provides comprehensive ISA education to help you make informed decisions about your financial future.
-            </Text>
           </View>
 
           <Text style={styles.section}>Progress & Rewards</Text>
