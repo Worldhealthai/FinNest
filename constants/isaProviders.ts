@@ -2,7 +2,7 @@
  * ISA Providers Data - Complete UK ISA Providers Database (2025)
  * Official list from GOV.UK - Registered Individual Savings Account (ISA) managers
  * Source: https://www.gov.uk/government/publications/list-of-individual-savings-account-managers
- * Total Providers: 442
+ * Total Providers: 444 (442 official + 2 popular fintech additions)
  */
 
 export interface ISAProvider {
@@ -12,6 +12,23 @@ export interface ISAProvider {
 }
 
 export const ISA_PROVIDERS: ISAProvider[] = [
+  {
+    "name": "Plum",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares ISA",
+      "Lifetime ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "InvestAndFund",
+    "types": [
+      "Stocks & Shares ISA",
+      "Innovative Finance ISA"
+    ],
+    "category": "investment-platform"
+  },
   {
     "name": "25 Bank Street",
     "types": [
@@ -3343,6 +3360,8 @@ export const ISA_PROVIDERS: ISAProvider[] = [
 
 // Common provider name aliases for better search
 const PROVIDER_ALIASES: Record<string, string[]> = {
+  'Plum': ['plum money', 'plum app'],
+  'InvestAndFund': ['invest and fund', 'invest & fund', 'investandfund'],
   'Digital Moneybox': ['moneybox', 'money box'],
   'Investengine (UK)': ['investengine', 'invest engine'],
   'National Westminster Bank': ['natwest', 'nat west'],
@@ -3407,11 +3426,10 @@ export const getProvidersByType = (isaType: string): ISAProvider[] => {
 export const getPopularProviders = (): ISAProvider[] => {
   // Return mix of categories - using actual names from the database
   const popularNames = [
-    'Hargreaves Lansdown', 'AJ Bell', 'Digital Moneybox', 'Investengine',
-    'Barclays', 'National Westminster', 'Lloyds Bank', 'HSBC',
-    'Nationwide', 'Coventry', 'Yorkshire',
-    'Monzo', 'Starling', 'Atom', 'Freetrade', 'Trading 212',
-    'Interactive Investor', 'eToro', 'Santander', 'Halifax'
+    'Plum', 'InvestAndFund', 'Hargreaves Lansdown', 'AJ Bell', 'Digital Moneybox',
+    'Investengine', 'Barclays', 'National Westminster', 'Lloyds Bank', 'HSBC',
+    'Nationwide', 'Coventry', 'Yorkshire', 'Monzo', 'Starling',
+    'Atom', 'Freetrade', 'Trading 212', 'Interactive Investor', 'eToro'
   ];
 
   return ISA_PROVIDERS.filter(p =>
