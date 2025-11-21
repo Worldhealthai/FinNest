@@ -726,7 +726,7 @@ export default function AddISAContributionModal({
             </Pressable>
           )}
 
-          {step < TOTAL_STEPS ? (
+          {step < 3 ? (
             <Pressable
               onPress={handleNext}
               style={({ pressed }) => [
