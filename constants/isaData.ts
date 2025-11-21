@@ -123,7 +123,7 @@ export const ISA_INFO: Record<string, ISAType> = {
       'Long-term savers',
       'Those wanting government bonus',
     ],
-    color: '#00FF87',
+    color: '#5B9BD5',
   },
   [ISA_TYPES.INNOVATIVE_FINANCE]: {
     id: ISA_TYPES.INNOVATIVE_FINANCE,

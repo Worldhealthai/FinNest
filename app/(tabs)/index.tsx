@@ -263,7 +263,7 @@ export default function DashboardScreen() {
 
           {/* Lifetime ISA */}
           <Pressable onPress={() => setExpandedISA(expandedISA === 'lifetime' ? null : 'lifetime')} style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}>
-            <GlassCard style={styles.card} intensity="dark">
+            <GlassCard style={styles.card} intensity="medium">
               <View style={styles.row}>
                 <View style={[styles.icon, { backgroundColor: ISA_INFO.lifetime.color + '30' }]}>
                   <Ionicons name="home" size={24} color={ISA_INFO.lifetime.color} />
