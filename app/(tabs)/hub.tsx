@@ -130,7 +130,17 @@ export default function HubScreen() {
               <Ionicons name="checkmark-circle" size={20} color={Colors.success} />
               <View style={{ flex: 1, marginLeft: 12 }}>
                 <Text style={styles.ruleName}>2024 Update</Text>
-                <Text style={styles.sub}>Multiple ISAs of the same type allowed per year</Text>
+                <Text style={styles.sub}>Multiple ISAs of the same type allowed per year (except LISA & Junior ISAs)</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.card}>
+            <View style={styles.ruleRow}>
+              <Ionicons name="alert-circle" size={20} color={Colors.warning} />
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={styles.ruleName}>LISA & Junior ISA Limits</Text>
+                <Text style={styles.sub}>Only one Lifetime ISA and one Junior ISA of each type per tax year</Text>
               </View>
             </View>
           </View>
