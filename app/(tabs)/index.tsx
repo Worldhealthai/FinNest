@@ -156,6 +156,29 @@ export default function DashboardScreen() {
     console.log('Contribution added and saved successfully');
   };
 
+  const handleDeleteContribution = (contributionId: string) => {
+    const contribution = contributions.find(c => c.id === contributionId);
+    if (!contribution) return;
+
+    Alert.alert(
+      'Delete Contribution',
+      `Are you sure you want to delete this ${formatCurrency(contribution.amount)} contribution from ${contribution.provider}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            const updatedContributions = contributions.filter(c => c.id !== contributionId);
+            setContributions(updatedContributions);
+            await saveContributions(updatedContributions);
+            console.log('Contribution deleted:', contributionId);
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <View style={styles.container}>
       <AnimatedBackground />
@@ -238,13 +261,24 @@ export default function DashboardScreen() {
                 </View>
               </View>
 
-              {expandedISA === 'cash' && Object.keys(groupedISAs.cash.providers).length > 0 && (
+              {expandedISA === 'cash' && contributions.filter(c => c.isaType === 'cash').length > 0 && (
                 <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.glassLight }}>
-                  <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Providers:</Text>
-                  {Object.entries(groupedISAs.cash.providers).map(([provider, data]) => (
-                    <View key={provider} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8, paddingLeft: 12 }}>
-                      <Text style={styles.sub}>• {provider}</Text>
-                      <Text style={styles.val}>{formatCurrency(data.contributed)}</Text>
+                  <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Contributions:</Text>
+                  {contributions.filter(c => c.isaType === 'cash').map((contribution) => (
+                    <View key={contribution.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingLeft: 12, paddingVertical: 8, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 8 }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.sub}>{contribution.provider}</Text>
+                        <Text style={[styles.sub, { fontSize: 12, opacity: 0.7, marginTop: 2 }]}>
+                          {new Date(contribution.date).toLocaleDateString()}
+                        </Text>
+                      </View>
+                      <Text style={[styles.val, { marginRight: 12 }]}>{formatCurrency(contribution.amount)}</Text>
+                      <Pressable
+                        onPress={() => handleDeleteContribution(contribution.id)}
+                        style={({ pressed }) => [{ opacity: pressed ? 0.5 : 1, padding: 4 }]}
+                      >
+                        <Ionicons name="trash-outline" size={20} color={Colors.error} />
+                      </Pressable>
                     </View>
                   ))}
                 </View>
@@ -280,13 +314,24 @@ export default function DashboardScreen() {
                 </View>
               </View>
 
-              {expandedISA === 'stocks_shares' && Object.keys(groupedISAs.stocks_shares.providers).length > 0 && (
+              {expandedISA === 'stocks_shares' && contributions.filter(c => c.isaType === 'stocks_shares').length > 0 && (
                 <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.glassLight }}>
-                  <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Providers:</Text>
-                  {Object.entries(groupedISAs.stocks_shares.providers).map(([provider, data]) => (
-                    <View key={provider} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8, paddingLeft: 12 }}>
-                      <Text style={styles.sub}>• {provider}</Text>
-                      <Text style={styles.val}>{formatCurrency(data.contributed)}</Text>
+                  <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Contributions:</Text>
+                  {contributions.filter(c => c.isaType === 'stocks_shares').map((contribution) => (
+                    <View key={contribution.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingLeft: 12, paddingVertical: 8, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 8 }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.sub}>{contribution.provider}</Text>
+                        <Text style={[styles.sub, { fontSize: 12, opacity: 0.7, marginTop: 2 }]}>
+                          {new Date(contribution.date).toLocaleDateString()}
+                        </Text>
+                      </View>
+                      <Text style={[styles.val, { marginRight: 12 }]}>{formatCurrency(contribution.amount)}</Text>
+                      <Pressable
+                        onPress={() => handleDeleteContribution(contribution.id)}
+                        style={({ pressed }) => [{ opacity: pressed ? 0.5 : 1, padding: 4 }]}
+                      >
+                        <Ionicons name="trash-outline" size={20} color={Colors.error} />
+                      </Pressable>
                     </View>
                   ))}
                 </View>
@@ -326,13 +371,24 @@ export default function DashboardScreen() {
               </View>
               <Text style={[styles.sub, { marginTop: 4 }]}>{formatCurrency(LIFETIME_ISA_MAX - groupedISAs.lifetime.total)} left for max bonus</Text>
 
-              {expandedISA === 'lifetime' && Object.keys(groupedISAs.lifetime.providers).length > 0 && (
+              {expandedISA === 'lifetime' && contributions.filter(c => c.isaType === 'lifetime').length > 0 && (
                 <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.glassLight }}>
-                  <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Providers:</Text>
-                  {Object.entries(groupedISAs.lifetime.providers).map(([provider, data]) => (
-                    <View key={provider} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8, paddingLeft: 12 }}>
-                      <Text style={styles.sub}>• {provider}</Text>
-                      <Text style={styles.val}>{formatCurrency(data.contributed)}</Text>
+                  <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Contributions:</Text>
+                  {contributions.filter(c => c.isaType === 'lifetime').map((contribution) => (
+                    <View key={contribution.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingLeft: 12, paddingVertical: 8, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 8 }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.sub}>{contribution.provider}</Text>
+                        <Text style={[styles.sub, { fontSize: 12, opacity: 0.7, marginTop: 2 }]}>
+                          {new Date(contribution.date).toLocaleDateString()}
+                        </Text>
+                      </View>
+                      <Text style={[styles.val, { marginRight: 12 }]}>{formatCurrency(contribution.amount)}</Text>
+                      <Pressable
+                        onPress={() => handleDeleteContribution(contribution.id)}
+                        style={({ pressed }) => [{ opacity: pressed ? 0.5 : 1, padding: 4 }]}
+                      >
+                        <Ionicons name="trash-outline" size={20} color={Colors.error} />
+                      </Pressable>
                     </View>
                   ))}
                 </View>
@@ -368,13 +424,24 @@ export default function DashboardScreen() {
                 </View>
               </View>
 
-              {expandedISA === 'innovative_finance' && Object.keys(groupedISAs.innovative_finance.providers).length > 0 && (
+              {expandedISA === 'innovative_finance' && contributions.filter(c => c.isaType === 'innovative_finance').length > 0 && (
                 <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.glassLight }}>
-                  <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Providers:</Text>
-                  {Object.entries(groupedISAs.innovative_finance.providers).map(([provider, data]) => (
-                    <View key={provider} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8, paddingLeft: 12 }}>
-                      <Text style={styles.sub}>• {provider}</Text>
-                      <Text style={styles.val}>{formatCurrency(data.contributed)}</Text>
+                  <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Contributions:</Text>
+                  {contributions.filter(c => c.isaType === 'innovative_finance').map((contribution) => (
+                    <View key={contribution.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingLeft: 12, paddingVertical: 8, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 8 }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.sub}>{contribution.provider}</Text>
+                        <Text style={[styles.sub, { fontSize: 12, opacity: 0.7, marginTop: 2 }]}>
+                          {new Date(contribution.date).toLocaleDateString()}
+                        </Text>
+                      </View>
+                      <Text style={[styles.val, { marginRight: 12 }]}>{formatCurrency(contribution.amount)}</Text>
+                      <Pressable
+                        onPress={() => handleDeleteContribution(contribution.id)}
+                        style={({ pressed }) => [{ opacity: pressed ? 0.5 : 1, padding: 4 }]}
+                      >
+                        <Ionicons name="trash-outline" size={20} color={Colors.error} />
+                      </Pressable>
                     </View>
                   ))}
                 </View>
