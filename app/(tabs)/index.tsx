@@ -299,6 +299,48 @@ export default function DashboardScreen() {
             </GlassCard>
           </Pressable>
 
+          {/* Innovative Finance ISA */}
+          <Pressable onPress={() => setExpandedISA(expandedISA === 'innovative_finance' ? null : 'innovative_finance')} style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}>
+            <GlassCard style={styles.card} intensity="medium">
+              <View style={styles.row}>
+                <View style={[styles.icon, { backgroundColor: ISA_INFO.innovative_finance.color + '30' }]}>
+                  <Ionicons name="flash" size={24} color={ISA_INFO.innovative_finance.color} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.name}>Innovative Finance ISA</Text>
+                  <Text style={styles.sub}>
+                    {Object.keys(groupedISAs.innovative_finance.providers).length > 0
+                      ? `${Object.keys(groupedISAs.innovative_finance.providers).length} provider${Object.keys(groupedISAs.innovative_finance.providers).length > 1 ? 's' : ''} • High Risk`
+                      : 'No contributions yet'}
+                  </Text>
+                </View>
+                <Ionicons name={expandedISA === 'innovative_finance' ? "chevron-up" : "chevron-down"} size={20} color={Colors.lightGray} />
+              </View>
+              <View style={[styles.row, { marginTop: 12 }]}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.sub}>Total Contributed</Text>
+                  <Text style={styles.val}>{formatCurrency(groupedISAs.innovative_finance.total)}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.sub}>Balance</Text>
+                  <Text style={[styles.val, { color: Colors.success }]}>{formatCurrency(groupedISAs.innovative_finance.total)}</Text>
+                </View>
+              </View>
+
+              {expandedISA === 'innovative_finance' && Object.keys(groupedISAs.innovative_finance.providers).length > 0 && (
+                <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.glassLight }}>
+                  <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Providers:</Text>
+                  {Object.entries(groupedISAs.innovative_finance.providers).map(([provider, data]) => (
+                    <View key={provider} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8, paddingLeft: 12 }}>
+                      <Text style={styles.sub}>• {provider}</Text>
+                      <Text style={styles.val}>{formatCurrency(data.contributed)}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </GlassCard>
+          </Pressable>
+
           <Pressable
             onPress={() => setAddContributionVisible(true)}
             style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
