@@ -135,16 +135,6 @@ export default function HubScreen() {
             </View>
           </View>
 
-          <View style={styles.card}>
-            <View style={styles.ruleRow}>
-              <Ionicons name="alert-circle" size={20} color={Colors.warning} />
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={styles.ruleName}>LISA & Junior ISA Limits</Text>
-                <Text style={styles.sub}>Only one Lifetime ISA and one Junior ISA of each type per tax year</Text>
-              </View>
-            </View>
-          </View>
-
           <Text style={styles.section}>Learn More</Text>
 
           {EDUCATIONAL_CONTENT.BEGINNER.map((item, i) => (
