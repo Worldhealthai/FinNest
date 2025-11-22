@@ -7,6 +7,7 @@ import {
   TextInput,
   Alert,
   ScrollView,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -175,29 +176,44 @@ export default function ISAAccountsModal({ visible, onClose }: ISAAccountsModalP
     return ISA_ANNUAL_ALLOWANCE - getTotalContributions();
   };
 
-  const handleDeleteAccount = (accountId: string, providerName: string) => {
-    Alert.alert(
-      'Delete ISA Account',
-      `Are you sure you want to delete your ${providerName} ISA account? This action cannot be undone.`,
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            const updatedAccounts = accounts.filter(acc => acc.id !== accountId);
-            setAccounts(updatedAccounts);
-            await saveAccounts(updatedAccounts);
-            console.log('ISA account deleted:', accountId);
-            Alert.alert('Success', 'ISA account deleted successfully');
+  const handleDeleteAccount = async (accountId: string, providerName: string) => {
+    const message = `Are you sure you want to delete your ${providerName} ISA account? This action cannot be undone.`;
+
+    // Use native browser confirm on web, Alert.alert on mobile
+    if (Platform.OS === 'web') {
+      // Web: Use window.confirm
+      if (typeof window !== 'undefined' && window.confirm(message)) {
+        const updatedAccounts = accounts.filter(acc => acc.id !== accountId);
+        setAccounts(updatedAccounts);
+        await saveAccounts(updatedAccounts);
+        console.log('ISA account deleted:', accountId);
+        alert('ISA account deleted successfully');
+      }
+    } else {
+      // Mobile: Use Alert.alert
+      Alert.alert(
+        'Delete ISA Account',
+        message,
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
           },
-        },
-      ],
-      { cancelable: true }
-    );
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: async () => {
+              const updatedAccounts = accounts.filter(acc => acc.id !== accountId);
+              setAccounts(updatedAccounts);
+              await saveAccounts(updatedAccounts);
+              console.log('ISA account deleted:', accountId);
+              Alert.alert('Success', 'ISA account deleted successfully');
+            },
+          },
+        ],
+        { cancelable: true }
+      );
+    }
   };
 
   const getISAIcon = (type: string) => {
