@@ -313,12 +313,13 @@ export default function DashboardScreen() {
                         </Text>
                       </View>
                       <Text style={[styles.val, { marginRight: 12 }]}>{formatCurrency(contribution.amount)}</Text>
-                      <Pressable
+                      <TouchableOpacity
                         onPress={() => handleDeleteContribution(contribution.id)}
-                        style={({ pressed }) => [{ opacity: pressed ? 0.5 : 1, padding: 4 }]}
+                        style={{ padding: 8 }}
+                        activeOpacity={0.6}
                       >
                         <Ionicons name="trash-outline" size={20} color={Colors.error} />
-                      </Pressable>
+                      </TouchableOpacity>
                     </View>
                   ))}
                 </View>
@@ -366,12 +367,13 @@ export default function DashboardScreen() {
                         </Text>
                       </View>
                       <Text style={[styles.val, { marginRight: 12 }]}>{formatCurrency(contribution.amount)}</Text>
-                      <Pressable
+                      <TouchableOpacity
                         onPress={() => handleDeleteContribution(contribution.id)}
-                        style={({ pressed }) => [{ opacity: pressed ? 0.5 : 1, padding: 4 }]}
+                        style={{ padding: 8 }}
+                        activeOpacity={0.6}
                       >
                         <Ionicons name="trash-outline" size={20} color={Colors.error} />
-                      </Pressable>
+                      </TouchableOpacity>
                     </View>
                   ))}
                 </View>
@@ -423,12 +425,13 @@ export default function DashboardScreen() {
                         </Text>
                       </View>
                       <Text style={[styles.val, { marginRight: 12 }]}>{formatCurrency(contribution.amount)}</Text>
-                      <Pressable
+                      <TouchableOpacity
                         onPress={() => handleDeleteContribution(contribution.id)}
-                        style={({ pressed }) => [{ opacity: pressed ? 0.5 : 1, padding: 4 }]}
+                        style={{ padding: 8 }}
+                        activeOpacity={0.6}
                       >
                         <Ionicons name="trash-outline" size={20} color={Colors.error} />
-                      </Pressable>
+                      </TouchableOpacity>
                     </View>
                   ))}
                 </View>
@@ -476,12 +479,13 @@ export default function DashboardScreen() {
                         </Text>
                       </View>
                       <Text style={[styles.val, { marginRight: 12 }]}>{formatCurrency(contribution.amount)}</Text>
-                      <Pressable
+                      <TouchableOpacity
                         onPress={() => handleDeleteContribution(contribution.id)}
-                        style={({ pressed }) => [{ opacity: pressed ? 0.5 : 1, padding: 4 }]}
+                        style={{ padding: 8 }}
+                        activeOpacity={0.6}
                       >
                         <Ionicons name="trash-outline" size={20} color={Colors.error} />
-                      </Pressable>
+                      </TouchableOpacity>
                     </View>
                   ))}
                 </View>
