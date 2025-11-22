@@ -1,0 +1,3250 @@
+Parsed 442 providers
+[
+  {
+    "name": "25 Bank Street",
+    "types": [
+      "Stocks & Shares",
+      "Lifetime ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "4 Northumberland Buildings",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "40 Bank Street",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "40 Bank Street",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "5 Bank Street",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "7 Harbour Buildings",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Abrdn Fund Managers",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Abundance Investment Limited (trading as",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares",
+      "Innovative Finance"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Aegon Asset Management UK",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Aegon Investment Solutions Limited (trading as",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "AJ Bell Securities",
+    "types": [
+      "Stocks & Shares",
+      "Lifetime ISA"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Al Rayan Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Alder Investment Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Aldermore Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Alexandra Buildings",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Allianz Global Investors UK Limited (trading as Allianz",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Alpha Real property Investment Advisers LLP (trading",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "APM Capital Markets",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Apollo Multi Asset Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Arbuthnot Latham & Co",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "ArchOver",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Artemis Fund Managers",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Assetz SME Capital",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Atom Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Atomos Investments",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Aviation and Tech Capital",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Aviva Investment Solutions UK",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Aviva Investors UK Fund Services",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Aviva Life & Pensions UK",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Aviva Wrap UK",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "AXA Investment Managers UK",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Bank J. Safra Sarasin (Gibraltar)",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Bank of East Asia",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Bank of Ireland UK",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Bank of Scotland",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Bank Pictet & Cie (Europe) AG London Branch",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Barclays Bank",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Barclays Bank UK",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Barclays Investment Solutions",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Barratt & Cooke",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Bath Investment & Building Society",
+    "types": [
+      "Cash ISA",
+      "Lifetime ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Bayonet Ventures",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Bedworth and Bulkington Credit Union",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Beverley Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Blackfinch Investments",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Blackrock Investment Management (UK)",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "BNY Mellon Fund Managers",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Bordier & Cie (UK)",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Bramdean Asset Management",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares",
+      "Innovative Finance"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Brewin Dolphin",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Brewin Dolphin Wealth Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "British Pearl",
+    "types": [
+      "Stocks & Shares",
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Brooks MacDonald Asset Management",
+    "types": [
+      "Stocks & Shares",
+      "Lifetime ISA"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Brown Advisory",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Brown Shipley & Co",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Buckinghamshire Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Cambridge Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Canaccord Genuity Wealth",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Capel Court Public Limited Company",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Capital Credit Union Limited (trading as Capital Credit",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Carne Global Fund Managers (UK)",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "CASFS",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Castle Trust Capital",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Castlefield Investment Partners",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Causeway Securities Limited (trading as Causeway",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Central Liverpool Credit Union",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Charter Savings Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Charteris Treasury Portfolio Managers",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Chetwood Financial",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Citibank UK",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "City Asset Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Clearbank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Clockwise Credit Union",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Close Brothers",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Clydesdale Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "CMC Markets Investments",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Cofunds",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Columbia Threadneedle Fund Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Columbia Threadneedle Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Commsave Credit Union",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "ConBrio Fund Partners",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Connor Broadley",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Consistent Unit Trust Management Company",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Courtiers Investment Services",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Coventry Building Society",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Credo Capital",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Crowd for Angels (UK)",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Crowd2Fund",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Crowdstacker",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares",
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Cumberland Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Cushon Money",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Cynergy Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Danske Bank",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Darlington Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "DB UK Bank",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Denmark Square",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Digital Moneybox",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Dolfin Financial (UK)",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Downing",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Dura Capital",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "E-Money Capital",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Earl Shilton Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Ecology Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Edaid",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "EdenTree Investment Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Edinburgh Alternative Finance Ltd (trading as Lending",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "EFG Private Bank",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Elevate Portfolio Services",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Elfin Market",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Embark Investment Services",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Emoneyhub",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Equiniti Financial Services",
+    "types": [
+      "Stocks & Shares",
+      "Lifetime ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Erewash Credit Union",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "eToro (UK)",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Evelyn Partners Asset Management",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Evelyn Partners Fund Solutions",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Evelyn Partners Investment Services",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Exchange Buildings",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Family Assurance Friendly Society",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Family Equity Plan",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Farley & Thompson",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "FCE Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Financial Administration Services",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares",
+      "Lifetime ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "First Sentier Investors (UK) Funds",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Fiske",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Fluro Platform",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "FNZ Securities",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Focus 2020",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Folk2Folk",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Forester Life",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Franklin Templeton Fund Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Freetrade",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Fund Ourselves",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Funding Circle",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "FundingSecure",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Fundment",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "FundRock Partners",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Fundsmith",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Furness Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Fusion Wealth",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Gallium P E Depositary",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Gatehouse Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "GHC Capital Markets",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Glasgow Credit Union",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Global Investment Strategy UK",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Goji Financial Services",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Goldman Sachs International Bank",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Graphene Platforms",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Great Western Credit Union",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Growth Capital Ventures",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Halifax Share Dealing",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Halo Invest",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Hampshire Credit Union",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Hampshire Trust Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Handelsbanken",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Handelsbanken Wealth and Asset Management",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Hanley Economic Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Hargreaves Lansdown Asset Management",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares",
+      "Lifetime ISA"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Hargreaves Lansdown Savings",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Harpenden Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Hathaway Investment Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Haw Bank House",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares",
+      "Lifetime ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "HBOS Investment Fund Managers",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Hedley & Company Stockbrokers",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Henderson Rowe",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Hilbert Investment Solutions",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Hinckley and Rugby Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "HNW Lending",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Housemartin Property",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "HSBC UK Bank",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Hubwise Securities",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "IBP Markets",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "iDealing.Com",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares",
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "iFAST Global Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "IFG.VC",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "IG Trading & Investments",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "IM Asset Management",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Independent Order of Odd Fellows Friendly Society",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares",
+      "Lifetime ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Integrated Financial Arrangements",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares",
+      "Lifetime ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Interactive Brokers (U.K.)",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Interactive Investor Services",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Invesco Fund Managers",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Investec Bank",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Investec Wealth & Investment",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Investengine (UK)",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Investment Fund Services",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Investment Funds Direct",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Investment HCP Building",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Invinitive Financial UK",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "ITI Capital",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "J & E Davy (UK)",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "J M Finn & Co",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "J. Edward Sellars & Partners",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "James Brearley & Sons",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "James Hambro & Partners",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "James Hay Wrap Managers",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Janus Henderson Fund Management UK",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Jarvis Investment Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Julian Hodge Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Kidstart",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Killik & Co",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares",
+      "Lifetime ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "King & Shaxson Asset Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Kingdom Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Kroo Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Kuflink",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Landlordinvest",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Leeds Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Leek United Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Legal & General (Unit Trust Managers)",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Lendwise",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Lewis Building",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "LGT Wealth Management UK",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Lightyear U.K.",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Link Fund Solutions",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Liontrust Fund Partners",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Liverpool Victoria Financial Services",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Lloyds Bank",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Loanpad",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Logic Investments",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "London House Exchange",
+    "types": [
+      "Stocks & Shares",
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "London Mutual Credit Union",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "London Plus Credit Union",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Loughborough Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "M & G Securities",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Maitland Institutional Services",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Man Fund Management UK",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Margetts Fund Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Market Harborough Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Marks & Spencer Financial Services",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Marks and Spencer Unit Trust Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Marsden Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Match the Cash",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Maunby Investment Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "McInroy & Wood",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "McInroy & Wood Portfolios",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Melton Mowbray Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Mercer",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "MES Financial Services",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Meteor Asset Management",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Methodist Chapel Aid",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Metlife UK",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Metro Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Metropolitan Police Friendly Society",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares",
+      "Lifetime ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "MFM Investment",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "MHA Wealth",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Miller & Co Investment Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Moai Wealth",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Mole Valley Asset Management",
+    "types": [
+      "Stocks & Shares",
+      "Lifetime ISA"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Monmouthshire Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Monument Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Monzo Bank",
+    "types": [
+      "Cash ISA",
+      "Innovative Finance"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Moorfields Advisory",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Morgan Stanley & Co. International",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Morningstar Wealth Administration",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Multrees Investor Services",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "National Counties Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "National Deposit Friendly Society",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "National Westminster Bank",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Nationwide Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Navera Investment Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Newbury Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Newcastle Building Society",
+    "types": [
+      "Cash ISA",
+      "Lifetime ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "NFU Mutual Select Investments",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Ninety One Fund Managers UK",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Nottingham Building Society",
+    "types": [
+      "Cash ISA",
+      "Lifetime ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Nottingham Credit Union",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Novia Financial",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Novia Global",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Nucleus Financial Services",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Number One Police Credit Union",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Oakglen Wealth",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Oaknorth Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Oberon Investments",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Octopus Investments",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "One Bank Street",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "OneSavings Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Open Access Finance",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Orbis Investments (U.K.)",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "P1 Investment Services",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Paragon Bank",
+    "types": [
+      "Cash ISA",
+      "Lifetime ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Parmenion Capital Partners",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Partners Credit Union",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Penny Post Credit Union",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Penrith Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Pershing Securities",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Philip J Milton & Company",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares",
+      "Lifetime ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Phoenix Life",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Pilling & Co Stockbrokers",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Plane Saver Credit Union",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Plata Finance",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Platform One",
+    "types": [
+      "Stocks & Shares",
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Platform Securities",
+    "types": [
+      "Stocks & Shares",
+      "Lifetime ISA"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Police Credit Union",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Premier Fund Managers",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Premier Portfolio Managers",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Principality Buildings",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Progressive Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Proplend",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Prosper Capital",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Prosper Savings",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Punjab National Bank (International)",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Quai Investment Services",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Quilter Cheviot",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Quilter Investment Platform",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "R C Brown Investment Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Rathbones Asset Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Rathbones Investment Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Ravenscroft Investments (UK)",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Raymond James Investment Services",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Raymond James Wealth Management",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "RBC Europe",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "RBS Collective Investment Funds",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Rebuildingsociety.com",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Redmayne-Bentley",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Relendex",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Resolution Compliance",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares",
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Revolut Trading",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Reyker Securities",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares",
+      "Innovative Finance"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "RLUM",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Rockpool Investments",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Rossie House Investment Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Rothschild & Co Wealth Management UK",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Rowan Dartington & Co",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Royal London Savings",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Royal London Unit Trust Managers",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Ruffer",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "RW Blears",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "S&T Asset Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Saffron Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Saltus Partners LLP (trading as Saltus Investment",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares",
+      "Lifetime ISA"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Sanctuary Buildings",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Santander ISA Managers",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Santander UK",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Sarasin & Partners",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Sarasin Asset Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Sarasin Investment Funds",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Saveable",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares",
+      "Lifetime ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Schroder & Co",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Schroder Unit Trusts",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Schroders Personal Wealth",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Scottish Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Scottish Friendly Asset Managers",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Scottish Provident Buildings",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Scottish Widows Administration Services",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Scottish Widows Unit Trust Managers",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Seccl Custody",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Secure Trust Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Seven Investment Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Shard Capital Partners",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Share In",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares",
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Shawbrook Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Sheffield Mutual Friendly Society",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Shore Capital Stockbrokers",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Skipton Building Society",
+    "types": [
+      "Cash ISA",
+      "Lifetime ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Slater Investments",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "St James's Place Investment Administration",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Standard Life Savings",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Starling Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "State Bank of India (UK)",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Stratiphy",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Stubben Edge (Risk)",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Suffolk Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Swansea Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Synergy Financial Products",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "TAM Asset Management",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Tandem Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Teachers' Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Tembo Savings",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares",
+      "Lifetime ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "The Ancient Order of Foresters Friendly Society",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares",
+      "Lifetime ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "The Bloomsbury Building",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "The Charity Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "The Chorley and District Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "The Co-operative Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "The Emerson Building",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "The Exeter Practice",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "The Mansfield Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "The Rechabite Friendly Society",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "The Red Rose Friendly Society",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "The Royal Bank of Scotland",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "The Royal London Mutual Insurance Society",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "The Stafford Railway Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "The Walbrook Building",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Third Platform Services",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Thomas Grant and Company",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Threadneedle Investment Services",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Tifosy",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Tilney Discretionary Portfolio Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Tipton and Coseley Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Titan Pensions & Investments Ltd (trading as Titan",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Titan Private Wealth",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Titan Settlement & Custody",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Trading 212 UK",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Transport Friendly Society",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "TrinityBridge",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "TrinityBridge Fund Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Triodos Bank UK",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Triple Point Investment Management",
+    "types": [
+      "Stocks & Shares",
+      "Innovative Finance"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "True Potential Investments",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "TSB Bank",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "UBS Asset Management Funds",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Unicorn Asset Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "United National Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "United Trust Bank",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Upvest Securities",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Valu-Trac Investment Management",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares",
+      "Lifetime ISA"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Vanquis Bank Limited (trading as Vanquis Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "VCAP Capital",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Vernon Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Verso Investment Management LLP (trading as Verso",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Verso Wealth Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Verus Financial Services",
+    "types": [
+      "Stocks & Shares",
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Vida Bank",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "Virgin Money Unit Trust Managers",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "W H Ireland",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "W1M Wealth Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Walker Crips Investment Management",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Waverton Investment Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Way Fund Managers",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Waystone Financial Investments",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Waystone Management (UK)",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Wealth at Work",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Wealth Club Asset Management",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Wealthify",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Wealthkernel",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "WealthTek",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Wealthtime",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Webull Securities (UK)",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Wesleyan Assurance Society",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Wesleyan Unit Trust Managers",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "West Bromwich Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Westminster Buildings",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Weston Super Mare and District Credit Union",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Whitechurch Securities",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Williams Investment Management",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Winterflood Securities",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "WiseAlpha Technologies",
+    "types": [
+      "Innovative Finance"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "XTB",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Yealand Fund Services",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Yorkshire Building Society",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "building-society"
+  },
+  {
+    "name": "Zeus Capital",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "investment-platform"
+  },
+  {
+    "name": "Zig Zag Building",
+    "types": [
+      "Stocks & Shares"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Zopa Bank",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares"
+    ],
+    "category": "bank"
+  }
+]
