@@ -43,6 +43,8 @@ interface ISAContribution {
   provider: string;
   amount: number;
   date: string;
+  deleted?: boolean;
+  deletedDate?: string;
 }
 
 interface ISAAccountsModalProps {
@@ -199,6 +201,9 @@ export default function ISAAccountsModal({ visible, onClose, contributions = [] 
     };
 
     contributions.forEach(contribution => {
+      // Skip deleted contributions in display
+      if (contribution.deleted) return;
+
       const type = contribution.isaType;
       if (!grouped[type].providers[contribution.provider]) {
         grouped[type].providers[contribution.provider] = 0;

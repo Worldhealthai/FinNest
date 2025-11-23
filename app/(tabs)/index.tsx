@@ -340,10 +340,10 @@ export default function DashboardScreen() {
                 </View>
               </View>
 
-              {expandedISA === 'cash' && filteredContributions.filter(c => c.isaType === 'cash').length > 0 && (
+              {expandedISA === 'cash' && filteredContributions.filter(c => c.isaType === 'cash' && !c.deleted).length > 0 && (
                 <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.glassLight }}>
                   <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Contributions:</Text>
-                  {filteredContributions.filter(c => c.isaType === 'cash').map((contribution) => (
+                  {filteredContributions.filter(c => c.isaType === 'cash' && !c.deleted).map((contribution) => (
                     <View key={contribution.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingLeft: 12, paddingVertical: 8, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 8 }}>
                       <View style={{ flex: 1 }}>
                         <Text style={styles.sub}>{contribution.provider}</Text>
@@ -394,10 +394,10 @@ export default function DashboardScreen() {
                 </View>
               </View>
 
-              {expandedISA === 'stocks_shares' && filteredContributions.filter(c => c.isaType === 'stocks_shares').length > 0 && (
+              {expandedISA === 'stocks_shares' && filteredContributions.filter(c => c.isaType === 'stocks_shares' && !c.deleted).length > 0 && (
                 <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.glassLight }}>
                   <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Contributions:</Text>
-                  {filteredContributions.filter(c => c.isaType === 'stocks_shares').map((contribution) => (
+                  {filteredContributions.filter(c => c.isaType === 'stocks_shares' && !c.deleted).map((contribution) => (
                     <View key={contribution.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingLeft: 12, paddingVertical: 8, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 8 }}>
                       <View style={{ flex: 1 }}>
                         <Text style={styles.sub}>{contribution.provider}</Text>
@@ -452,10 +452,10 @@ export default function DashboardScreen() {
               </View>
               <Text style={[styles.sub, { marginTop: 4 }]}>{formatCurrency(LIFETIME_ISA_MAX - groupedISAs.lifetime.total)} left for max bonus</Text>
 
-              {expandedISA === 'lifetime' && filteredContributions.filter(c => c.isaType === 'lifetime').length > 0 && (
+              {expandedISA === 'lifetime' && filteredContributions.filter(c => c.isaType === 'lifetime' && !c.deleted).length > 0 && (
                 <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.glassLight }}>
                   <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Contributions:</Text>
-                  {filteredContributions.filter(c => c.isaType === 'lifetime').map((contribution) => (
+                  {filteredContributions.filter(c => c.isaType === 'lifetime' && !c.deleted).map((contribution) => (
                     <View key={contribution.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingLeft: 12, paddingVertical: 8, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 8 }}>
                       <View style={{ flex: 1 }}>
                         <Text style={styles.sub}>{contribution.provider}</Text>
@@ -506,10 +506,10 @@ export default function DashboardScreen() {
                 </View>
               </View>
 
-              {expandedISA === 'innovative_finance' && filteredContributions.filter(c => c.isaType === 'innovative_finance').length > 0 && (
+              {expandedISA === 'innovative_finance' && filteredContributions.filter(c => c.isaType === 'innovative_finance' && !c.deleted).length > 0 && (
                 <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.glassLight }}>
                   <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Contributions:</Text>
-                  {filteredContributions.filter(c => c.isaType === 'innovative_finance').map((contribution) => (
+                  {filteredContributions.filter(c => c.isaType === 'innovative_finance' && !c.deleted).map((contribution) => (
                     <View key={contribution.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingLeft: 12, paddingVertical: 8, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 8 }}>
                       <View style={{ flex: 1 }}>
                         <Text style={styles.sub}>{contribution.provider}</Text>

@@ -22,6 +22,8 @@ interface ISAContribution {
   provider: string;
   amount: number;
   date: string;
+  deleted?: boolean;
+  deletedDate?: string;
 }
 
 // Helper to group contributions by ISA type and provider
@@ -34,6 +36,9 @@ const groupContributions = (contributions: ISAContribution[]) => {
   };
 
   contributions.forEach(contribution => {
+    // Skip deleted contributions in display
+    if (contribution.deleted) return;
+
     const type = contribution.isaType;
     if (!grouped[type].providers[contribution.provider]) {
       grouped[type].providers[contribution.provider] = { contributed: 0, balance: 0 };
@@ -54,6 +59,9 @@ const calculateHistoricalPerformance = (contributions: ISAContribution[]) => {
   const byTaxYear: Record<string, number> = {};
 
   contributions.forEach(contribution => {
+    // Skip deleted contributions
+    if (contribution.deleted) return;
+
     const taxYear = getTaxYearFromDate(new Date(contribution.date));
     const yearLabel = taxYear.label;
 
@@ -90,6 +98,9 @@ const calculateContributionTrend = (contributions: ISAContribution[]) => {
   const byTaxYear: Record<string, number> = {};
 
   contributions.forEach(contribution => {
+    // Skip deleted contributions
+    if (contribution.deleted) return;
+
     const taxYear = getTaxYearFromDate(new Date(contribution.date));
     const yearLabel = taxYear.label;
 
