@@ -1,21 +1,87 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LineChart } from 'react-native-chart-kit';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import GlassCard from '@/components/GlassCard';
 import { Colors, Spacing, Typography } from '@/constants/theme';
-import { formatCurrency, ISA_INFO } from '@/constants/isaData';
+import { formatCurrency, ISA_INFO, ISA_ANNUAL_ALLOWANCE } from '@/constants/isaData';
 import { Dimensions } from 'react-native';
+import { getCurrentTaxYear, isDateInTaxYear } from '@/utils/taxYear';
 
 const { width } = Dimensions.get('window');
+const CONTRIBUTIONS_STORAGE_KEY = '@finnest_contributions';
+
+interface ISAContribution {
+  id: string;
+  isaType: string;
+  provider: string;
+  amount: number;
+  date: string;
+}
+
+// Helper to group contributions by ISA type and provider
+const groupContributions = (contributions: ISAContribution[]) => {
+  const grouped: Record<string, { providers: Record<string, { contributed: number; balance: number }>, total: number }> = {
+    cash: { providers: {}, total: 0 },
+    stocks_shares: { providers: {}, total: 0 },
+    lifetime: { providers: {}, total: 0 },
+    innovative_finance: { providers: {}, total: 0 },
+  };
+
+  contributions.forEach(contribution => {
+    const type = contribution.isaType;
+    if (!grouped[type].providers[contribution.provider]) {
+      grouped[type].providers[contribution.provider] = { contributed: 0, balance: 0 };
+    }
+    grouped[type].providers[contribution.provider].contributed += contribution.amount;
+    grouped[type].providers[contribution.provider].balance += contribution.amount;
+    grouped[type].total += contribution.amount;
+  });
+
+  return grouped;
+};
 
 export default function AnalyticsScreen() {
+  const [contributions, setContributions] = useState<ISAContribution[]>([]);
+
+  // Load saved ISA data on mount
+  useEffect(() => {
+    loadISAData();
+  }, []);
+
+  const loadISAData = async () => {
+    try {
+      const savedData = await AsyncStorage.getItem(CONTRIBUTIONS_STORAGE_KEY);
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        setContributions(parsed);
+      }
+    } catch (error) {
+      console.error('Error loading contributions:', error);
+    }
+  };
+
+  // Filter contributions by current tax year
+  const currentTaxYear = getCurrentTaxYear();
+  const filteredContributions = contributions.filter(contribution =>
+    isDateInTaxYear(new Date(contribution.date), currentTaxYear)
+  );
+
+  const groupedISAs = groupContributions(filteredContributions);
+  const totalSaved = Object.values(groupedISAs).reduce((s, i) => s + i.total, 0);
+  const remaining = ISA_ANNUAL_ALLOWANCE - totalSaved;
+  const lifetimeBonus = groupedISAs.lifetime.total * 0.25;
+
+  // Calculate estimated tax saved (20% basic rate on contributions)
+  const taxSaved = totalSaved * 0.20;
+
   const chartData = {
     labels: ['Apr', 'Jun', 'Aug', 'Oct', 'Dec', 'Feb'],
-    datasets: [{ data: [0, 3000, 7000, 10500, 14000, 16000], color: () => Colors.gold }],
+    datasets: [{ data: [0, totalSaved * 0.2, totalSaved * 0.45, totalSaved * 0.65, totalSaved * 0.85, totalSaved], color: () => Colors.gold }],
   };
 
   return (
@@ -52,12 +118,12 @@ export default function AnalyticsScreen() {
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <GlassCard style={[styles.card, { flex: 1 }]} intensity="medium">
               <Ionicons name="trending-up" size={24} color={Colors.success} />
-              <Text style={styles.big}>£16,000</Text>
+              <Text style={styles.big}>{formatCurrency(totalSaved)}</Text>
               <Text style={styles.sub}>Total Saved</Text>
             </GlassCard>
             <GlassCard style={[styles.card, { flex: 1 }]} intensity="medium">
               <Ionicons name="calendar" size={24} color={Colors.info} />
-              <Text style={styles.big}>£4,000</Text>
+              <Text style={styles.big}>{formatCurrency(remaining)}</Text>
               <Text style={styles.sub}>Remaining</Text>
             </GlassCard>
           </View>
@@ -65,12 +131,12 @@ export default function AnalyticsScreen() {
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <GlassCard style={[styles.card, { flex: 1 }]} intensity="medium">
               <Ionicons name="shield-checkmark" size={24} color={Colors.gold} />
-              <Text style={styles.big}>£1,200</Text>
+              <Text style={styles.big}>{formatCurrency(taxSaved)}</Text>
               <Text style={styles.sub}>Tax Saved</Text>
             </GlassCard>
             <GlassCard style={[styles.card, { flex: 1 }]} intensity="medium">
               <Ionicons name="flash" size={24} color={ISA_INFO.lifetime.color} />
-              <Text style={styles.big}>£750</Text>
+              <Text style={styles.big}>{formatCurrency(lifetimeBonus)}</Text>
               <Text style={styles.sub}>Gov Bonus</Text>
             </GlassCard>
           </View>
@@ -78,44 +144,96 @@ export default function AnalyticsScreen() {
           <Text style={styles.section}>ISA Breakdown</Text>
 
           <GlassCard style={styles.card} intensity="dark">
-            <View style={styles.breakdown}>
-              <View style={styles.brow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.bname}>Cash ISA</Text>
-                  <Text style={styles.sub}>NatWest</Text>
+            {/* Cash ISA */}
+            {groupedISAs.cash.total > 0 && (
+              <View style={styles.breakdown}>
+                <View style={styles.brow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.bname}>{ISA_INFO.cash.name}</Text>
+                    <Text style={styles.sub}>
+                      {Object.keys(groupedISAs.cash.providers).join(', ') || 'No providers'}
+                    </Text>
+                  </View>
+                  <Text style={styles.bval}>{formatCurrency(groupedISAs.cash.total)}</Text>
                 </View>
-                <Text style={styles.bval}>£5,000</Text>
+                <View style={styles.bbar}>
+                  <View style={[styles.bprog, {
+                    width: `${(groupedISAs.cash.total / ISA_ANNUAL_ALLOWANCE) * 100}%`,
+                    backgroundColor: ISA_INFO.cash.color
+                  }]} />
+                </View>
               </View>
-              <View style={styles.bbar}>
-                <View style={[styles.bprog, { width: '25%', backgroundColor: '#00C9FF' }]} />
-              </View>
-            </View>
+            )}
 
-            <View style={styles.breakdown}>
-              <View style={styles.brow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.bname}>Stocks & Shares</Text>
-                  <Text style={styles.sub}>Vanguard</Text>
+            {/* Stocks & Shares ISA */}
+            {groupedISAs.stocks_shares.total > 0 && (
+              <View style={styles.breakdown}>
+                <View style={styles.brow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.bname}>{ISA_INFO.stocks_shares.name}</Text>
+                    <Text style={styles.sub}>
+                      {Object.keys(groupedISAs.stocks_shares.providers).join(', ') || 'No providers'}
+                    </Text>
+                  </View>
+                  <Text style={styles.bval}>{formatCurrency(groupedISAs.stocks_shares.total)}</Text>
                 </View>
-                <Text style={styles.bval}>£8,000</Text>
+                <View style={styles.bbar}>
+                  <View style={[styles.bprog, {
+                    width: `${(groupedISAs.stocks_shares.total / ISA_ANNUAL_ALLOWANCE) * 100}%`,
+                    backgroundColor: ISA_INFO.stocks_shares.color
+                  }]} />
+                </View>
               </View>
-              <View style={styles.bbar}>
-                <View style={[styles.bprog, { width: '40%', backgroundColor: Colors.gold }]} />
-              </View>
-            </View>
+            )}
 
-            <View style={styles.breakdown}>
-              <View style={styles.brow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.bname}>Lifetime ISA</Text>
-                  <Text style={styles.sub}>Moneybox</Text>
+            {/* Lifetime ISA */}
+            {groupedISAs.lifetime.total > 0 && (
+              <View style={styles.breakdown}>
+                <View style={styles.brow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.bname}>{ISA_INFO.lifetime.name}</Text>
+                    <Text style={styles.sub}>
+                      {Object.keys(groupedISAs.lifetime.providers).join(', ') || 'No providers'}
+                    </Text>
+                  </View>
+                  <Text style={styles.bval}>{formatCurrency(groupedISAs.lifetime.total)}</Text>
                 </View>
-                <Text style={styles.bval}>£3,000</Text>
+                <View style={styles.bbar}>
+                  <View style={[styles.bprog, {
+                    width: `${(groupedISAs.lifetime.total / ISA_ANNUAL_ALLOWANCE) * 100}%`,
+                    backgroundColor: ISA_INFO.lifetime.color
+                  }]} />
+                </View>
               </View>
-              <View style={styles.bbar}>
-                <View style={[styles.bprog, { width: '15%', backgroundColor: '#00FF87' }]} />
+            )}
+
+            {/* Innovative Finance ISA (IFISA) */}
+            {groupedISAs.innovative_finance.total > 0 && (
+              <View style={styles.breakdown}>
+                <View style={styles.brow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.bname}>{ISA_INFO.innovative_finance.name}</Text>
+                    <Text style={styles.sub}>
+                      {Object.keys(groupedISAs.innovative_finance.providers).join(', ') || 'No providers'}
+                    </Text>
+                  </View>
+                  <Text style={styles.bval}>{formatCurrency(groupedISAs.innovative_finance.total)}</Text>
+                </View>
+                <View style={styles.bbar}>
+                  <View style={[styles.bprog, {
+                    width: `${(groupedISAs.innovative_finance.total / ISA_ANNUAL_ALLOWANCE) * 100}%`,
+                    backgroundColor: ISA_INFO.innovative_finance.color
+                  }]} />
+                </View>
               </View>
-            </View>
+            )}
+
+            {/* Show message if no ISAs */}
+            {totalSaved === 0 && (
+              <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+                <Text style={styles.sub}>No ISA contributions yet</Text>
+              </View>
+            )}
           </GlassCard>
 
           <Text style={styles.section}>Historical Performance</Text>
