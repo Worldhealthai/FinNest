@@ -9,7 +9,7 @@ import GlassCard from '@/components/GlassCard';
 import AddISAContributionModal, { ISAContribution } from '@/components/AddISAContributionModal';
 import { Colors, Spacing, Typography } from '@/constants/theme';
 import { ISA_INFO, ISA_ANNUAL_ALLOWANCE, LIFETIME_ISA_MAX, getDaysUntilTaxYearEnd, formatCurrency, getTaxYearDates, calculateFlexibleISA } from '@/constants/isaData';
-import { getCurrentTaxYear, getAvailableTaxYears, isDateInTaxYear, getTaxYearLabel, type TaxYear } from '@/utils/taxYear';
+import { getCurrentTaxYear, isDateInTaxYear } from '@/utils/taxYear';
 
 const CONTRIBUTIONS_STORAGE_KEY = '@finnest_contributions';
 
@@ -38,12 +38,11 @@ const groupContributions = (contributions: ISAContribution[]) => {
 export default function DashboardScreen() {
   const [contributions, setContributions] = useState<ISAContribution[]>([]);
   const [expandedISA, setExpandedISA] = useState<string | null>(null);
-  const [selectedTaxYear, setSelectedTaxYear] = useState<TaxYear>(getCurrentTaxYear());
-  const [availableTaxYears] = useState<TaxYear[]>(getAvailableTaxYears(5, 0));
 
-  // Filter contributions by selected tax year
+  // Filter contributions by current tax year only
+  const currentTaxYear = getCurrentTaxYear();
   const filteredContributions = contributions.filter(contribution =>
-    isDateInTaxYear(new Date(contribution.date), selectedTaxYear)
+    isDateInTaxYear(new Date(contribution.date), currentTaxYear)
   );
 
   const groupedISAs = groupContributions(filteredContributions);
@@ -213,38 +212,6 @@ export default function DashboardScreen() {
             </View>
             <Image source={require('@/assets/logo.png')} style={styles.logo} resizeMode="contain" />
           </View>
-
-          {/* Tax Year Selector Tabs */}
-          <GlassCard style={[styles.card, { marginBottom: Spacing.md }]} intensity="dark">
-            <Text style={[styles.label, { marginBottom: 12 }]}>Select Tax Year</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 8 }}
-            >
-              {availableTaxYears.map((year) => {
-                const isSelected = year.startYear === selectedTaxYear.startYear;
-                return (
-                  <Pressable
-                    key={year.startYear}
-                    onPress={() => setSelectedTaxYear(year)}
-                    style={({ pressed }) => [
-                      styles.taxYearTab,
-                      isSelected && styles.taxYearTabActive,
-                      { opacity: pressed ? 0.7 : 1 }
-                    ]}
-                  >
-                    <Text style={[
-                      styles.taxYearTabText,
-                      isSelected && styles.taxYearTabTextActive
-                    ]}>
-                      {getTaxYearLabel(year)}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          </GlassCard>
 
           {days <= 30 && (
             <GlassCard style={styles.card} intensity="dark">
@@ -727,25 +694,4 @@ const styles = StyleSheet.create({
   resultCard: { padding: Spacing.md, borderRadius: 8, borderWidth: 1, borderColor: Colors.glassLight },
   resultTitle: { fontSize: Typography.sizes.sm, color: Colors.white, fontWeight: Typography.weights.bold },
   divider: { height: 1, backgroundColor: Colors.glassLight, marginVertical: 12 },
-  taxYearTab: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    backgroundColor: Colors.glassLight,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  taxYearTabActive: {
-    backgroundColor: Colors.gold + '20',
-    borderColor: Colors.gold,
-  },
-  taxYearTabText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    fontWeight: Typography.weights.semibold,
-  },
-  taxYearTabTextActive: {
-    color: Colors.gold,
-    fontWeight: Typography.weights.bold,
-  },
 });
