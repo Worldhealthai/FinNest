@@ -97,6 +97,16 @@ export default function ProfileScreen() {
   const progressPercentage = Math.min((totalContributed / ISA_ANNUAL_ALLOWANCE) * 100, 100);
   const progressMessage = getProgressMessage(progressPercentage);
 
+  // Calculate stats for profile card
+  const activeContributions = contributions.filter(c => !c.deleted);
+  const uniqueAccounts = new Set(
+    activeContributions.map(c => `${c.provider}-${c.isaType}`)
+  ).size;
+  const totalAllTime = activeContributions.reduce((sum, c) => sum + c.amount, 0);
+  // Simplified tax benefit: Assume 4% annual growth, 20% tax rate
+  const estimatedAnnualGrowth = totalAllTime * 0.04;
+  const estimatedTaxSaved = estimatedAnnualGrowth * 0.2;
+
   return (
     <View style={styles.container}>
       <AnimatedBackground />
@@ -145,20 +155,20 @@ export default function ProfileScreen() {
             <View style={styles.statsRow}>
               <View style={styles.stat}>
                 <Ionicons name="wallet" size={20} color={Colors.gold} />
-                <Text style={styles.statValue}>3</Text>
+                <Text style={styles.statValue}>{uniqueAccounts}</Text>
                 <Text style={styles.statLabel}>ISA Accounts</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.stat}>
                 <Ionicons name="trending-up" size={20} color={Colors.success} />
-                <Text style={styles.statValue}>£16K</Text>
+                <Text style={styles.statValue}>{formatCurrency(totalAllTime)}</Text>
                 <Text style={styles.statLabel}>Total Saved</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.stat}>
                 <Ionicons name="shield-checkmark" size={20} color={Colors.info} />
-                <Text style={styles.statValue}>£1.2K</Text>
-                <Text style={styles.statLabel}>Tax Saved</Text>
+                <Text style={styles.statValue}>{formatCurrency(estimatedTaxSaved)}</Text>
+                <Text style={styles.statLabel}>Tax Saved (Est.)</Text>
               </View>
             </View>
 
