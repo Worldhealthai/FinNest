@@ -39,7 +39,7 @@ export default function DashboardScreen() {
   const [contributions, setContributions] = useState<ISAContribution[]>([]);
   const [expandedISA, setExpandedISA] = useState<string | null>(null);
   const [selectedTaxYear, setSelectedTaxYear] = useState<TaxYear>(getCurrentTaxYear());
-  const [availableTaxYears] = useState<TaxYear[]>(getAvailableTaxYears(5));
+  const [availableTaxYears] = useState<TaxYear[]>(getAvailableTaxYears(5, 0));
 
   // Filter contributions by selected tax year
   const filteredContributions = contributions.filter(contribution =>

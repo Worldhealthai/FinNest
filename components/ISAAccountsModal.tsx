@@ -37,12 +37,21 @@ interface ISAAccount {
   openedDate: string;
 }
 
+interface ISAContribution {
+  id: string;
+  isaType: string;
+  provider: string;
+  amount: number;
+  date: string;
+}
+
 interface ISAAccountsModalProps {
   visible: boolean;
   onClose: () => void;
+  contributions?: ISAContribution[];
 }
 
-export default function ISAAccountsModal({ visible, onClose }: ISAAccountsModalProps) {
+export default function ISAAccountsModal({ visible, onClose, contributions = [] }: ISAAccountsModalProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [accounts, setAccounts] = useState<ISAAccount[]>([]);
 
@@ -169,6 +178,10 @@ export default function ISAAccountsModal({ visible, onClose }: ISAAccountsModalP
   };
 
   const getTotalContributions = () => {
+    // Use dashboard contributions if provided, otherwise fall back to accounts
+    if (contributions.length > 0) {
+      return contributions.reduce((sum, contribution) => sum + contribution.amount, 0);
+    }
     return accounts.reduce((sum, acc) => sum + acc.contributionsThisYear, 0);
   };
 

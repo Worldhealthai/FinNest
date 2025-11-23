@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import GlassCard from '@/components/GlassCard';
 import PersonalInfoModal from '@/components/PersonalInfoModal';
@@ -18,15 +19,45 @@ import ISAAccountsModal from '@/components/ISAAccountsModal';
 import SecurityModal from '@/components/SecurityModal';
 import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
 
+const CONTRIBUTIONS_STORAGE_KEY = '@finnest_contributions';
+
+interface ISAContribution {
+  id: string;
+  isaType: string;
+  provider: string;
+  amount: number;
+  date: string;
+}
+
 export default function ProfileScreen() {
-  const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
-  const [biometricsEnabled, setBiometricsEnabled] = React.useState(true);
-  const [darkModeEnabled, setDarkModeEnabled] = React.useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [biometricsEnabled, setBiometricsEnabled] = useState(true);
+  const [darkModeEnabled, setDarkModeEnabled] = useState(true);
 
   // Modal states
-  const [personalInfoVisible, setPersonalInfoVisible] = React.useState(false);
-  const [isaAccountsVisible, setIsaAccountsVisible] = React.useState(false);
-  const [securityVisible, setSecurityVisible] = React.useState(false);
+  const [personalInfoVisible, setPersonalInfoVisible] = useState(false);
+  const [isaAccountsVisible, setIsaAccountsVisible] = useState(false);
+  const [securityVisible, setSecurityVisible] = useState(false);
+
+  // Contributions data for ISA Accounts Modal
+  const [contributions, setContributions] = useState<ISAContribution[]>([]);
+
+  // Load contributions when component mounts
+  useEffect(() => {
+    loadContributions();
+  }, []);
+
+  const loadContributions = async () => {
+    try {
+      const savedData = await AsyncStorage.getItem(CONTRIBUTIONS_STORAGE_KEY);
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        setContributions(parsed);
+      }
+    } catch (error) {
+      console.error('Error loading contributions:', error);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -343,6 +374,7 @@ export default function ProfileScreen() {
       <ISAAccountsModal
         visible={isaAccountsVisible}
         onClose={() => setIsaAccountsVisible(false)}
+        contributions={contributions}
       />
       <SecurityModal
         visible={securityVisible}
