@@ -228,6 +228,7 @@ const styles = StyleSheet.create({
     fontWeight: Typography.weights.bold,
     marginBottom: Spacing.md,
     letterSpacing: 0.5,
+    textAlign: 'left',
   },
   subsectionTitle: {
     fontSize: Typography.sizes.md,
