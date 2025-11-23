@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     fontWeight: Typography.weights.bold,
     lineHeight: 22,
     marginBottom: Spacing.md,
-    textAlign: 'center',
+    textAlign: 'left',
   },
   contactText: {
     fontSize: Typography.sizes.sm,
