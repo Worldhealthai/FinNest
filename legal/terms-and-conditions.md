@@ -237,10 +237,10 @@ Your use of FinNest is also governed by our Privacy Policy, which complies with 
 ## 13. Governing Law and Jurisdiction
 
 ### 13.1 Governing Law
-These Terms shall be governed by and construed in accordance with the laws of England and Wales.
+These Terms shall be governed by and construed in accordance with the laws of the United Kingdom.
 
 ### 13.2 Dispute Resolution
-Any disputes arising from these Terms or your use of FinNest shall be subject to the exclusive jurisdiction of the courts of England and Wales.
+Any disputes arising from these Terms or your use of FinNest shall be subject to the exclusive jurisdiction of the courts of the United Kingdom.
 
 **[LEGAL REVIEW NEEDED: Consider alternative dispute resolution provisions]**
 
