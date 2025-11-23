@@ -81,6 +81,72 @@ const calculateHistoricalPerformance = (contributions: ISAContribution[]) => {
   return years;
 };
 
+// Helper to calculate contribution trend data for the chart
+const calculateContributionTrend = (contributions: ISAContribution[]) => {
+  if (contributions.length === 0) {
+    return { labels: [], data: [] };
+  }
+
+  const currentTaxYear = getCurrentTaxYear();
+
+  // Group contributions by tax year
+  const byTaxYear: Record<string, number> = {};
+
+  contributions.forEach(contribution => {
+    const taxYear = getTaxYearFromDate(new Date(contribution.date));
+    const yearLabel = taxYear.label;
+
+    if (!byTaxYear[yearLabel]) {
+      byTaxYear[yearLabel] = 0;
+    }
+    byTaxYear[yearLabel] += contribution.amount;
+  });
+
+  // Get all tax years from oldest to current
+  const allYears = Object.keys(byTaxYear).sort();
+
+  // If we have less than 4 years, pad with recent years including current
+  const yearsToShow: string[] = [];
+  const dataPoints: number[] = [];
+
+  if (allYears.length === 0) {
+    // No data, show last 4 years with zeros
+    for (let i = 3; i >= 0; i--) {
+      const year = getTaxYearBoundaries(currentTaxYear.startYear - i);
+      yearsToShow.push(year.label);
+      dataPoints.push(0);
+    }
+  } else if (allYears.length < 4) {
+    // Pad with recent years up to 4 total
+    const yearsNeeded = 4 - allYears.length;
+    for (let i = yearsNeeded; i > 0; i--) {
+      const year = getTaxYearBoundaries(currentTaxYear.startYear - allYears.length - i + 1);
+      yearsToShow.push(year.label);
+      dataPoints.push(0);
+    }
+    // Add actual years
+    allYears.forEach(year => {
+      yearsToShow.push(year);
+      dataPoints.push(byTaxYear[year]);
+    });
+  } else {
+    // Show last 4 years of actual data
+    const lastFourYears = allYears.slice(-4);
+    lastFourYears.forEach(year => {
+      yearsToShow.push(year);
+      dataPoints.push(byTaxYear[year]);
+    });
+  }
+
+  // Format labels to show short form (e.g., "21/22")
+  const labels = yearsToShow.map(year => {
+    const match = year.match(/20(\d{2})\/(\d{2})/);
+    return match ? `${match[1]}/${match[2]}` : year;
+  });
+
+  return { labels, data: dataPoints };
+};
+
 export default function AnalyticsScreen() {
   const [contributions, setContributions] = useState<ISAContribution[]>([]);
 
@@ -129,9 +195,15 @@ export default function AnalyticsScreen() {
   // Calculate historical performance data
   const historicalPerformance = calculateHistoricalPerformance(contributions);
 
+  // Calculate contribution trend for the chart
+  const contributionTrend = calculateContributionTrend(contributions);
+
   const chartData = {
-    labels: ['Apr', 'Jun', 'Aug', 'Oct', 'Dec', 'Feb'],
-    datasets: [{ data: [0, totalSaved * 0.2, totalSaved * 0.45, totalSaved * 0.65, totalSaved * 0.85, totalSaved], color: () => Colors.gold }],
+    labels: contributionTrend.labels.length > 0 ? contributionTrend.labels : ['21/22', '22/23', '23/24', '24/25'],
+    datasets: [{
+      data: contributionTrend.data.length > 0 ? contributionTrend.data : [0, 0, 0, 0],
+      color: () => Colors.gold
+    }],
   };
 
   return (
@@ -142,7 +214,7 @@ export default function AnalyticsScreen() {
           <Text style={styles.title}>ISA Summary</Text>
 
           <GlassCard style={styles.card} intensity="dark">
-            <Text style={styles.label}>Contribution Progress</Text>
+            <Text style={styles.label}>Contribution History</Text>
             <LineChart
               data={chartData}
               width={width - 64}
