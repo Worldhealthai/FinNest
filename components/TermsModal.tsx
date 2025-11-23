@@ -9,8 +9,6 @@ interface TermsModalProps {
 }
 
 export default function TermsModal({ visible, onClose }: TermsModalProps) {
-  const renderDivider = () => <View style={styles.divider} />;
-
   return (
     <Modal
       visible={visible}
@@ -20,128 +18,143 @@ export default function TermsModal({ visible, onClose }: TermsModalProps) {
     >
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={true}>
         <View style={styles.content}>
-          <View style={styles.header}>
-            <Text style={styles.lastUpdated}>Last Updated: January 2025</Text>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>1. Introduction</Text>
-            <Text style={styles.paragraph}>
-              Welcome to FinNest. These Terms and Conditions govern your use of the FinNest mobile application and related services.
-            </Text>
-            <Text style={styles.paragraph}>
-              By accessing or using FinNest, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use the Service.
+          {/* Header Section */}
+          <View style={styles.headerSection}>
+            <Text style={styles.lastUpdated}>Last Updated: November 2025</Text>
+            <Text style={styles.introText}>
+              Welcome to FinNest. By using our services, you agree to these Terms & Conditions. Please read them carefully.
             </Text>
           </View>
-          {renderDivider()}
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>2. Service Description</Text>
-            <Text style={styles.paragraph}>
-              FinNest is an educational tracking tool designed to help UK users monitor their Individual Savings Account (ISA) contributions and allowances.
-            </Text>
-
-            <View style={styles.infoBox}>
-              <Text style={styles.subsectionTitle}>What FinNest Does</Text>
-              <Text style={styles.bulletPoint}>• Track ISA contributions across multiple providers</Text>
-              <Text style={styles.bulletPoint}>• Calculate remaining annual allowance</Text>
-              <Text style={styles.bulletPoint}>• Display historical contribution data</Text>
-              <Text style={styles.bulletPoint}>• Provide educational information about ISA types</Text>
-            </View>
-
-            <View style={styles.warningBox}>
-              <Text style={styles.subsectionTitle}>What FinNest Does NOT Do</Text>
-              <Text style={styles.bulletPoint}>• FinNest does NOT provide financial advice</Text>
-              <Text style={styles.bulletPoint}>• FinNest does NOT manage or hold your ISA accounts</Text>
-              <Text style={styles.bulletPoint}>• FinNest does NOT execute financial transactions</Text>
-              <Text style={styles.bulletPoint}>• FinNest is NOT regulated by the Financial Conduct Authority (FCA)</Text>
-            </View>
-          </View>
-          {renderDivider()}
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>3. Important Disclaimers</Text>
-            <View style={styles.disclaimerBox}>
-              <Text style={styles.highlight}>
-                THE SERVICE IS FOR INFORMATIONAL AND TRACKING PURPOSES ONLY.
-              </Text>
-              <Text style={styles.disclaimerText}>
-                All information provided through FinNest is for general educational purposes. We do not provide investment advice, tax advice, or financial planning services.
-              </Text>
-              <Text style={styles.disclaimerText}>
-                You should consult with a qualified financial advisor before making any financial decisions.
+          {/* Section 1 */}
+          <View style={styles.sectionContainer}>
+            <View style={styles.sectionBox}>
+              <Text style={styles.sectionTitle}>1. Acceptance of Terms</Text>
+              <Text style={styles.paragraph}>
+                By accessing and using FinNest, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
               </Text>
             </View>
           </View>
-          {renderDivider()}
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>4. User Responsibilities</Text>
-            <Text style={styles.paragraph}>
-              You are solely responsible for entering accurate contribution amounts, selecting correct ISA types and providers, and verifying all calculations independently.
-            </Text>
-            <Text style={styles.paragraph}>
-              You must be at least 18 years old to use FinNest.
-            </Text>
-
-            <Text style={styles.subsectionTitle}>Prohibited Use</Text>
-            <Text style={styles.bulletPoint}>• Use the Service for illegal purposes</Text>
-            <Text style={styles.bulletPoint}>• Attempt to gain unauthorized access to our systems</Text>
-            <Text style={styles.bulletPoint}>• Reverse engineer or disassemble the Service</Text>
-            <Text style={styles.bulletPoint}>• Violate any applicable laws or regulations</Text>
+          {/* Section 2 */}
+          <View style={styles.sectionContainer}>
+            <View style={styles.sectionBox}>
+              <Text style={styles.sectionTitle}>2. Description of Service</Text>
+              <Text style={styles.paragraph}>
+                FinNest provides a wealth management platform for tracking ISAs, investments, and financial goals. The service is provided "as is" and FinNest reserves the right to modify, suspend, or discontinue the service at any time.
+              </Text>
+            </View>
           </View>
-          {renderDivider()}
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>5. Data Storage</Text>
-            <Text style={styles.paragraph}>
-              All ISA contribution data you enter is stored locally on your device using AsyncStorage. We do not store your financial data on our servers or share your contribution data with third parties.
-            </Text>
+          {/* Section 3 */}
+          <View style={styles.sectionContainer}>
+            <View style={styles.sectionBox}>
+              <Text style={styles.sectionTitle}>3. User Accounts</Text>
+              <Text style={styles.paragraph}>
+                You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree to notify FinNest immediately of any unauthorized use of your account.
+              </Text>
+            </View>
           </View>
-          {renderDivider()}
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>6. Limitation of Liability</Text>
-            <Text style={styles.paragraph}>
-              To the fullest extent permitted by law, we shall not be liable for any financial losses resulting from your use of the Service, decisions made based on information in FinNest, or errors in calculations or data entry.
-            </Text>
-            <Text style={styles.paragraph}>
-              We do not exclude or limit liability for death or personal injury caused by our negligence, fraud or fraudulent misrepresentation, or any other liability that cannot be excluded under UK law.
-            </Text>
+          {/* Section 4 */}
+          <View style={styles.sectionContainer}>
+            <View style={styles.sectionBox}>
+              <Text style={styles.sectionTitle}>4. Financial Information</Text>
+              <Text style={styles.paragraph}>
+                The information provided through FinNest is for informational purposes only and should not be considered as financial advice. You should consult with qualified financial advisors before making investment decisions.
+              </Text>
+            </View>
           </View>
-          {renderDivider()}
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>7. Changes to the Service</Text>
-            <Text style={styles.paragraph}>
-              We reserve the right to modify or discontinue the Service at any time, change features or functionality, and update ISA allowance amounts and tax year information.
-            </Text>
+          {/* Section 5 */}
+          <View style={styles.sectionContainer}>
+            <View style={styles.sectionBox}>
+              <Text style={styles.sectionTitle}>5. Privacy and Data Protection</Text>
+              <Text style={styles.paragraph}>
+                Your privacy is important to us. We collect, use, and protect your personal information in accordance with our Privacy Policy and applicable data protection laws including GDPR and UK Data Protection Act 2018.
+              </Text>
+            </View>
           </View>
-          {renderDivider()}
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>8. Governing Law</Text>
-            <Text style={styles.paragraph}>
-              These Terms shall be governed by and construed in accordance with the laws of the United Kingdom.
-            </Text>
+          {/* Section 6 */}
+          <View style={styles.sectionContainer}>
+            <View style={styles.sectionBox}>
+              <Text style={styles.sectionTitle}>6. Intellectual Property</Text>
+              <Text style={styles.paragraph}>
+                All content, features, and functionality of FinNest are owned by FinNest and are protected by international copyright, trademark, and other intellectual property laws.
+              </Text>
+            </View>
           </View>
-          {renderDivider()}
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>9. Contact Information</Text>
-            <Text style={styles.paragraph}>
-              If you have questions about these Terms, please contact us at support@finnest.app
-            </Text>
+          {/* Section 7 */}
+          <View style={styles.sectionContainer}>
+            <View style={styles.sectionBox}>
+              <Text style={styles.sectionTitle}>7. Limitation of Liability</Text>
+              <Text style={styles.paragraph}>
+                FinNest shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use or inability to use the service. Our total liability shall not exceed the amount paid by you, if any, for accessing the service.
+              </Text>
+            </View>
           </View>
-          {renderDivider()}
 
-          <View style={styles.acknowledgment}>
-            <Text style={styles.acknowledgmentTitle}>BY USING FINNEST, YOU ACKNOWLEDGE THAT:</Text>
-            <View style={styles.acknowledgmentContent}>
-              <Text style={styles.acknowledgmentBullet}>• You have read and understood these Terms</Text>
-              <Text style={styles.acknowledgmentBullet}>• You agree to be bound by these Terms</Text>
-              <Text style={styles.acknowledgmentBullet}>• FinNest is not a regulated financial service</Text>
-              <Text style={styles.acknowledgmentBullet}>• You will seek professional advice for financial decisions</Text>
+          {/* Section 8 */}
+          <View style={styles.sectionContainer}>
+            <View style={styles.sectionBox}>
+              <Text style={styles.sectionTitle}>8. Governing Law</Text>
+              <Text style={styles.paragraph}>
+                These Terms shall be governed by and construed in accordance with the laws of the United Kingdom.
+              </Text>
+            </View>
+          </View>
+
+          {/* Section 9 */}
+          <View style={styles.sectionContainer}>
+            <View style={styles.sectionBox}>
+              <Text style={styles.sectionTitle}>9. ISA Regulations</Text>
+              <Text style={styles.paragraph}>
+                ISA contributions are subject to HMRC regulations and annual allowance limits. You are responsible for ensuring your contributions comply with current ISA rules. FinNest provides tracking tools but does not guarantee compliance.
+              </Text>
+            </View>
+          </View>
+
+          {/* Section 10 */}
+          <View style={styles.sectionContainer}>
+            <View style={styles.sectionBox}>
+              <Text style={styles.sectionTitle}>10. Third-Party Services</Text>
+              <Text style={styles.paragraph}>
+                FinNest may integrate with third-party financial institutions and services. We are not responsible for the availability, accuracy, or content of these third-party services.
+              </Text>
+            </View>
+          </View>
+
+          {/* Section 11 */}
+          <View style={styles.sectionContainer}>
+            <View style={styles.sectionBox}>
+              <Text style={styles.sectionTitle}>11. Termination</Text>
+              <Text style={styles.paragraph}>
+                We reserve the right to terminate or suspend your account at any time without notice for conduct that we believe violates these Terms or is harmful to other users, us, or third parties.
+              </Text>
+            </View>
+          </View>
+
+          {/* Section 12 */}
+          <View style={styles.sectionContainer}>
+            <View style={styles.sectionBox}>
+              <Text style={styles.sectionTitle}>12. Changes to Terms</Text>
+              <Text style={styles.paragraph}>
+                We reserve the right to modify these Terms at any time. We will notify users of any material changes. Your continued use of FinNest after such modifications constitutes acceptance of the updated Terms.
+              </Text>
+            </View>
+          </View>
+
+          {/* Section 13 */}
+          <View style={styles.sectionContainer}>
+            <View style={styles.sectionBox}>
+              <Text style={styles.sectionTitle}>13. Contact Information</Text>
+              <Text style={styles.paragraph}>
+                If you have any questions about these Terms & Conditions, please contact us at:
+              </Text>
+              <Text style={styles.contactText}>Email: support@finnest.app</Text>
+              <Text style={styles.contactText}>Address: FinNest Ltd, London, United Kingdom</Text>
             </View>
           </View>
         </View>
@@ -157,25 +170,40 @@ const styles = StyleSheet.create({
   content: {
     paddingBottom: Spacing.xl,
   },
-  header: {
-    paddingBottom: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.gold + '20',
-    marginBottom: Spacing.md,
+  headerSection: {
+    paddingBottom: Spacing.lg,
+    marginBottom: Spacing.xl,
+    borderBottomWidth: 2,
+    borderBottomColor: Colors.gold + '30',
   },
   lastUpdated: {
     fontSize: Typography.sizes.sm,
     color: Colors.mediumGray,
     fontStyle: 'italic',
     textAlign: 'center',
+    marginBottom: Spacing.md,
   },
-  section: {
-    marginBottom: Spacing.sm,
+  introText: {
+    fontSize: Typography.sizes.md,
+    color: Colors.lightGray,
+    textAlign: 'center',
+    lineHeight: 22,
+    paddingHorizontal: Spacing.sm,
   },
-  divider: {
-    height: 1,
-    backgroundColor: Colors.lightGray + '20',
-    marginVertical: Spacing.lg,
+  sectionContainer: {
+    // Outer transparent/glass box
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 16,
+    padding: Spacing.sm,
+    marginBottom: Spacing.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  sectionBox: {
+    // Inner grey box
+    backgroundColor: 'rgba(45, 45, 45, 0.8)',
+    borderRadius: 12,
+    padding: Spacing.lg,
   },
   sectionTitle: {
     fontSize: Typography.sizes.lg,
@@ -184,100 +212,17 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
     letterSpacing: 0.5,
   },
-  subsectionTitle: {
-    fontSize: Typography.sizes.md,
-    color: Colors.white,
-    fontWeight: Typography.weights.semibold,
-    marginBottom: Spacing.sm,
-    marginTop: Spacing.xs,
-  },
   paragraph: {
     fontSize: Typography.sizes.sm,
     color: Colors.lightGray,
-    lineHeight: 24,
-    marginBottom: Spacing.md,
-    textAlign: 'justify',
+    lineHeight: 22,
+    textAlign: 'left',
   },
-  bulletPoint: {
+  contactText: {
     fontSize: Typography.sizes.sm,
     color: Colors.lightGray,
-    lineHeight: 24,
-    marginBottom: Spacing.xs,
-    paddingLeft: Spacing.sm,
-  },
-  infoBox: {
-    backgroundColor: Colors.gold + '10',
-    padding: Spacing.md,
-    borderRadius: 12,
-    marginTop: Spacing.md,
-    marginBottom: Spacing.md,
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.gold,
-  },
-  warningBox: {
-    backgroundColor: '#FF6B6B' + '10',
-    padding: Spacing.md,
-    borderRadius: 12,
-    marginTop: Spacing.md,
-    borderLeftWidth: 3,
-    borderLeftColor: '#FF6B6B',
-  },
-  disclaimerBox: {
-    backgroundColor: Colors.gold + '15',
-    padding: Spacing.lg,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.gold + '40',
-    marginTop: Spacing.sm,
-  },
-  disclaimerText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    lineHeight: 24,
-    marginBottom: Spacing.sm,
-  },
-  highlight: {
-    fontSize: Typography.sizes.md,
-    color: Colors.gold,
-    fontWeight: Typography.weights.bold,
-    lineHeight: 24,
-    marginBottom: Spacing.md,
-    textAlign: 'center',
-  },
-  acknowledgment: {
-    backgroundColor: Colors.glassDark,
-    padding: Spacing.lg,
-    borderRadius: 12,
-    marginTop: Spacing.md,
-    borderWidth: 2,
-    borderColor: Colors.gold + '60',
-    shadowColor: Colors.gold,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  acknowledgmentTitle: {
-    fontSize: Typography.sizes.md,
-    color: Colors.gold,
-    fontWeight: Typography.weights.bold,
-    marginBottom: Spacing.md,
-    textAlign: 'center',
-    letterSpacing: 0.5,
-  },
-  acknowledgmentContent: {
-    paddingTop: Spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: Colors.gold + '30',
-  },
-  acknowledgmentBullet: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.white,
-    lineHeight: 24,
-    marginBottom: Spacing.sm,
-    paddingLeft: Spacing.sm,
+    lineHeight: 22,
+    marginTop: Spacing.xs,
+    paddingLeft: Spacing.md,
   },
 });
