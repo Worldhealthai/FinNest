@@ -112,11 +112,11 @@ export default function PrivacyPolicyModal({ visible, onClose }: PrivacyPolicyMo
           <View style={styles.sectionContainer}>
             <View style={styles.sectionBox}>
               <Text style={styles.sectionTitle}>5. Data Sharing</Text>
-              <Text style={styles.highlight}>
-                We will NEVER sell, rent, or trade your personal information to third parties for marketing purposes.
-              </Text>
               <Text style={styles.paragraph}>
                 We may share limited data with trusted third-party service providers who assist us with analytics and app performance monitoring.
+              </Text>
+              <Text style={styles.highlight}>
+                We will NEVER sell, rent, or trade your personal information to third parties for marketing purposes.
               </Text>
             </View>
           </View>
