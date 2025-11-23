@@ -123,7 +123,7 @@ export default function ProfileScreen() {
         >
           {/* Simple Greeting with Logo */}
           <View style={styles.header}>
-            <Text style={styles.greeting}>{getGreeting()}</Text>
+            <Text style={styles.greeting}>{getGreeting()} 👋</Text>
             <Image source={require('@/assets/logo.png')} style={styles.logo} resizeMode="contain" />
           </View>
 
