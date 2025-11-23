@@ -18,6 +18,7 @@ import GlassCard from '@/components/GlassCard';
 import PersonalInfoModal from '@/components/PersonalInfoModal';
 import ISAAccountsModal from '@/components/ISAAccountsModal';
 import SecurityModal from '@/components/SecurityModal';
+import TermsModal from '@/components/TermsModal';
 import { ISAContribution } from '@/components/AddISAContributionModal';
 import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
 
@@ -32,6 +33,7 @@ export default function ProfileScreen() {
   const [personalInfoVisible, setPersonalInfoVisible] = React.useState(false);
   const [isaAccountsVisible, setIsaAccountsVisible] = React.useState(false);
   const [securityVisible, setSecurityVisible] = React.useState(false);
+  const [termsVisible, setTermsVisible] = React.useState(false);
 
   // Contributions state
   const [contributions, setContributions] = useState<ISAContribution[]>([]);
@@ -329,7 +331,7 @@ export default function ProfileScreen() {
             </GlassCard>
 
             <GlassCard style={styles.menuCard} intensity="medium">
-              <TouchableOpacity style={styles.menuItem}>
+              <TouchableOpacity style={styles.menuItem} onPress={() => setTermsVisible(true)}>
                 <View style={styles.menuLeft}>
                   <View style={[styles.menuIcon, { backgroundColor: Colors.gold + '30' }]}>
                     <Ionicons name="document-text-outline" size={20} color={Colors.gold} />
@@ -381,6 +383,10 @@ export default function ProfileScreen() {
       <SecurityModal
         visible={securityVisible}
         onClose={() => setSecurityVisible(false)}
+      />
+      <TermsModal
+        visible={termsVisible}
+        onClose={() => setTermsVisible(false)}
       />
     </View>
   );
