@@ -20,6 +20,8 @@ import ISAAccountsModal from '@/components/ISAAccountsModal';
 import SecurityModal from '@/components/SecurityModal';
 import { ISAContribution } from '@/components/AddISAContributionModal';
 import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
+import { ISA_ANNUAL_ALLOWANCE, formatCurrency } from '@/constants/isaData';
+import { getCurrentTaxYear, isDateInTaxYear } from '@/utils/taxYear';
 
 const CONTRIBUTIONS_STORAGE_KEY = '@finnest_contributions';
 
@@ -29,6 +31,23 @@ const getGreeting = () => {
   if (hour < 12) return 'Good Morning';
   if (hour < 18) return 'Good Afternoon';
   return 'Good Evening';
+};
+
+// Get motivational message based on progress percentage
+const getProgressMessage = (percentage: number) => {
+  if (percentage === 0) {
+    return "Start your ISA journey today and secure your financial future!";
+  } else if (percentage < 25) {
+    return "Great start! Keep building your tax-free savings.";
+  } else if (percentage < 50) {
+    return "You're making solid progress with your ISA contributions!";
+  } else if (percentage < 75) {
+    return "Excellent work! You're well on your way to maximizing your allowance.";
+  } else if (percentage < 100) {
+    return "Outstanding! You're using your allowance better than most UK savers.";
+  } else {
+    return "Amazing! You've maximized your ISA allowance for this tax year!";
+  }
 };
 
 export default function ProfileScreen() {
@@ -68,6 +87,15 @@ export default function ProfileScreen() {
       loadContributions();
     }, [])
   );
+
+  // Calculate real progress based on current tax year contributions
+  const currentTaxYear = getCurrentTaxYear();
+  const currentYearContributions = contributions.filter(
+    c => !c.deleted && isDateInTaxYear(new Date(c.date), currentTaxYear)
+  );
+  const totalContributed = currentYearContributions.reduce((sum, c) => sum + c.amount, 0);
+  const progressPercentage = Math.min((totalContributed / ISA_ANNUAL_ALLOWANCE) * 100, 100);
+  const progressMessage = getProgressMessage(progressPercentage);
 
   return (
     <View style={styles.container}>
@@ -138,17 +166,17 @@ export default function ProfileScreen() {
             <View style={styles.progressSection}>
               <View style={styles.progressHeader}>
                 <Text style={styles.progressTitle}>ISA Journey Progress</Text>
-                <Text style={styles.progressPercent}>80%</Text>
+                <Text style={styles.progressPercent}>{progressPercentage.toFixed(0)}%</Text>
               </View>
               <View style={styles.progressBar}>
                 <LinearGradient
                   colors={Colors.goldGradient}
-                  style={styles.progressFill}
+                  style={[styles.progressFill, { width: `${progressPercentage}%` }]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                 />
               </View>
-              <Text style={styles.progressSubtext}>You're using your allowance better than 78% of UK savers!</Text>
+              <Text style={styles.progressSubtext}>{progressMessage}</Text>
             </View>
           </GlassCard>
 
@@ -506,7 +534,6 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   progressFill: {
-    width: '80%',
     height: '100%',
     borderRadius: 4,
   },
