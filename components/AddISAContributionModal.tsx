@@ -24,6 +24,7 @@ import {
 } from '@/constants/isaData';
 import { searchProviders, getPopularProviders, ISAProvider } from '@/constants/isaProviders';
 import { getAvailableTaxYears, getTaxYearLabel, getTaxYearFromDate, type TaxYear } from '@/utils/taxYear';
+import { getISASetting, setISASetting } from '@/utils/isaSettings';
 
 const { width } = Dimensions.get('window');
 
@@ -47,6 +48,8 @@ export interface ISAContribution {
   amount: number;
   date: string;
   notes?: string;
+  deleted?: boolean;
+  deletedDate?: string;
 }
 
 export default function AddISAContributionModal({
@@ -67,6 +70,9 @@ export default function AddISAContributionModal({
   const [submittedContribution, setSubmittedContribution] = useState<ISAContribution | null>(null);
   const [availableTaxYears] = useState<TaxYear[]>(getAvailableTaxYears(5, 1)); // 5 previous + 1 future year
   const [selectedTaxYear, setSelectedTaxYear] = useState<TaxYear>(getTaxYearFromDate(new Date()));
+  const [showFlexibilityQuestion, setShowFlexibilityQuestion] = useState(false);
+  const [isFlexible, setIsFlexible] = useState<boolean | null>(null);
+  const [needsFlexibilityAnswer, setNeedsFlexibilityAnswer] = useState(false);
 
   const TOTAL_STEPS = 4;
 
@@ -85,6 +91,9 @@ export default function AddISAContributionModal({
       setProviderSearch('');
       setFilteredProviders(getPopularProviders());
       setSubmittedContribution(null);
+      setShowFlexibilityQuestion(false);
+      setIsFlexible(null);
+      setNeedsFlexibilityAnswer(false);
     }
   }, [visible]);
 
@@ -100,6 +109,9 @@ export default function AddISAContributionModal({
     setProviderSearch('');
     setFilteredProviders(getPopularProviders());
     setSubmittedContribution(null);
+    setShowFlexibilityQuestion(false);
+    setIsFlexible(null);
+    setNeedsFlexibilityAnswer(false);
   };
 
   const handleProviderSearch = (text: string) => {
@@ -154,8 +166,33 @@ export default function AddISAContributionModal({
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     console.log('=== handleSubmit called ===');
+
+    // Check if we need to ask about flexibility
+    const setting = await getISASetting(provider.trim(), selectedType);
+
+    if (!setting && !needsFlexibilityAnswer) {
+      // First time adding to this provider+type combo
+      // Show flexibility question
+      console.log('First time for this provider+type - showing flexibility question');
+      setShowFlexibilityQuestion(true);
+      setNeedsFlexibilityAnswer(true);
+      return; // Don't submit yet
+    }
+
+    // If we need an answer but haven't set it yet, don't proceed
+    if (needsFlexibilityAnswer && isFlexible === null) {
+      Alert.alert('Please Answer', 'Please indicate if your ISA is flexible before continuing.');
+      return;
+    }
+
+    // Save the flexibility setting if this is the first time
+    if (needsFlexibilityAnswer && isFlexible !== null) {
+      await setISASetting(provider.trim(), selectedType, isFlexible);
+      console.log(`✅ Saved flexibility setting: ${isFlexible}`);
+    }
+
     const contributionAmount = parseFloat(amount);
 
     const contribution: ISAContribution = {
@@ -592,6 +629,131 @@ export default function AddISAContributionModal({
     </View>
   );
 
+  const renderFlexibilityQuestion = () => {
+    if (!showFlexibilityQuestion) return null;
+
+    const isaInfo = ISA_INFO[selectedType];
+
+    return (
+      <View style={styles.flexibilityOverlay}>
+        <View style={styles.flexibilityCard}>
+          <View style={styles.flexibilityHeader}>
+            <Ionicons name="help-circle" size={48} color={Colors.gold} />
+            <Text style={styles.flexibilityTitle}>
+              Is Your {provider} {isaInfo.shortName} ISA Flexible?
+            </Text>
+          </View>
+
+          <View style={styles.flexibilityInfo}>
+            <View style={styles.infoBox}>
+              <Ionicons name="information-circle" size={24} color={Colors.info} />
+              <View style={{ flex: 1, marginLeft: Spacing.md }}>
+                <Text style={styles.infoBoxTitle}>What's a Flexible ISA?</Text>
+                <Text style={styles.infoBoxText}>
+                  Flexible ISAs let you withdraw money and put it back in the same tax year without losing your allowance.
+                </Text>
+                <Text style={[styles.infoBoxText, { marginTop: Spacing.sm }]}>
+                  Check your {provider} account details or contact them if you're unsure.
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.flexibilityOptions}>
+            <Pressable
+              onPress={() => setIsFlexible(true)}
+              style={({ pressed }) => [
+                styles.flexibilityOption,
+                isFlexible === true && styles.flexibilityOptionSelected,
+                { opacity: pressed ? 0.8 : 1 }
+              ]}
+            >
+              <View style={styles.flexibilityOptionContent}>
+                <View style={[
+                  styles.radioCircle,
+                  isFlexible === true && styles.radioCircleSelected
+                ]}>
+                  {isFlexible === true && (
+                    <View style={styles.radioInner} />
+                  )}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.flexibilityOptionTitle}>Yes, it's flexible</Text>
+                  <Text style={styles.flexibilityOptionDesc}>
+                    I can withdraw and replace money without losing allowance
+                  </Text>
+                </View>
+                <Ionicons name="checkmark-circle" size={24} color={isFlexible === true ? Colors.gold : Colors.mediumGray} />
+              </View>
+            </Pressable>
+
+            <Pressable
+              onPress={() => setIsFlexible(false)}
+              style={({ pressed }) => [
+                styles.flexibilityOption,
+                isFlexible === false && styles.flexibilityOptionSelected,
+                { opacity: pressed ? 0.8 : 1 }
+              ]}
+            >
+              <View style={styles.flexibilityOptionContent}>
+                <View style={[
+                  styles.radioCircle,
+                  isFlexible === false && styles.radioCircleSelected
+                ]}>
+                  {isFlexible === false && (
+                    <View style={styles.radioInner} />
+                  )}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.flexibilityOptionTitle}>No, it's not flexible</Text>
+                  <Text style={styles.flexibilityOptionDesc}>
+                    Withdrawals reduce my allowance permanently
+                  </Text>
+                </View>
+                <Ionicons name="close-circle" size={24} color={isFlexible === false ? Colors.error : Colors.mediumGray} />
+              </View>
+            </Pressable>
+          </View>
+
+          <View style={styles.flexibilityActions}>
+            <Pressable
+              onPress={() => {
+                setShowFlexibilityQuestion(false);
+                setIsFlexible(null);
+                setNeedsFlexibilityAnswer(false);
+              }}
+              style={({ pressed }) => [
+                styles.flexibilityCancelButton,
+                { opacity: pressed ? 0.7 : 1 }
+              ]}
+            >
+              <Text style={styles.flexibilityCancelText}>Cancel</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={handleSubmit}
+              disabled={isFlexible === null}
+              style={({ pressed }) => [
+                styles.flexibilityConfirmButton,
+                { opacity: pressed ? 0.9 : isFlexible === null ? 0.5 : 1 }
+              ]}
+            >
+              <LinearGradient
+                colors={isFlexible === null ? [Colors.mediumGray, Colors.mediumGray] : Colors.goldGradient}
+                style={styles.flexibilityConfirmGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+              >
+                <Text style={styles.flexibilityConfirmText}>Continue</Text>
+                <Ionicons name="arrow-forward" size={20} color={Colors.deepNavy} />
+              </LinearGradient>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   const renderStep4 = () => {
     console.log('=== renderStep4 called ===');
     console.log('submittedContribution:', submittedContribution);
@@ -708,6 +870,9 @@ export default function AddISAContributionModal({
         {step === 2 && renderStep2()}
         {step === 3 && renderStep3()}
         {step === 4 && renderStep4()}
+
+        {/* Flexibility Question Overlay */}
+        {renderFlexibilityQuestion()}
 
         {/* Navigation Buttons */}
         {step < 4 && (
@@ -1413,5 +1578,146 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.md,
     color: Colors.deepNavy,
     fontWeight: Typography.weights.extrabold,
+  },
+
+  // Flexibility Question Overlay
+  flexibilityOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.xl,
+    zIndex: 1000,
+  },
+  flexibilityCard: {
+    width: '100%',
+    maxWidth: 500,
+    backgroundColor: Colors.mediumNavy,
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.xl,
+    borderWidth: 2,
+    borderColor: Colors.gold + '40',
+  },
+  flexibilityHeader: {
+    alignItems: 'center',
+    marginBottom: Spacing.xl,
+  },
+  flexibilityTitle: {
+    fontSize: Typography.sizes.xl,
+    color: Colors.white,
+    fontWeight: Typography.weights.bold,
+    textAlign: 'center',
+    marginTop: Spacing.md,
+    lineHeight: 28,
+  },
+  flexibilityInfo: {
+    marginBottom: Spacing.xl,
+  },
+  infoBox: {
+    flexDirection: 'row',
+    backgroundColor: Colors.info + '15',
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.info + '30',
+  },
+  infoBoxTitle: {
+    fontSize: Typography.sizes.md,
+    color: Colors.white,
+    fontWeight: Typography.weights.bold,
+    marginBottom: Spacing.xs,
+  },
+  infoBoxText: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.lightGray,
+    lineHeight: 20,
+  },
+  flexibilityOptions: {
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  flexibilityOption: {
+    backgroundColor: Colors.glassDark,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  flexibilityOptionSelected: {
+    borderColor: Colors.gold,
+    backgroundColor: Colors.gold + '15',
+  },
+  flexibilityOptionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  radioCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: Colors.lightGray,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioCircleSelected: {
+    borderColor: Colors.gold,
+  },
+  radioInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: Colors.gold,
+  },
+  flexibilityOptionTitle: {
+    fontSize: Typography.sizes.md,
+    color: Colors.white,
+    fontWeight: Typography.weights.bold,
+    marginBottom: 4,
+  },
+  flexibilityOptionDesc: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.lightGray,
+    lineHeight: 18,
+  },
+  flexibilityActions: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  flexibilityCancelButton: {
+    flex: 1,
+    padding: Spacing.lg,
+    backgroundColor: Colors.glassDark,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  flexibilityCancelText: {
+    fontSize: Typography.sizes.md,
+    color: Colors.white,
+    fontWeight: Typography.weights.bold,
+  },
+  flexibilityConfirmButton: {
+    flex: 2,
+  },
+  flexibilityConfirmGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    gap: Spacing.sm,
+  },
+  flexibilityConfirmText: {
+    fontSize: Typography.sizes.md,
+    color: Colors.deepNavy,
+    fontWeight: Typography.weights.bold,
   },
 });

@@ -37,12 +37,21 @@ interface ISAAccount {
   openedDate: string;
 }
 
+interface ISAContribution {
+  id: string;
+  isaType: string;
+  provider: string;
+  amount: number;
+  date: string;
+}
+
 interface ISAAccountsModalProps {
   visible: boolean;
   onClose: () => void;
+  contributions?: ISAContribution[];
 }
 
-export default function ISAAccountsModal({ visible, onClose }: ISAAccountsModalProps) {
+export default function ISAAccountsModal({ visible, onClose, contributions = [] }: ISAAccountsModalProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [accounts, setAccounts] = useState<ISAAccount[]>([]);
 
@@ -169,11 +178,36 @@ export default function ISAAccountsModal({ visible, onClose }: ISAAccountsModalP
   };
 
   const getTotalContributions = () => {
+    // Use dashboard contributions if provided, otherwise fall back to accounts
+    if (contributions.length > 0) {
+      return contributions.reduce((sum, contribution) => sum + contribution.amount, 0);
+    }
     return accounts.reduce((sum, acc) => sum + acc.contributionsThisYear, 0);
   };
 
   const getRemainingAllowance = () => {
     return ISA_ANNUAL_ALLOWANCE - getTotalContributions();
+  };
+
+  // Group contributions by ISA type for display
+  const getGroupedContributions = () => {
+    const grouped: Record<string, { providers: Record<string, number>, total: number }> = {
+      [ISA_TYPES.CASH]: { providers: {}, total: 0 },
+      [ISA_TYPES.STOCKS_SHARES]: { providers: {}, total: 0 },
+      [ISA_TYPES.LIFETIME]: { providers: {}, total: 0 },
+      [ISA_TYPES.INNOVATIVE_FINANCE]: { providers: {}, total: 0 },
+    };
+
+    contributions.forEach(contribution => {
+      const type = contribution.isaType;
+      if (!grouped[type].providers[contribution.provider]) {
+        grouped[type].providers[contribution.provider] = 0;
+      }
+      grouped[type].providers[contribution.provider] += contribution.amount;
+      grouped[type].total += contribution.amount;
+    });
+
+    return grouped;
   };
 
   const handleDeleteAccount = async (accountId: string, providerName: string) => {
@@ -503,90 +537,69 @@ export default function ISAAccountsModal({ visible, onClose }: ISAAccountsModalP
         </LinearGradient>
       </GlassCard>
 
-      {/* Accounts List */}
-      <Text style={styles.sectionTitle}>Your ISA Accounts ({accounts.length})</Text>
+      {/* ISA Types Breakdown */}
+      <Text style={styles.sectionTitle}>Your ISA Breakdown</Text>
 
-      {accounts.map((account) => {
-        const info = ISA_INFO[account.isaType];
+      {Object.entries(getGroupedContributions()).map(([isaType, data]) => {
+        const info = ISA_INFO[isaType];
+        const providerCount = Object.keys(data.providers).length;
+
         return (
-          <GlassCard key={account.id} style={styles.accountCard} intensity="medium">
+          <GlassCard key={isaType} style={styles.accountCard} intensity="medium">
             <View style={styles.accountHeader}>
               <View style={styles.accountLeft}>
                 <View style={[styles.accountIcon, { backgroundColor: info.color + '30' }]}>
                   <Ionicons
-                    name={getISAIcon(account.isaType)}
+                    name={getISAIcon(isaType)}
                     size={24}
                     color={info.color}
                   />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.accountProvider}>{account.providerName}</Text>
-                  <Text style={styles.accountType}>{info.name}</Text>
+                  <Text style={styles.accountProvider}>{info.name}</Text>
+                  <Text style={styles.accountType}>
+                    {providerCount > 0
+                      ? `${providerCount} provider${providerCount > 1 ? 's' : ''}`
+                      : 'No contributions yet'
+                    }
+                  </Text>
                 </View>
               </View>
               <View style={styles.accountRight}>
                 <Text style={styles.accountBalance}>
-                  {formatCurrency(account.currentBalance)}
+                  {formatCurrency(data.total)}
                 </Text>
-                <TouchableOpacity
-                  onPress={() => handleDeleteAccount(account.id, account.providerName)}
-                  style={styles.deleteButton}
-                >
-                  <Ionicons name="trash" size={20} color={Colors.error} />
-                </TouchableOpacity>
               </View>
             </View>
 
-            <View style={styles.accountDetails}>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Contributed This Year:</Text>
-                <Text style={styles.detailValue}>
-                  {formatCurrency(account.contributionsThisYear)}
+            {providerCount > 0 && (
+              <View style={styles.accountDetails}>
+                <Text style={[styles.detailLabel, { marginBottom: 8, fontWeight: '600' }]}>
+                  Providers:
                 </Text>
+                {Object.entries(data.providers).map(([provider, amount]) => (
+                  <View key={provider} style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>{provider}:</Text>
+                    <Text style={styles.detailValue}>
+                      {formatCurrency(amount)}
+                    </Text>
+                  </View>
+                ))}
               </View>
-              {account.withdrawalsThisYear > 0 && (
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Withdrawals:</Text>
-                  <Text style={[styles.detailValue, { color: Colors.warning }]}>
-                    {formatCurrency(account.withdrawalsThisYear)}
-                  </Text>
-                </View>
-              )}
-              {account.interestRate && (
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Interest Rate:</Text>
-                  <Text style={[styles.detailValue, { color: Colors.success }]}>
-                    {account.interestRate}% AER
-                  </Text>
-                </View>
-              )}
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Opened:</Text>
-                <Text style={styles.detailValue}>
-                  {new Date(account.openedDate).toLocaleDateString('en-GB', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                  })}
-                </Text>
-              </View>
-            </View>
+            )}
           </GlassCard>
         );
       })}
 
-      {/* Add New Account Button */}
-      <TouchableOpacity onPress={() => setShowAddForm(true)}>
-        <LinearGradient
-          colors={Colors.goldGradient}
-          style={styles.addNewButton}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-        >
-          <Ionicons name="add-circle" size={24} color={Colors.deepNavy} />
-          <Text style={styles.addNewButtonText}>Add New ISA Account</Text>
-        </LinearGradient>
-      </TouchableOpacity>
+      {/* Info message */}
+      <GlassCard style={styles.infoCard} intensity="light">
+        <View style={styles.infoContent}>
+          <Ionicons name="information-circle" size={24} color={Colors.gold} />
+          <Text style={styles.infoText}>
+            Add new contributions from the Dashboard tab to see them reflected here
+          </Text>
+        </View>
+      </GlassCard>
     </Modal>
   );
 }
@@ -870,5 +883,20 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.md,
     color: Colors.lightGray,
     fontWeight: Typography.weights.semibold,
+  },
+  infoCard: {
+    marginTop: Spacing.md,
+    padding: Spacing.md,
+  },
+  infoContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: Typography.sizes.sm,
+    color: Colors.lightGray,
+    lineHeight: 20,
   },
 });

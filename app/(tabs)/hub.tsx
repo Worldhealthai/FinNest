@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -44,8 +44,13 @@ export default function HubScreen() {
       <AnimatedBackground />
       <SafeAreaView style={styles.safe} edges={['top']}>
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          <Text style={styles.title}>ISA Hub</Text>
-          <Text style={styles.subtitle}>Essential ISA knowledge and resources</Text>
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.title}>ISA Hub</Text>
+              <Text style={styles.subtitle}>Essential ISA knowledge and resources</Text>
+            </View>
+            <Image source={require('@/assets/logo.png')} style={styles.logo} resizeMode="contain" />
+          </View>
 
           {/* ISA Essentials - Educational Content */}
           <Text style={styles.section}>ISA Essentials</Text>
@@ -336,8 +341,10 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safe: { flex: 1 },
   scroll: { padding: Spacing.md },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.lg },
   title: { fontSize: Typography.sizes.xxl, color: Colors.white, fontWeight: Typography.weights.bold },
-  subtitle: { fontSize: Typography.sizes.sm, color: Colors.lightGray, marginTop: 4, marginBottom: Spacing.lg },
+  subtitle: { fontSize: Typography.sizes.sm, color: Colors.lightGray, marginTop: 4 },
+  logo: { width: 60, height: 60 },
   section: { fontSize: Typography.sizes.lg, color: Colors.white, fontWeight: Typography.weights.bold, marginBottom: Spacing.md, marginTop: Spacing.lg },
   card: {
     marginBottom: Spacing.sm,

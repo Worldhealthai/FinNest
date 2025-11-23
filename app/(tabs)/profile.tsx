@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,12 +11,17 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import GlassCard from '@/components/GlassCard';
 import PersonalInfoModal from '@/components/PersonalInfoModal';
 import ISAAccountsModal from '@/components/ISAAccountsModal';
 import SecurityModal from '@/components/SecurityModal';
+import { ISAContribution } from '@/components/AddISAContributionModal';
 import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
+
+const CONTRIBUTIONS_STORAGE_KEY = '@finnest_contributions';
 
 export default function ProfileScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
@@ -27,6 +32,34 @@ export default function ProfileScreen() {
   const [personalInfoVisible, setPersonalInfoVisible] = React.useState(false);
   const [isaAccountsVisible, setIsaAccountsVisible] = React.useState(false);
   const [securityVisible, setSecurityVisible] = React.useState(false);
+
+  // Contributions state
+  const [contributions, setContributions] = useState<ISAContribution[]>([]);
+
+  // Load contributions from AsyncStorage
+  const loadContributions = async () => {
+    try {
+      const savedData = await AsyncStorage.getItem(CONTRIBUTIONS_STORAGE_KEY);
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        setContributions(parsed);
+      }
+    } catch (error) {
+      console.error('Error loading contributions:', error);
+    }
+  };
+
+  // Load contributions on mount and when screen comes into focus
+  useEffect(() => {
+    loadContributions();
+  }, []);
+
+  // Reload contributions whenever the profile tab is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      loadContributions();
+    }, [])
+  );
 
   return (
     <View style={styles.container}>
@@ -343,6 +376,7 @@ export default function ProfileScreen() {
       <ISAAccountsModal
         visible={isaAccountsVisible}
         onClose={() => setIsaAccountsVisible(false)}
+        contributions={contributions}
       />
       <SecurityModal
         visible={securityVisible}
