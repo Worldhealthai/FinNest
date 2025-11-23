@@ -79,8 +79,11 @@ export default function ProfileScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Simple Greeting */}
-          <Text style={styles.greeting}>{getGreeting()}</Text>
+          {/* Simple Greeting with Logo */}
+          <View style={styles.header}>
+            <Text style={styles.greeting}>{getGreeting()}</Text>
+            <Image source={require('@/assets/logo.png')} style={styles.logo} resizeMode="contain" />
+          </View>
 
           {/* Enhanced Profile Card */}
           <GlassCard style={styles.profileCard} intensity="dark">
@@ -368,11 +371,20 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: Spacing.md,
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
+  },
   greeting: {
     fontSize: Typography.sizes.xxl,
     color: Colors.white,
     fontWeight: Typography.weights.bold,
-    marginBottom: Spacing.lg,
+  },
+  logo: {
+    width: 60,
+    height: 60,
   },
   profileCard: {
     padding: Spacing.lg,
