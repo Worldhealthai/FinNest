@@ -197,8 +197,216 @@ export default function AnalyticsScreen() {
   const remaining = ISA_ANNUAL_ALLOWANCE - totalSaved;
   const lifetimeBonus = currentYearGrouped.lifetime.total * 0.25;
 
-  // Calculate estimated tax saved (20% basic rate on contributions)
-  const taxSaved = totalSaved * 0.20;
+  // Calculate Consistency Score - Simple & Transparent
+  const calculateConsistencyScore = (contributions: ISAContribution[]) => {
+    if (contributions.length === 0) {
+      return {
+        score: 0,
+        baseScore: 0,
+        monthsCovered: 0,
+        bonuses: [],
+        rating: 'Not Started',
+        monthlyHeatmap: Array(12).fill(false)
+      };
+    }
+
+    const currentTaxYear = getCurrentTaxYear();
+
+    // Get contributions for current tax year only
+    const yearContributions = contributions.filter(c =>
+      !c.deleted && isDateInTaxYear(new Date(c.date), currentTaxYear)
+    );
+
+    if (yearContributions.length === 0) {
+      return {
+        score: 0,
+        baseScore: 0,
+        monthsCovered: 0,
+        bonuses: [],
+        rating: 'Not Started',
+        monthlyHeatmap: Array(12).fill(false)
+      };
+    }
+
+    // BASE SCORE: Simple monthly coverage (0-100%)
+    const monthsWithContributions = new Set(
+      yearContributions.map(c => {
+        const date = new Date(c.date);
+        return date.getMonth(); // 0-11 for Jan-Dec
+      })
+    );
+    const monthsCovered = monthsWithContributions.size;
+    const baseScore = Math.round((monthsCovered / 12) * 100);
+
+    // Create monthly heatmap (April = index 0, March = index 11)
+    const taxYearStart = currentTaxYear.startDate.getMonth(); // April = 3
+    const monthlyHeatmap = Array(12).fill(false);
+    monthsWithContributions.forEach(month => {
+      // Convert calendar month to tax year month (April = 0, May = 1, etc.)
+      const taxYearMonth = (month - taxYearStart + 12) % 12;
+      monthlyHeatmap[taxYearMonth] = true;
+    });
+
+    // BONUSES (transparent and visible)
+    const bonuses: Array<{ name: string; value: number; earned: boolean }> = [];
+
+    // 1. EARLY BIRD BONUS (+10%)
+    const firstContribution = new Date(Math.min(...yearContributions.map(c => new Date(c.date).getTime())));
+    const monthsSinceStart = Math.max(0,
+      (firstContribution.getFullYear() - currentTaxYear.startDate.getFullYear()) * 12 +
+      (firstContribution.getMonth() - currentTaxYear.startDate.getMonth())
+    );
+    const earnedEarlyBird = monthsSinceStart <= 2; // First 3 months (Apr, May, Jun)
+    bonuses.push({
+      name: 'Early Bird',
+      value: 10,
+      earned: earnedEarlyBird
+    });
+
+    // 2. ACTIVE STREAK BONUS (+10%)
+    // Check for 3+ consecutive months
+    let maxStreak = 0;
+    let currentStreak = 0;
+    for (let i = 0; i < 12; i++) {
+      if (monthlyHeatmap[i]) {
+        currentStreak++;
+        maxStreak = Math.max(maxStreak, currentStreak);
+      } else {
+        currentStreak = 0;
+      }
+    }
+    const earnedStreak = maxStreak >= 3;
+    bonuses.push({
+      name: 'Active Streak',
+      value: 10,
+      earned: earnedStreak
+    });
+
+    // 3. FREQUENT SAVER BONUS (+5%)
+    const earnedFrequent = monthsCovered >= 6;
+    bonuses.push({
+      name: 'Frequent Saver',
+      value: 5,
+      earned: earnedFrequent
+    });
+
+    // TOTAL SCORE (base + earned bonuses, capped at 100%)
+    const bonusPoints = bonuses.filter(b => b.earned).reduce((sum, b) => sum + b.value, 0);
+    const totalScore = Math.min(100, baseScore + bonusPoints);
+
+    // RATING
+    let rating = 'Getting Started';
+    if (totalScore >= 90) rating = 'ISA Pro';
+    else if (totalScore >= 75) rating = 'Steady Investor';
+    else if (totalScore >= 60) rating = 'Building Habits';
+    else if (totalScore >= 40) rating = 'Making Progress';
+
+    return {
+      score: totalScore,
+      baseScore,
+      monthsCovered,
+      bonuses,
+      rating,
+      monthlyHeatmap
+    };
+  };
+
+  const consistencyData = calculateConsistencyScore(currentYearContributions);
+
+  // Calculate ISA Master Level (7-level system)
+  const calculateLevel = (score: number, monthsCovered: number, bonusesEarned: number) => {
+    const levels = [
+      {
+        level: 1,
+        name: 'Seedling',
+        icon: '🌱',
+        minScore: 0,
+        maxScore: 15,
+        color: '#90EE90',
+        description: 'Your ISA journey begins'
+      },
+      {
+        level: 2,
+        name: 'Sprout',
+        icon: '🌿',
+        minScore: 15,
+        maxScore: 30,
+        color: '#7FD87F',
+        description: 'Growing your savings habit'
+      },
+      {
+        level: 3,
+        name: 'Sapling',
+        icon: '🌳',
+        minScore: 30,
+        maxScore: 50,
+        color: '#4CAF50',
+        description: 'Building consistent momentum'
+      },
+      {
+        level: 4,
+        name: 'Bronze Investor',
+        icon: '🥉',
+        minScore: 50,
+        maxScore: 65,
+        color: '#CD7F32',
+        description: 'Halfway to ISA mastery'
+      },
+      {
+        level: 5,
+        name: 'Silver Champion',
+        icon: '🥈',
+        minScore: 65,
+        maxScore: 80,
+        color: '#C0C0C0',
+        description: 'Excellence in saving'
+      },
+      {
+        level: 6,
+        name: 'Gold Pro',
+        icon: '🥇',
+        minScore: 80,
+        maxScore: 90,
+        color: Colors.gold,
+        description: 'Elite investor status'
+      },
+      {
+        level: 7,
+        name: 'ISA Master',
+        icon: '👑',
+        minScore: 90,
+        maxScore: 100,
+        color: '#FFD700',
+        description: 'Legendary dedication'
+      }
+    ];
+
+    let currentLevel = levels[0];
+    for (const lvl of levels) {
+      if (score >= lvl.minScore && score <= lvl.maxScore) {
+        currentLevel = lvl;
+        break;
+      }
+    }
+
+    const nextLevel = levels[currentLevel.level]; // Next level (or undefined if max)
+    const progressToNext = nextLevel
+      ? ((score - currentLevel.minScore) / (nextLevel.minScore - currentLevel.minScore)) * 100
+      : 100;
+
+    return {
+      current: currentLevel,
+      next: nextLevel,
+      progressToNext: Math.min(100, progressToNext),
+      allLevels: levels
+    };
+  };
+
+  const levelData = calculateLevel(
+    consistencyData.score,
+    consistencyData.monthsCovered,
+    consistencyData.bonuses.filter(b => b.earned).length
+  );
 
   // Calculate historical performance data
   const historicalPerformance = calculateHistoricalPerformance(contributions);
@@ -261,18 +469,184 @@ export default function AnalyticsScreen() {
             </GlassCard>
           </View>
 
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <GlassCard style={[styles.card, { flex: 1 }]} intensity="medium">
-              <Ionicons name="shield-checkmark" size={24} color={Colors.gold} />
-              <Text style={styles.big}>{formatCurrency(taxSaved)}</Text>
-              <Text style={styles.sub}>Tax Saved</Text>
-            </GlassCard>
-            <GlassCard style={[styles.card, { flex: 1 }]} intensity="medium">
-              <Ionicons name="flash" size={24} color={ISA_INFO.lifetime.color} />
-              <Text style={styles.big}>{formatCurrency(lifetimeBonus)}</Text>
-              <Text style={styles.sub}>Gov Bonus</Text>
-            </GlassCard>
-          </View>
+          {/* Consistency Score Card - Full Width */}
+          <GlassCard style={styles.card} intensity="medium">
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Ionicons name="analytics" size={24} color={Colors.gold} style={{ marginRight: 8 }} />
+                <Text style={styles.name}>Consistency Score</Text>
+              </View>
+              <View style={{ alignItems: 'flex-end' }}>
+                <Text style={[styles.big, { fontSize: Typography.sizes.xxxl, marginBottom: 0 }]}>{consistencyData.score}%</Text>
+                <Text style={[styles.sub, { fontSize: 11, color: Colors.gold, marginTop: 2 }]}>
+                  {consistencyData.rating}
+                </Text>
+              </View>
+            </View>
+
+            {/* Base Score + Bonuses */}
+            <View style={{ marginBottom: 12 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <Text style={[styles.sub, { fontSize: 12 }]}>Base: {consistencyData.monthsCovered}/12 months</Text>
+                <Text style={[styles.val, { fontSize: 14, color: Colors.gold }]}>{consistencyData.baseScore}%</Text>
+              </View>
+
+              {/* Bonuses */}
+              {consistencyData.bonuses.map((bonus: any, index: number) => (
+                <View key={index} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4, opacity: bonus.earned ? 1 : 0.4 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Ionicons
+                      name={bonus.earned ? "checkmark-circle" : "close-circle"}
+                      size={16}
+                      color={bonus.earned ? Colors.success : Colors.mediumGray}
+                      style={{ marginRight: 6 }}
+                    />
+                    <Text style={[styles.sub, { fontSize: 11 }]}>
+                      {bonus.name} {!bonus.earned && '(locked)'}
+                    </Text>
+                  </View>
+                  <Text style={[styles.sub, { fontSize: 11, color: bonus.earned ? Colors.success : Colors.mediumGray }]}>
+                    +{bonus.value}%
+                  </Text>
+                </View>
+              ))}
+            </View>
+
+            {/* Monthly Heatmap */}
+            <View>
+              <Text style={[styles.sub, { fontSize: 10, marginBottom: 6, opacity: 0.7 }]}>Monthly Activity</Text>
+              <View style={{ flexDirection: 'row', gap: 4 }}>
+                {['A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D', 'J', 'F', 'M'].map((month, index) => (
+                  <View key={index} style={{ flex: 1, alignItems: 'center' }}>
+                    <View style={{
+                      width: '100%',
+                      aspectRatio: 1,
+                      backgroundColor: consistencyData.monthlyHeatmap[index] ? Colors.gold : 'rgba(255, 255, 255, 0.1)',
+                      borderRadius: 4,
+                      marginBottom: 2
+                    }} />
+                    <Text style={{ fontSize: 8, color: Colors.lightGray }}>{month}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </GlassCard>
+
+          {/* Gov Bonus Card */}
+          <GlassCard style={styles.card} intensity="medium">
+            <Ionicons name="flash" size={24} color={ISA_INFO.lifetime.color} />
+            <Text style={styles.big}>{formatCurrency(lifetimeBonus)}</Text>
+            <Text style={styles.sub}>Government Bonus (LISA)</Text>
+          </GlassCard>
+
+          {/* ISA Master Level Section */}
+          <Text style={styles.section}>ISA Master Level</Text>
+
+          <GlassCard style={styles.card} intensity="medium">
+            {/* Current Level Display */}
+            <View style={{ alignItems: 'center', marginBottom: 20 }}>
+              <Text style={{ fontSize: 64, marginBottom: 8 }}>{levelData.current.icon}</Text>
+              <Text style={{ fontSize: Typography.sizes.xxl, color: levelData.current.color, fontWeight: Typography.weights.extrabold }}>
+                Level {levelData.current.level}: {levelData.current.name}
+              </Text>
+              <Text style={{ fontSize: Typography.sizes.sm, color: Colors.lightGray, marginTop: 4 }}>
+                {levelData.current.description}
+              </Text>
+            </View>
+
+            {/* Progress to Next Level */}
+            {levelData.next && (
+              <View style={{ marginBottom: 20 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <Text style={{ fontSize: Typography.sizes.sm, color: Colors.lightGray }}>
+                    Progress to {levelData.next.name} {levelData.next.icon}
+                  </Text>
+                  <Text style={{ fontSize: Typography.sizes.sm, color: Colors.gold, fontWeight: Typography.weights.bold }}>
+                    {Math.round(levelData.progressToNext)}%
+                  </Text>
+                </View>
+                <View style={{ height: 12, backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 6, overflow: 'hidden' }}>
+                  <LinearGradient
+                    colors={[levelData.next.color, levelData.next.color + 'AA']}
+                    style={{ width: `${levelData.progressToNext}%`, height: '100%' }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                  />
+                </View>
+                <Text style={{ fontSize: Typography.sizes.xs, color: Colors.lightGray, marginTop: 6 }}>
+                  {levelData.next.minScore - consistencyData.score}% more needed to level up
+                </Text>
+              </View>
+            )}
+
+            {/* Max Level Achieved */}
+            {!levelData.next && (
+              <View style={{ backgroundColor: Colors.gold + '20', padding: 16, borderRadius: 12, borderWidth: 2, borderColor: Colors.gold, marginBottom: 20 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                  <Ionicons name="trophy" size={24} color={Colors.gold} style={{ marginRight: 8 }} />
+                  <Text style={{ fontSize: Typography.sizes.md, color: Colors.gold, fontWeight: Typography.weights.bold }}>
+                    Maximum Level Reached!
+                  </Text>
+                </View>
+                <Text style={{ fontSize: Typography.sizes.sm, color: Colors.white, textAlign: 'center', marginTop: 8 }}>
+                  You've achieved ISA mastery! 🎉
+                </Text>
+              </View>
+            )}
+
+            {/* All Levels Display */}
+            <View style={{ marginTop: 12 }}>
+              <Text style={{ fontSize: Typography.sizes.sm, color: Colors.lightGray, marginBottom: 12, fontWeight: Typography.weights.semibold }}>
+                All Levels
+              </Text>
+              {levelData.allLevels.map((lvl) => {
+                const isUnlocked = consistencyData.score >= lvl.minScore;
+                const isCurrent = lvl.level === levelData.current.level;
+
+                return (
+                  <View
+                    key={lvl.level}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      padding: 12,
+                      marginBottom: 8,
+                      backgroundColor: isCurrent ? lvl.color + '20' : 'rgba(255, 255, 255, 0.05)',
+                      borderRadius: 12,
+                      borderWidth: isCurrent ? 2 : 1,
+                      borderColor: isCurrent ? lvl.color : 'rgba(255, 255, 255, 0.1)',
+                      opacity: isUnlocked ? 1 : 0.5
+                    }}
+                  >
+                    <Text style={{ fontSize: 32, marginRight: 12 }}>{lvl.icon}</Text>
+                    <View style={{ flex: 1 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={{ fontSize: Typography.sizes.md, color: Colors.white, fontWeight: Typography.weights.semibold }}>
+                          {lvl.name}
+                        </Text>
+                        {isCurrent && (
+                          <View style={{ marginLeft: 8, backgroundColor: lvl.color, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 }}>
+                            <Text style={{ fontSize: Typography.sizes.xs, color: Colors.deepNavy, fontWeight: Typography.weights.bold }}>
+                              CURRENT
+                            </Text>
+                          </View>
+                        )}
+                        {isUnlocked && !isCurrent && (
+                          <Ionicons name="checkmark-circle" size={16} color={Colors.success} style={{ marginLeft: 6 }} />
+                        )}
+                      </View>
+                      <Text style={{ fontSize: Typography.sizes.xs, color: Colors.lightGray, marginTop: 2 }}>
+                        {lvl.description} • {lvl.minScore}-{lvl.maxScore}% score
+                      </Text>
+                    </View>
+                    <Text style={{ fontSize: Typography.sizes.lg, color: Colors.lightGray, fontWeight: Typography.weights.bold }}>
+                      {lvl.level}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+          </GlassCard>
 
           <Text style={styles.section}>ISA Breakdown</Text>
 
