@@ -197,9 +197,18 @@ export default function AnalyticsScreen() {
   const remaining = ISA_ANNUAL_ALLOWANCE - totalSaved;
   const lifetimeBonus = currentYearGrouped.lifetime.total * 0.25;
 
-  // Calculate Consistency Score
+  // Calculate Consistency Score - Simple & Transparent
   const calculateConsistencyScore = (contributions: ISAContribution[]) => {
-    if (contributions.length === 0) return { score: 0, monthsCovered: 0, rating: 'Not Started' };
+    if (contributions.length === 0) {
+      return {
+        score: 0,
+        baseScore: 0,
+        monthsCovered: 0,
+        bonuses: [],
+        rating: 'Not Started',
+        monthlyHeatmap: Array(12).fill(false)
+      };
+    }
 
     const currentTaxYear = getCurrentTaxYear();
 
@@ -208,60 +217,82 @@ export default function AnalyticsScreen() {
       !c.deleted && isDateInTaxYear(new Date(c.date), currentTaxYear)
     );
 
-    if (yearContributions.length === 0) return { score: 0, monthsCovered: 0, rating: 'Not Started' };
+    if (yearContributions.length === 0) {
+      return {
+        score: 0,
+        baseScore: 0,
+        monthsCovered: 0,
+        bonuses: [],
+        rating: 'Not Started',
+        monthlyHeatmap: Array(12).fill(false)
+      };
+    }
 
-    // 1. MONTHLY COVERAGE SCORE (60% weight)
-    // Count unique months with contributions
+    // BASE SCORE: Simple monthly coverage (0-100%)
     const monthsWithContributions = new Set(
       yearContributions.map(c => {
         const date = new Date(c.date);
-        return `${date.getFullYear()}-${date.getMonth()}`;
+        return date.getMonth(); // 0-11 for Jan-Dec
       })
     );
     const monthsCovered = monthsWithContributions.size;
-    const monthlyCoverageScore = (monthsCovered / 12) * 60;
+    const baseScore = Math.round((monthsCovered / 12) * 100);
 
-    // 2. DISTRIBUTION QUALITY SCORE (30% weight)
-    // Rewards spreading contributions throughout the year
-    // Uses coefficient of variation - lower is better (more consistent)
-    const monthlyTotals = new Map<string, number>();
-    yearContributions.forEach(c => {
-      const date = new Date(c.date);
-      const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
-      monthlyTotals.set(monthKey, (monthlyTotals.get(monthKey) || 0) + c.amount);
+    // Create monthly heatmap (April = index 0, March = index 11)
+    const taxYearStart = currentTaxYear.startDate.getMonth(); // April = 3
+    const monthlyHeatmap = Array(12).fill(false);
+    monthsWithContributions.forEach(month => {
+      // Convert calendar month to tax year month (April = 0, May = 1, etc.)
+      const taxYearMonth = (month - taxYearStart + 12) % 12;
+      monthlyHeatmap[taxYearMonth] = true;
     });
 
-    const amounts = Array.from(monthlyTotals.values());
-    if (amounts.length < 2) {
-      // Single month contribution = lower distribution score
-      var distributionScore = 10; // Out of 30
-    } else {
-      const mean = amounts.reduce((a, b) => a + b, 0) / amounts.length;
-      const variance = amounts.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / amounts.length;
-      const stdDev = Math.sqrt(variance);
-      const coefficientOfVariation = stdDev / mean;
+    // BONUSES (transparent and visible)
+    const bonuses: Array<{ name: string; value: number; earned: boolean }> = [];
 
-      // Lower CV = more consistent = higher score
-      // CV of 0 (all equal) = 30 points, CV of 2+ = 0 points
-      const normalizedCV = Math.max(0, Math.min(2, coefficientOfVariation)) / 2;
-      var distributionScore = (1 - normalizedCV) * 30;
-    }
-
-    // 3. EARLY START BONUS (10% weight)
-    // Rewards starting contributions early in the tax year
+    // 1. EARLY BIRD BONUS (+10%)
     const firstContribution = new Date(Math.min(...yearContributions.map(c => new Date(c.date).getTime())));
-    const taxYearStart = currentTaxYear.startDate;
     const monthsSinceStart = Math.max(0,
-      (firstContribution.getFullYear() - taxYearStart.getFullYear()) * 12 +
-      (firstContribution.getMonth() - taxYearStart.getMonth())
+      (firstContribution.getFullYear() - currentTaxYear.startDate.getFullYear()) * 12 +
+      (firstContribution.getMonth() - currentTaxYear.startDate.getMonth())
     );
+    const earnedEarlyBird = monthsSinceStart <= 2; // First 3 months (Apr, May, Jun)
+    bonuses.push({
+      name: 'Early Bird',
+      value: 10,
+      earned: earnedEarlyBird
+    });
 
-    // Started in first 3 months = full 10 points
-    // Started after month 9 = 0 points
-    const earlyStartScore = Math.max(0, Math.min(10, 10 - (monthsSinceStart / 9) * 10));
+    // 2. ACTIVE STREAK BONUS (+10%)
+    // Check for 3+ consecutive months
+    let maxStreak = 0;
+    let currentStreak = 0;
+    for (let i = 0; i < 12; i++) {
+      if (monthlyHeatmap[i]) {
+        currentStreak++;
+        maxStreak = Math.max(maxStreak, currentStreak);
+      } else {
+        currentStreak = 0;
+      }
+    }
+    const earnedStreak = maxStreak >= 3;
+    bonuses.push({
+      name: 'Active Streak',
+      value: 10,
+      earned: earnedStreak
+    });
 
-    // TOTAL SCORE (out of 100)
-    const totalScore = Math.round(monthlyCoverageScore + distributionScore + earlyStartScore);
+    // 3. FREQUENT SAVER BONUS (+5%)
+    const earnedFrequent = monthsCovered >= 6;
+    bonuses.push({
+      name: 'Frequent Saver',
+      value: 5,
+      earned: earnedFrequent
+    });
+
+    // TOTAL SCORE (base + earned bonuses, capped at 100%)
+    const bonusPoints = bonuses.filter(b => b.earned).reduce((sum, b) => sum + b.value, 0);
+    const totalScore = Math.min(100, baseScore + bonusPoints);
 
     // RATING
     let rating = 'Getting Started';
@@ -272,8 +303,11 @@ export default function AnalyticsScreen() {
 
     return {
       score: totalScore,
+      baseScore,
       monthsCovered,
-      rating
+      bonuses,
+      rating,
+      monthlyHeatmap
     };
   };
 
@@ -340,26 +374,75 @@ export default function AnalyticsScreen() {
             </GlassCard>
           </View>
 
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <GlassCard style={[styles.card, { flex: 1 }]} intensity="medium">
-              <Ionicons name="analytics" size={24} color={Colors.gold} />
-              <Text style={styles.big}>{consistencyData.score}%</Text>
-              <Text style={styles.sub}>Consistency Score</Text>
-              <View style={{ marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: 'rgba(255, 255, 255, 0.1)', width: '100%' }}>
-                <Text style={[styles.sub, { fontSize: 11, textAlign: 'center', color: Colors.gold }]}>
+          {/* Consistency Score Card - Full Width */}
+          <GlassCard style={styles.card} intensity="medium">
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Ionicons name="analytics" size={24} color={Colors.gold} style={{ marginRight: 8 }} />
+                <Text style={styles.name}>Consistency Score</Text>
+              </View>
+              <View style={{ alignItems: 'flex-end' }}>
+                <Text style={[styles.big, { fontSize: Typography.sizes.xxxl, marginBottom: 0 }]}>{consistencyData.score}%</Text>
+                <Text style={[styles.sub, { fontSize: 11, color: Colors.gold, marginTop: 2 }]}>
                   {consistencyData.rating}
                 </Text>
-                <Text style={[styles.sub, { fontSize: 10, marginTop: 4, textAlign: 'center' }]}>
-                  {consistencyData.monthsCovered}/12 months
-                </Text>
               </View>
-            </GlassCard>
-            <GlassCard style={[styles.card, { flex: 1 }]} intensity="medium">
-              <Ionicons name="flash" size={24} color={ISA_INFO.lifetime.color} />
-              <Text style={styles.big}>{formatCurrency(lifetimeBonus)}</Text>
-              <Text style={styles.sub}>Gov Bonus</Text>
-            </GlassCard>
-          </View>
+            </View>
+
+            {/* Base Score + Bonuses */}
+            <View style={{ marginBottom: 12 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <Text style={[styles.sub, { fontSize: 12 }]}>Base: {consistencyData.monthsCovered}/12 months</Text>
+                <Text style={[styles.val, { fontSize: 14, color: Colors.gold }]}>{consistencyData.baseScore}%</Text>
+              </View>
+
+              {/* Bonuses */}
+              {consistencyData.bonuses.map((bonus: any, index: number) => (
+                <View key={index} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4, opacity: bonus.earned ? 1 : 0.4 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Ionicons
+                      name={bonus.earned ? "checkmark-circle" : "close-circle"}
+                      size={16}
+                      color={bonus.earned ? Colors.success : Colors.mediumGray}
+                      style={{ marginRight: 6 }}
+                    />
+                    <Text style={[styles.sub, { fontSize: 11 }]}>
+                      {bonus.name} {!bonus.earned && '(locked)'}
+                    </Text>
+                  </View>
+                  <Text style={[styles.sub, { fontSize: 11, color: bonus.earned ? Colors.success : Colors.mediumGray }]}>
+                    +{bonus.value}%
+                  </Text>
+                </View>
+              ))}
+            </View>
+
+            {/* Monthly Heatmap */}
+            <View>
+              <Text style={[styles.sub, { fontSize: 10, marginBottom: 6, opacity: 0.7 }]}>Monthly Activity</Text>
+              <View style={{ flexDirection: 'row', gap: 4 }}>
+                {['A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D', 'J', 'F', 'M'].map((month, index) => (
+                  <View key={index} style={{ flex: 1, alignItems: 'center' }}>
+                    <View style={{
+                      width: '100%',
+                      aspectRatio: 1,
+                      backgroundColor: consistencyData.monthlyHeatmap[index] ? Colors.gold : 'rgba(255, 255, 255, 0.1)',
+                      borderRadius: 4,
+                      marginBottom: 2
+                    }} />
+                    <Text style={{ fontSize: 8, color: Colors.lightGray }}>{month}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </GlassCard>
+
+          {/* Gov Bonus Card */}
+          <GlassCard style={styles.card} intensity="medium">
+            <Ionicons name="flash" size={24} color={ISA_INFO.lifetime.color} />
+            <Text style={styles.big}>{formatCurrency(lifetimeBonus)}</Text>
+            <Text style={styles.sub}>Government Bonus (LISA)</Text>
+          </GlassCard>
 
           <Text style={styles.section}>ISA Breakdown</Text>
 
