@@ -7,37 +7,8 @@ import AnimatedBackground from '@/components/AnimatedBackground';
 import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
 import { ISA_INFO, ISA_ANNUAL_ALLOWANCE, LIFETIME_ISA_MAX, EDUCATIONAL_CONTENT, formatCurrency } from '@/constants/isaData';
 
-// Gamification data
-const LEVEL_DATA = {
-  currentLevel: 5,
-  currentXP: 340,
-  nextLevelXP: 500,
-  totalXP: 1840,
-};
-
-const STREAK_DATA = {
-  currentStreak: 12,
-  longestStreak: 45,
-  lastCheckIn: 'Today',
-};
-
-const DAILY_TASKS = [
-  { id: '1', title: 'Check your ISA balance', xp: 10, completed: true, icon: 'wallet-outline' },
-  { id: '2', title: 'Read an ISA tip', xp: 15, completed: true, icon: 'book-outline' },
-  { id: '3', title: 'Track a contribution', xp: 20, completed: false, icon: 'add-circle-outline' },
-  { id: '4', title: 'Use the ISA calculator', xp: 25, completed: false, icon: 'calculator-outline' },
-];
-
-const ACHIEVEMENTS = [
-  { id: '1', title: 'First Steps', description: 'Created your first ISA', icon: 'footsteps', unlocked: true, color: Colors.gold },
-  { id: '2', title: 'Week Warrior', description: '7-day streak achieved', icon: 'flame', unlocked: true, color: Colors.warning },
-  { id: '3', title: 'ISA Expert', description: 'Reached Level 5', icon: 'school', unlocked: true, color: Colors.info },
-  { id: '4', title: 'Max Contributor', description: 'Hit annual ISA limit', icon: 'trophy', unlocked: false, color: Colors.mediumGray },
-];
-
 export default function HubScreen() {
   const [expandedISA, setExpandedISA] = useState<string | null>(null);
-  const levelProgress = (LEVEL_DATA.currentXP / LEVEL_DATA.nextLevelXP) * 100;
 
   return (
     <View style={styles.container}>
@@ -173,159 +144,236 @@ export default function HubScreen() {
             </View>
           </View>
 
-          <Text style={styles.section}>Progress & Rewards</Text>
+          {/* ISA Master Level Section */}
+          <Text style={styles.section}>ISA Master Level</Text>
 
-          {/* Level & Progress Section */}
-          <View style={styles.levelCard}>
-            <LinearGradient
-              colors={[Colors.gold + 'DD', Colors.gold + '88', Colors.warning + '66']}
-              style={styles.levelGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <View style={styles.levelHeader}>
-                <View style={styles.levelBadge}>
-                  <Ionicons name="star" size={32} color={Colors.deepNavy} />
-                  <Text style={styles.levelNumber}>{LEVEL_DATA.currentLevel}</Text>
-                </View>
-                <View style={styles.levelInfo}>
-                  <Text style={styles.levelTitle}>ISA Master Level {LEVEL_DATA.currentLevel}</Text>
-                  <Text style={styles.levelSubtitle}>{LEVEL_DATA.totalXP} Total XP Earned</Text>
-                </View>
-              </View>
-
-              <View style={styles.xpBar}>
-                <View style={styles.xpBarBg}>
-                  <LinearGradient
-                    colors={[Colors.deepNavy, Colors.mediumNavy]}
-                    style={[styles.xpBarFill, { width: `${levelProgress}%` }]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                  />
-                </View>
-                <Text style={styles.xpText}>
-                  {LEVEL_DATA.currentXP} / {LEVEL_DATA.nextLevelXP} XP
-                </Text>
-              </View>
-
-              <View style={styles.xpInfo}>
-                <Ionicons name="trending-up" size={16} color={Colors.deepNavy} />
-                <Text style={styles.xpInfoText}>
-                  {LEVEL_DATA.nextLevelXP - LEVEL_DATA.currentXP} XP to Level {LEVEL_DATA.currentLevel + 1}
-                </Text>
-              </View>
-            </LinearGradient>
-          </View>
-
-          {/* Achievements */}
-          <View style={styles.achievementGrid}>
-            {ACHIEVEMENTS.map((achievement) => (
-              <Pressable
-                key={achievement.id}
-                style={({ pressed }) => [
-                  styles.achievementWrapper,
-                  { opacity: pressed ? 0.8 : 1 }
-                ]}
-              >
-                <View
-                  style={[
-                    styles.achievementCard,
-                    !achievement.unlocked && styles.achievementCardLocked,
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.achievementIcon,
-                      { backgroundColor: achievement.color + '20' },
-                    ]}
-                  >
-                    <Ionicons
-                      name={achievement.icon as any}
-                      size={28}
-                      color={achievement.unlocked ? achievement.color : Colors.mediumGray}
-                    />
-                  </View>
-                  <Text style={[
-                    styles.achievementTitle,
-                    !achievement.unlocked && styles.achievementTitleLocked
-                  ]}>
-                    {achievement.title}
-                  </Text>
-                  <Text style={[
-                    styles.achievementDesc,
-                    !achievement.unlocked && styles.achievementDescLocked
-                  ]}>
-                    {achievement.description}
-                  </Text>
-                  {achievement.unlocked && (
-                    <View style={styles.unlockedBadge}>
-                      <Ionicons name="checkmark" size={12} color={Colors.white} />
-                    </View>
-                  )}
-                </View>
-              </Pressable>
-            ))}
-          </View>
-
-          {/* Daily Tasks */}
-          {DAILY_TASKS.map((task) => (
-            <View key={task.id} style={styles.taskCard}>
-              <View style={styles.taskRow}>
-                <View
-                  style={[
-                    styles.taskIcon,
-                    { backgroundColor: task.completed ? Colors.success + '30' : Colors.gold + '30' },
-                  ]}
-                >
-                  <Ionicons
-                    name={task.completed ? 'checkmark-circle' : (task.icon as any)}
-                    size={24}
-                    color={task.completed ? Colors.success : Colors.gold}
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={[
-                      styles.taskTitle,
-                      task.completed && { textDecorationLine: 'line-through', opacity: 0.6 },
-                    ]}
-                  >
-                    {task.title}
-                  </Text>
-                  <View style={styles.taskXP}>
-                    <Ionicons name="star-outline" size={14} color={Colors.gold} />
-                    <Text style={styles.taskXPText}>+{task.xp} XP</Text>
-                  </View>
-                </View>
-                {task.completed && (
-                  <View style={styles.completedBadge}>
-                    <Text style={styles.completedText}>Done!</Text>
-                  </View>
-                )}
-              </View>
+          <View style={styles.card}>
+            {/* Current Level Display */}
+            <View style={{ alignItems: 'center', marginBottom: 20 }}>
+              <Text style={{ fontSize: 64, marginBottom: 8 }}>🌱</Text>
+              <Text style={{ fontSize: Typography.sizes.xxl, color: '#90EE90', fontWeight: Typography.weights.extrabold }}>
+                Level 1: Seedling
+              </Text>
+              <Text style={{ fontSize: Typography.sizes.sm, color: Colors.lightGray, marginTop: 4 }}>
+                Your ISA journey begins
+              </Text>
             </View>
-          ))}
 
-          {/* Streak Section */}
-          <View style={styles.streakCard}>
-            <View style={styles.streakHeader}>
-              <View style={styles.streakIconWrapper}>
+            {/* Progress to Next Level */}
+            <View style={{ marginBottom: 20 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                <Text style={{ fontSize: Typography.sizes.sm, color: Colors.lightGray }}>
+                  Progress to Sprout 🌿
+                </Text>
+                <Text style={{ fontSize: Typography.sizes.sm, color: Colors.gold, fontWeight: Typography.weights.bold }}>
+                  0%
+                </Text>
+              </View>
+              <View style={{ height: 12, backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 6, overflow: 'hidden' }}>
                 <LinearGradient
-                  colors={[Colors.warning, Colors.error]}
-                  style={styles.streakIconGradient}
+                  colors={['#7FD87F', '#7FD87FAA']}
+                  style={{ width: '0%', height: '100%' }}
                   start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                >
-                  <Ionicons name="flame" size={28} color={Colors.white} />
-                </LinearGradient>
+                  end={{ x: 1, y: 0 }}
+                />
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.streakTitle}>Daily Streak</Text>
-                <Text style={styles.streakSubtitle}>{STREAK_DATA.currentStreak} days</Text>
+              <Text style={{ fontSize: Typography.sizes.xs, color: Colors.lightGray, marginTop: 6 }}>
+                Start contributing to level up
+              </Text>
+            </View>
+
+            {/* All Levels Display */}
+            <View style={{ marginTop: 12 }}>
+              <Text style={{ fontSize: Typography.sizes.sm, color: Colors.lightGray, marginBottom: 12, fontWeight: Typography.weights.semibold }}>
+                All Levels
+              </Text>
+
+              {/* Seedling - Level 1 */}
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: 12,
+                marginBottom: 8,
+                backgroundColor: '#90EE9020',
+                borderRadius: 12,
+                borderWidth: 2,
+                borderColor: '#90EE90'
+              }}>
+                <Text style={{ fontSize: 32, marginRight: 12 }}>🌱</Text>
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={{ fontSize: Typography.sizes.md, color: Colors.white, fontWeight: Typography.weights.semibold }}>
+                      Seedling
+                    </Text>
+                    <View style={{ marginLeft: 8, backgroundColor: '#90EE90', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 }}>
+                      <Text style={{ fontSize: Typography.sizes.xs, color: Colors.deepNavy, fontWeight: Typography.weights.bold }}>
+                        CURRENT
+                      </Text>
+                    </View>
+                  </View>
+                  <Text style={{ fontSize: Typography.sizes.xs, color: Colors.lightGray, marginTop: 2 }}>
+                    Your ISA journey begins • 0-15% score
+                  </Text>
+                </View>
+                <Text style={{ fontSize: Typography.sizes.lg, color: Colors.lightGray, fontWeight: Typography.weights.bold }}>
+                  1
+                </Text>
               </View>
-              <View style={{ alignItems: 'flex-end' }}>
-                <Text style={styles.streakNumber}>{STREAK_DATA.currentStreak}</Text>
-                <Text style={styles.streakLabel}>Current</Text>
+
+              {/* Sprout - Level 2 */}
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: 12,
+                marginBottom: 8,
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                opacity: 0.5
+              }}>
+                <Text style={{ fontSize: 32, marginRight: 12 }}>🌿</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: Typography.sizes.md, color: Colors.white, fontWeight: Typography.weights.semibold }}>
+                    Sprout
+                  </Text>
+                  <Text style={{ fontSize: Typography.sizes.xs, color: Colors.lightGray, marginTop: 2 }}>
+                    Growing your savings habit • 15-30% score
+                  </Text>
+                </View>
+                <Text style={{ fontSize: Typography.sizes.lg, color: Colors.lightGray, fontWeight: Typography.weights.bold }}>
+                  2
+                </Text>
+              </View>
+
+              {/* Sapling - Level 3 */}
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: 12,
+                marginBottom: 8,
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                opacity: 0.5
+              }}>
+                <Text style={{ fontSize: 32, marginRight: 12 }}>🌳</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: Typography.sizes.md, color: Colors.white, fontWeight: Typography.weights.semibold }}>
+                    Sapling
+                  </Text>
+                  <Text style={{ fontSize: Typography.sizes.xs, color: Colors.lightGray, marginTop: 2 }}>
+                    Building consistent momentum • 30-50% score
+                  </Text>
+                </View>
+                <Text style={{ fontSize: Typography.sizes.lg, color: Colors.lightGray, fontWeight: Typography.weights.bold }}>
+                  3
+                </Text>
+              </View>
+
+              {/* Bronze Investor - Level 4 */}
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: 12,
+                marginBottom: 8,
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                opacity: 0.5
+              }}>
+                <Text style={{ fontSize: 32, marginRight: 12 }}>🥉</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: Typography.sizes.md, color: Colors.white, fontWeight: Typography.weights.semibold }}>
+                    Bronze Investor
+                  </Text>
+                  <Text style={{ fontSize: Typography.sizes.xs, color: Colors.lightGray, marginTop: 2 }}>
+                    Halfway to ISA mastery • 50-65% score
+                  </Text>
+                </View>
+                <Text style={{ fontSize: Typography.sizes.lg, color: Colors.lightGray, fontWeight: Typography.weights.bold }}>
+                  4
+                </Text>
+              </View>
+
+              {/* Silver Champion - Level 5 */}
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: 12,
+                marginBottom: 8,
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                opacity: 0.5
+              }}>
+                <Text style={{ fontSize: 32, marginRight: 12 }}>🥈</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: Typography.sizes.md, color: Colors.white, fontWeight: Typography.weights.semibold }}>
+                    Silver Champion
+                  </Text>
+                  <Text style={{ fontSize: Typography.sizes.xs, color: Colors.lightGray, marginTop: 2 }}>
+                    Excellence in saving • 65-80% score
+                  </Text>
+                </View>
+                <Text style={{ fontSize: Typography.sizes.lg, color: Colors.lightGray, fontWeight: Typography.weights.bold }}>
+                  5
+                </Text>
+              </View>
+
+              {/* Gold Pro - Level 6 */}
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: 12,
+                marginBottom: 8,
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                opacity: 0.5
+              }}>
+                <Text style={{ fontSize: 32, marginRight: 12 }}>🥇</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: Typography.sizes.md, color: Colors.white, fontWeight: Typography.weights.semibold }}>
+                    Gold Pro
+                  </Text>
+                  <Text style={{ fontSize: Typography.sizes.xs, color: Colors.lightGray, marginTop: 2 }}>
+                    Elite investor status • 80-90% score
+                  </Text>
+                </View>
+                <Text style={{ fontSize: Typography.sizes.lg, color: Colors.lightGray, fontWeight: Typography.weights.bold }}>
+                  6
+                </Text>
+              </View>
+
+              {/* ISA Master - Level 7 */}
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: 12,
+                marginBottom: 8,
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                opacity: 0.5
+              }}>
+                <Text style={{ fontSize: 32, marginRight: 12 }}>👑</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: Typography.sizes.md, color: Colors.white, fontWeight: Typography.weights.semibold }}>
+                    ISA Master
+                  </Text>
+                  <Text style={{ fontSize: Typography.sizes.xs, color: Colors.lightGray, marginTop: 2 }}>
+                    Legendary dedication • 90-100% score
+                  </Text>
+                </View>
+                <Text style={{ fontSize: Typography.sizes.lg, color: Colors.lightGray, fontWeight: Typography.weights.bold }}>
+                  7
+                </Text>
               </View>
             </View>
           </View>

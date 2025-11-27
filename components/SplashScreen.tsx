@@ -41,16 +41,19 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
   const taglineOpacity = useSharedValue(0);
   const glowScale = useSharedValue(1);
   const ringRotate = useSharedValue(0);
-  const gridOpacity = useSharedValue(0);
   const particlesOpacity = useSharedValue(0);
   const scanLineY = useSharedValue(-height);
+  const loadingProgress = useSharedValue(0);
 
   useEffect(() => {
-    // Grid fade in
-    gridOpacity.value = withTiming(1, { duration: 1000 });
-
     // Particles fade in
     particlesOpacity.value = withDelay(200, withTiming(1, { duration: 800 }));
+
+    // Animated loading bar - moves from 0% to 100%
+    loadingProgress.value = withTiming(100, {
+      duration: 3000,
+      easing: Easing.inOut(Easing.ease)
+    });
 
     // Scan line animation
     scanLineY.value = withDelay(
@@ -132,16 +135,16 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
     transform: [{ rotate: `${ringRotate.value}deg` }],
   }));
 
-  const gridAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: gridOpacity.value,
-  }));
-
   const particlesAnimatedStyle = useAnimatedStyle(() => ({
     opacity: particlesOpacity.value,
   }));
 
   const scanLineAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: scanLineY.value }],
+  }));
+
+  const loadingProgressStyle = useAnimatedStyle(() => ({
+    width: `${loadingProgress.value}%`,
   }));
 
   return (
@@ -153,18 +156,6 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       />
-
-      {/* Grid background */}
-      <Animated.View style={[styles.gridContainer, gridAnimatedStyle]}>
-        {/* Vertical lines */}
-        {[...Array(8)].map((_, i) => (
-          <View key={`v-${i}`} style={[styles.gridLine, { left: `${(i + 1) * 12.5}%` }]} />
-        ))}
-        {/* Horizontal lines */}
-        {[...Array(12)].map((_, i) => (
-          <View key={`h-${i}`} style={[styles.gridLineH, { top: `${(i + 1) * 8.33}%` }]} />
-        ))}
-      </Animated.View>
 
       {/* Futuristic scan line */}
       <Animated.View style={[styles.scanLine, scanLineAnimatedStyle]} />
@@ -226,16 +217,17 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
         <Text style={styles.taglineSecondary}>Your Financial Future, Secured</Text>
       </Animated.View>
 
-      {/* Loading indicator - futuristic */}
+      {/* Loading indicator - animated progress bar */}
       <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>INITIALIZING SYSTEM</Text>
         <View style={styles.loadingBar}>
-          <LinearGradient
-            colors={[Colors.gold, '#FFD700', Colors.gold]}
-            style={styles.loadingProgress}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-          />
+          <Animated.View style={[styles.loadingProgressWrapper, loadingProgressStyle]}>
+            <LinearGradient
+              colors={[Colors.gold, '#FFD700', Colors.gold]}
+              style={styles.loadingProgress}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            />
+          </Animated.View>
         </View>
         <View style={styles.loadingDots}>
           <View style={[styles.dot, styles.dot1]} />
@@ -243,12 +235,6 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
           <View style={[styles.dot, styles.dot3]} />
         </View>
       </View>
-
-      {/* Corner accents */}
-      <View style={styles.cornerTL} />
-      <View style={styles.cornerTR} />
-      <View style={styles.cornerBL} />
-      <View style={styles.cornerBR} />
     </View>
   );
 }
@@ -261,24 +247,6 @@ const styles = StyleSheet.create({
   },
   gradient: {
     ...StyleSheet.absoluteFillObject,
-  },
-  // Grid background
-  gridContainer: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  gridLine: {
-    position: 'absolute',
-    width: 1,
-    height: '100%',
-    backgroundColor: Colors.gold,
-    opacity: 0.08,
-  },
-  gridLineH: {
-    position: 'absolute',
-    height: 1,
-    width: '100%',
-    backgroundColor: Colors.gold,
-    opacity: 0.08,
   },
   // Scan line
   scanLine: {
@@ -436,14 +404,6 @@ const styles = StyleSheet.create({
     width: width * 0.7,
     alignItems: 'center',
   },
-  loadingText: {
-    fontSize: Typography.sizes.xs,
-    fontWeight: Typography.weights.bold,
-    color: Colors.gold,
-    letterSpacing: 2,
-    marginBottom: Spacing.sm,
-    opacity: 0.8,
-  },
   loadingBar: {
     width: '100%',
     height: 3,
@@ -451,9 +411,12 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     overflow: 'hidden',
   },
+  loadingProgressWrapper: {
+    height: '100%',
+  },
   loadingProgress: {
     height: '100%',
-    width: '60%',
+    width: '100%',
   },
   loadingDots: {
     flexDirection: 'row',
@@ -474,50 +437,5 @@ const styles = StyleSheet.create({
   },
   dot3: {
     opacity: 0.3,
-  },
-  // Corner accents
-  cornerTL: {
-    position: 'absolute',
-    top: 40,
-    left: 20,
-    width: 30,
-    height: 30,
-    borderTopWidth: 3,
-    borderLeftWidth: 3,
-    borderColor: Colors.gold,
-    opacity: 0.6,
-  },
-  cornerTR: {
-    position: 'absolute',
-    top: 40,
-    right: 20,
-    width: 30,
-    height: 30,
-    borderTopWidth: 3,
-    borderRightWidth: 3,
-    borderColor: Colors.gold,
-    opacity: 0.6,
-  },
-  cornerBL: {
-    position: 'absolute',
-    bottom: 40,
-    left: 20,
-    width: 30,
-    height: 30,
-    borderBottomWidth: 3,
-    borderLeftWidth: 3,
-    borderColor: Colors.gold,
-    opacity: 0.6,
-  },
-  cornerBR: {
-    position: 'absolute',
-    bottom: 40,
-    right: 20,
-    width: 30,
-    height: 30,
-    borderBottomWidth: 3,
-    borderRightWidth: 3,
-    borderColor: Colors.gold,
-    opacity: 0.6,
   },
 });
