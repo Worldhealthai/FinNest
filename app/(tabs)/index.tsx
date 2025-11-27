@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import GlassCard from '@/components/GlassCard';
 import AddISAContributionModal, { ISAContribution } from '@/components/AddISAContributionModal';
@@ -61,7 +62,51 @@ const calculateAllowanceUsed = async (contributions: ISAContribution[]) => {
   return totalUsed;
 };
 
+// Helper to calculate quick consistency score for dashboard preview
+const calculateQuickConsistency = (contributions: ISAContribution[]) => {
+  const currentTaxYear = getCurrentTaxYear();
+  const yearContributions = contributions.filter(c =>
+    !c.deleted && isDateInTaxYear(new Date(c.date), currentTaxYear)
+  );
+
+  if (yearContributions.length === 0) {
+    return { score: 0, monthsCovered: 0, rating: 'Not Started', hasAchievements: false };
+  }
+
+  const monthsWithContributions = new Set(
+    yearContributions.map(c => new Date(c.date).getMonth())
+  );
+  const monthsCovered = monthsWithContributions.size;
+  const baseScore = Math.round((monthsCovered / 12) * 100);
+
+  // Quick bonus checks
+  const firstContribution = new Date(Math.min(...yearContributions.map(c => new Date(c.date).getTime())));
+  const monthsSinceStart = Math.max(0,
+    (firstContribution.getFullYear() - currentTaxYear.startDate.getFullYear()) * 12 +
+    (firstContribution.getMonth() - currentTaxYear.startDate.getMonth())
+  );
+  const earnedEarlyBird = monthsSinceStart <= 2;
+  const earnedFrequent = monthsCovered >= 6;
+
+  const bonusPoints = (earnedEarlyBird ? 10 : 0) + (earnedFrequent ? 5 : 0);
+  const totalScore = Math.min(100, baseScore + bonusPoints);
+
+  let rating = 'Getting Started';
+  if (totalScore >= 90) rating = 'ISA Pro';
+  else if (totalScore >= 75) rating = 'Steady Investor';
+  else if (totalScore >= 60) rating = 'Building Habits';
+  else if (totalScore >= 40) rating = 'Making Progress';
+
+  return {
+    score: totalScore,
+    monthsCovered,
+    rating,
+    hasAchievements: earnedEarlyBird || earnedFrequent
+  };
+};
+
 export default function DashboardScreen() {
+  const router = useRouter();
   const [contributions, setContributions] = useState<ISAContribution[]>([]);
   const [expandedISA, setExpandedISA] = useState<string | null>(null);
   const [allowanceUsed, setAllowanceUsed] = useState<number>(0);
@@ -82,6 +127,9 @@ export default function DashboardScreen() {
   // Use allowanceUsed for percentage calculation too
   const percent = (allowanceUsed / ISA_ANNUAL_ALLOWANCE) * 100;
   const lisaBonus = groupedISAs.lifetime.total * 0.25;
+
+  // Calculate consistency score for dashboard preview
+  const consistencyData = calculateQuickConsistency(filteredContributions);
 
   // Modal state
   const [addContributionVisible, setAddContributionVisible] = useState(false);
@@ -335,6 +383,92 @@ export default function DashboardScreen() {
               </View>
             </View>
           </GlassCard>
+
+          {/* Progress & Achievements - Clickable to navigate to Hub */}
+          <Pressable
+            onPress={() => router.push('/(tabs)/analytics')}
+            style={({ pressed }) => [{ opacity: pressed ? 0.85 : 1 }]}
+          >
+            <GlassCard style={styles.card} intensity="medium">
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <View style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 20,
+                    backgroundColor: Colors.gold + '20',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: 12
+                  }}>
+                    <Ionicons name="trophy" size={22} color={Colors.gold} />
+                  </View>
+                  <View>
+                    <Text style={styles.name}>Progress & Achievements</Text>
+                    <Text style={[styles.sub, { marginTop: 2 }]}>Tap to view full details</Text>
+                  </View>
+                </View>
+                <Ionicons name="chevron-forward" size={24} color={Colors.lightGray} />
+              </View>
+
+              {/* Consistency Score Preview */}
+              <View style={{ backgroundColor: 'rgba(255, 215, 0, 0.08)', borderRadius: 12, padding: 16, marginTop: 8 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Ionicons name="analytics" size={20} color={Colors.gold} style={{ marginRight: 8 }} />
+                    <Text style={[styles.name, { fontSize: Typography.sizes.sm }]}>Consistency Score</Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
+                    <Text style={{ fontSize: Typography.sizes.xxl, color: Colors.gold, fontWeight: Typography.weights.extrabold }}>
+                      {consistencyData.score}
+                    </Text>
+                    <Text style={{ fontSize: Typography.sizes.md, color: Colors.gold, fontWeight: Typography.weights.bold, marginLeft: 2 }}>
+                      %
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Rating & Months */}
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <View style={{
+                    backgroundColor: Colors.gold + '25',
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: Colors.gold + '40'
+                  }}>
+                    <Text style={{ fontSize: Typography.sizes.xs, color: Colors.gold, fontWeight: Typography.weights.semibold }}>
+                      {consistencyData.rating}
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: Typography.sizes.xs, color: Colors.lightGray }}>
+                    {consistencyData.monthsCovered}/12 months active
+                  </Text>
+                </View>
+
+                {/* Achievement Badge (if any earned) */}
+                {consistencyData.hasAchievements && (
+                  <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginTop: 10,
+                    paddingTop: 10,
+                    borderTopWidth: 1,
+                    borderTopColor: 'rgba(255, 255, 255, 0.1)'
+                  }}>
+                    <Ionicons name="ribbon" size={16} color={Colors.success} style={{ marginRight: 6 }} />
+                    <Text style={{ fontSize: Typography.sizes.xs, color: Colors.success, fontWeight: Typography.weights.semibold }}>
+                      Achievement unlocked!
+                    </Text>
+                    <Text style={{ fontSize: Typography.sizes.xs, color: Colors.lightGray, marginLeft: 6 }}>
+                      Tap to see all
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </GlassCard>
+          </Pressable>
 
           <Text style={styles.section}>My ISAs</Text>
 
