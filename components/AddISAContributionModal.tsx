@@ -172,8 +172,13 @@ export default function AddISAContributionModal({
     // Check if we need to ask about flexibility
     const setting = await getISASetting(provider.trim(), selectedType);
 
-    if (!setting && !needsFlexibilityAnswer) {
-      // First time adding to this provider+type combo
+    // Lifetime ISAs are NEVER flexible - automatically set as non-flexible
+    if (selectedType === ISA_TYPES.LIFETIME && !setting) {
+      console.log('Lifetime ISA detected - automatically setting as non-flexible');
+      await setISASetting(provider.trim(), selectedType, false);
+      console.log(`✅ Saved flexibility setting for Lifetime ISA: false`);
+    } else if (!setting && !needsFlexibilityAnswer) {
+      // First time adding to this provider+type combo (non-Lifetime ISA)
       // Show flexibility question
       console.log('First time for this provider+type - showing flexibility question');
       setShowFlexibilityQuestion(true);
