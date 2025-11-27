@@ -377,13 +377,20 @@ export default function DashboardScreen() {
                           {new Date(contribution.date).toLocaleDateString()}
                         </Text>
                       </View>
-                      <Text style={[styles.val, { marginRight: 12 }]}>{formatCurrency(contribution.amount)}</Text>
+                      <Text style={[styles.val, { marginRight: 8 }]}>{formatCurrency(contribution.amount)}</Text>
                       <TouchableOpacity
                         onPress={() => handleEditContribution(contribution)}
                         style={{ padding: 8 }}
                         activeOpacity={0.6}
                       >
                         <Ionicons name="create-outline" size={20} color={Colors.gold} />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => handleDeleteContribution(contribution.id)}
+                        style={{ padding: 8 }}
+                        activeOpacity={0.6}
+                      >
+                        <Ionicons name="trash-outline" size={20} color={Colors.error} />
                       </TouchableOpacity>
                     </View>
                   ))}
@@ -431,13 +438,20 @@ export default function DashboardScreen() {
                           {new Date(contribution.date).toLocaleDateString()}
                         </Text>
                       </View>
-                      <Text style={[styles.val, { marginRight: 12 }]}>{formatCurrency(contribution.amount)}</Text>
+                      <Text style={[styles.val, { marginRight: 8 }]}>{formatCurrency(contribution.amount)}</Text>
                       <TouchableOpacity
                         onPress={() => handleEditContribution(contribution)}
                         style={{ padding: 8 }}
                         activeOpacity={0.6}
                       >
                         <Ionicons name="create-outline" size={20} color={Colors.gold} />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => handleDeleteContribution(contribution.id)}
+                        style={{ padding: 8 }}
+                        activeOpacity={0.6}
+                      >
+                        <Ionicons name="trash-outline" size={20} color={Colors.error} />
                       </TouchableOpacity>
                     </View>
                   ))}
@@ -489,13 +503,20 @@ export default function DashboardScreen() {
                           {new Date(contribution.date).toLocaleDateString()}
                         </Text>
                       </View>
-                      <Text style={[styles.val, { marginRight: 12 }]}>{formatCurrency(contribution.amount)}</Text>
+                      <Text style={[styles.val, { marginRight: 8 }]}>{formatCurrency(contribution.amount)}</Text>
                       <TouchableOpacity
                         onPress={() => handleEditContribution(contribution)}
                         style={{ padding: 8 }}
                         activeOpacity={0.6}
                       >
                         <Ionicons name="create-outline" size={20} color={Colors.gold} />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => handleDeleteContribution(contribution.id)}
+                        style={{ padding: 8 }}
+                        activeOpacity={0.6}
+                      >
+                        <Ionicons name="trash-outline" size={20} color={Colors.error} />
                       </TouchableOpacity>
                     </View>
                   ))}
@@ -543,13 +564,20 @@ export default function DashboardScreen() {
                           {new Date(contribution.date).toLocaleDateString()}
                         </Text>
                       </View>
-                      <Text style={[styles.val, { marginRight: 12 }]}>{formatCurrency(contribution.amount)}</Text>
+                      <Text style={[styles.val, { marginRight: 8 }]}>{formatCurrency(contribution.amount)}</Text>
                       <TouchableOpacity
                         onPress={() => handleEditContribution(contribution)}
                         style={{ padding: 8 }}
                         activeOpacity={0.6}
                       >
                         <Ionicons name="create-outline" size={20} color={Colors.gold} />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => handleDeleteContribution(contribution.id)}
+                        style={{ padding: 8 }}
+                        activeOpacity={0.6}
+                      >
+                        <Ionicons name="trash-outline" size={20} color={Colors.error} />
                       </TouchableOpacity>
                     </View>
                   ))}
