@@ -220,7 +220,7 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
       {/* Loading indicator - animated progress bar */}
       <View style={styles.loadingContainer}>
         <View style={styles.loadingBar}>
-          <Animated.View style={[loadingProgressStyle]}>
+          <Animated.View style={[styles.loadingProgressWrapper, loadingProgressStyle]}>
             <LinearGradient
               colors={[Colors.gold, '#FFD700', Colors.gold]}
               style={styles.loadingProgress}
@@ -410,6 +410,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 215, 0, 0.2)',
     borderRadius: 2,
     overflow: 'hidden',
+  },
+  loadingProgressWrapper: {
+    height: '100%',
   },
   loadingProgress: {
     height: '100%',
