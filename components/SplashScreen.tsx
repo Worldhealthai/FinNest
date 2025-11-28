@@ -243,8 +243,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: height * 0.2,
+    justifyContent: 'center',
   },
   gradient: {
     ...StyleSheet.absoluteFillObject,
@@ -352,6 +351,7 @@ const styles = StyleSheet.create({
   titleContainer: {
     alignItems: 'center',
     marginBottom: Spacing.md,
+    marginTop: -Spacing.xl,
   },
   title: {
     fontSize: Typography.sizes.xxxl + 4,
