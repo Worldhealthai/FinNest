@@ -361,6 +361,7 @@ export default function AnalyticsScreen() {
 
           <Text style={styles.section}>Year Overview</Text>
 
+          {/* Row 1: Total Saved and Remaining */}
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <GlassCard style={[styles.card, { flex: 1 }]} intensity="medium">
               <Ionicons name="trending-up" size={24} color={Colors.success} />
@@ -374,75 +375,19 @@ export default function AnalyticsScreen() {
             </GlassCard>
           </View>
 
-          {/* Consistency Score Card - Full Width */}
-          <GlassCard style={styles.card} intensity="medium">
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Ionicons name="analytics" size={24} color={Colors.gold} style={{ marginRight: 8 }} />
-                <Text style={styles.name}>Consistency Score</Text>
-              </View>
-              <View style={{ alignItems: 'flex-end' }}>
-                <Text style={[styles.big, { fontSize: Typography.sizes.xxxl, marginBottom: 0 }]}>{consistencyData.score}%</Text>
-                <Text style={[styles.sub, { fontSize: 11, color: Colors.gold, marginTop: 2 }]}>
-                  {consistencyData.rating}
-                </Text>
-              </View>
-            </View>
-
-            {/* Base Score + Bonuses */}
-            <View style={{ marginBottom: 12 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <Text style={[styles.sub, { fontSize: 12 }]}>Base: {consistencyData.monthsCovered}/12 months</Text>
-                <Text style={[styles.val, { fontSize: 14, color: Colors.gold }]}>{consistencyData.baseScore}%</Text>
-              </View>
-
-              {/* Bonuses */}
-              {consistencyData.bonuses.map((bonus: any, index: number) => (
-                <View key={index} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4, opacity: bonus.earned ? 1 : 0.4 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Ionicons
-                      name={bonus.earned ? "checkmark-circle" : "close-circle"}
-                      size={16}
-                      color={bonus.earned ? Colors.success : Colors.mediumGray}
-                      style={{ marginRight: 6 }}
-                    />
-                    <Text style={[styles.sub, { fontSize: 11 }]}>
-                      {bonus.name} {!bonus.earned && '(locked)'}
-                    </Text>
-                  </View>
-                  <Text style={[styles.sub, { fontSize: 11, color: bonus.earned ? Colors.success : Colors.mediumGray }]}>
-                    +{bonus.value}%
-                  </Text>
-                </View>
-              ))}
-            </View>
-
-            {/* Monthly Heatmap */}
-            <View>
-              <Text style={[styles.sub, { fontSize: 10, marginBottom: 6, opacity: 0.7 }]}>Monthly Activity</Text>
-              <View style={{ flexDirection: 'row', gap: 4 }}>
-                {['A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D', 'J', 'F', 'M'].map((month, index) => (
-                  <View key={index} style={{ flex: 1, alignItems: 'center' }}>
-                    <View style={{
-                      width: '100%',
-                      aspectRatio: 1,
-                      backgroundColor: consistencyData.monthlyHeatmap[index] ? Colors.gold : 'rgba(255, 255, 255, 0.1)',
-                      borderRadius: 4,
-                      marginBottom: 2
-                    }} />
-                    <Text style={{ fontSize: 8, color: Colors.lightGray }}>{month}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          </GlassCard>
-
-          {/* Gov Bonus Card */}
-          <GlassCard style={styles.card} intensity="medium">
-            <Ionicons name="flash" size={24} color={ISA_INFO.lifetime.color} />
-            <Text style={styles.big}>{formatCurrency(lifetimeBonus)}</Text>
-            <Text style={styles.sub}>Government Bonus (LISA)</Text>
-          </GlassCard>
+          {/* Row 2: Government Bonus and Consistency Score */}
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <GlassCard style={[styles.card, { flex: 1 }]} intensity="medium">
+              <Ionicons name="flash" size={24} color={ISA_INFO.lifetime.color} />
+              <Text style={styles.big}>{formatCurrency(lifetimeBonus)}</Text>
+              <Text style={styles.sub}>Govt Bonus (LISA)</Text>
+            </GlassCard>
+            <GlassCard style={[styles.card, { flex: 1 }]} intensity="medium">
+              <Ionicons name="analytics" size={24} color={Colors.gold} />
+              <Text style={styles.big}>{consistencyData.score}%</Text>
+              <Text style={styles.sub}>{consistencyData.rating}</Text>
+            </GlassCard>
+          </View>
 
           <Text style={styles.section}>ISA Breakdown</Text>
 
