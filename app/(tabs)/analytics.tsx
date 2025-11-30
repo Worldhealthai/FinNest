@@ -205,7 +205,7 @@ export default function AnalyticsScreen() {
         baseScore: 0,
         monthsCovered: 0,
         bonuses: [],
-        rating: 'Not Started',
+        rating: '',
         monthlyHeatmap: Array(12).fill(false)
       };
     }
@@ -223,7 +223,7 @@ export default function AnalyticsScreen() {
         baseScore: 0,
         monthsCovered: 0,
         bonuses: [],
-        rating: 'Not Started',
+        rating: '',
         monthlyHeatmap: Array(12).fill(false)
       };
     }
@@ -385,10 +385,12 @@ export default function AnalyticsScreen() {
             <GlassCard style={[styles.card, { flex: 1 }]} intensity="medium">
               <Ionicons name="analytics" size={24} color={Colors.gold} />
               <Text style={styles.big}>{consistencyData.score}%</Text>
-              <Text style={styles.sub}>Consistency Score</Text>
-              <View style={[styles.badge, { marginTop: 6 }]}>
-                <Text style={styles.badgeText}>{consistencyData.rating}</Text>
-              </View>
+              <Text style={styles.sub}>
+                Consistency Score
+                {consistencyData.score > 0 && (
+                  <Text style={{ color: Colors.gold, fontWeight: Typography.weights.semibold }}> • {consistencyData.rating}</Text>
+                )}
+              </Text>
             </GlassCard>
           </View>
 
