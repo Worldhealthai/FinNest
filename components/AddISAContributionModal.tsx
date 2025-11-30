@@ -48,8 +48,8 @@ export interface ISAContribution {
   amount: number;
   date: string;
   notes?: string;
-  deleted?: boolean;
-  deletedDate?: string;
+  withdrawn?: boolean;
+  withdrawnDate?: string;
 }
 
 export default function AddISAContributionModal({

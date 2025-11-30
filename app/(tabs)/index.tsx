@@ -25,37 +25,34 @@ const groupContributions = (contributions: ISAContribution[]) => {
   };
 
   contributions.forEach(contribution => {
-    // Skip deleted contributions in display
-    if (contribution.deleted) return;
-
     const type = contribution.isaType;
     if (!grouped[type].providers[contribution.provider]) {
       grouped[type].providers[contribution.provider] = { contributed: 0, balance: 0 };
     }
+
+    // Contributed total includes withdrawn amounts (they were still contributed)
     grouped[type].providers[contribution.provider].contributed += contribution.amount;
-    grouped[type].providers[contribution.provider].balance += contribution.amount;
     grouped[type].total += contribution.amount;
+
+    // Balance only includes active (not withdrawn) amounts
+    if (!contribution.withdrawn) {
+      grouped[type].providers[contribution.provider].balance += contribution.amount;
+    }
   });
 
   return grouped;
 };
 
-// Helper to calculate total allowance used (including deleted non-flexible contributions)
-const calculateAllowanceUsed = async (contributions: ISAContribution[]) => {
+// Helper to calculate total allowance used
+// Withdrawn contributions still count toward allowance
+// Only truly deleted entries don't count
+const calculateAllowanceUsed = (contributions: ISAContribution[]) => {
   let totalUsed = 0;
 
   for (const contribution of contributions) {
-    if (!contribution.deleted) {
-      // Active contribution - always counts
-      totalUsed += contribution.amount;
-    } else {
-      // Deleted contribution - only counts if non-flexible
-      const flexible = await isISAFlexible(contribution.provider, contribution.isaType);
-      if (!flexible) {
-        // Non-flexible deleted contribution still uses allowance
-        totalUsed += contribution.amount;
-      }
-    }
+    // All contributions count toward allowance (even withdrawn ones)
+    // Only deleted entries (mistakes) don't count
+    totalUsed += contribution.amount;
   }
 
   return totalUsed;
@@ -98,13 +95,10 @@ export default function DashboardScreen() {
     loadISAData();
   }, []);
 
-  // Calculate allowance used (including deleted non-flexible contributions)
+  // Calculate allowance used (withdrawn contributions count, deleted don't)
   useEffect(() => {
-    const updateAllowanceUsed = async () => {
-      const used = await calculateAllowanceUsed(filteredContributions);
-      setAllowanceUsed(used);
-    };
-    updateAllowanceUsed();
+    const used = calculateAllowanceUsed(filteredContributions);
+    setAllowanceUsed(used);
   }, [filteredContributions]);
 
   const loadISAData = async () => {
@@ -227,50 +221,67 @@ export default function DashboardScreen() {
     console.log('Contribution updated and saved successfully');
   };
 
-  const handleDeleteContribution = async (contributionId: string) => {
+  const handleWithdrawContribution = async (contributionId: string) => {
     const contribution = contributions.find(c => c.id === contributionId);
     if (!contribution) return;
 
-    // Check if this ISA is flexible
-    const flexible = await isISAFlexible(contribution.provider, contribution.isaType);
+    const message = `Withdraw this ${formatCurrency(contribution.amount)} contribution from ${contribution.provider}?\n\nThe contribution will be marked as withdrawn, but the allowance remains used for this tax year (ISA rules).`;
 
-    const isaTypeInfo = ISA_INFO[contribution.isaType];
-    const message = flexible
-      ? `Delete this ${formatCurrency(contribution.amount)} contribution from ${contribution.provider}?\n\nThis is a FLEXIBLE ISA - your allowance will be restored.`
-      : `Delete this ${formatCurrency(contribution.amount)} contribution from ${contribution.provider}?\n\nThis is a NON-FLEXIBLE ISA - the allowance will be permanently used even after deletion.`;
-
-    const performDelete = async () => {
-      if (flexible) {
-        // FLEXIBLE ISA: Actually remove the contribution
-        console.log(`Deleting from flexible ISA - allowance will be restored`);
-        const updatedContributions = contributions.filter(c => c.id !== contributionId);
-        setContributions(updatedContributions);
-        await saveContributions(updatedContributions);
-        console.log('✅ Contribution deleted from flexible ISA:', contributionId);
-      } else {
-        // NON-FLEXIBLE ISA: Soft delete (mark as deleted but keep in array)
-        console.log(`Soft deleting from non-flexible ISA - allowance remains used`);
-        const updatedContributions = contributions.map(c =>
-          c.id === contributionId
-            ? { ...c, deleted: true, deletedDate: new Date().toISOString() }
-            : c
-        );
-        setContributions(updatedContributions);
-        await saveContributions(updatedContributions);
-        console.log('✅ Contribution soft deleted from non-flexible ISA:', contributionId);
-      }
+    const performWithdraw = async () => {
+      console.log(`Marking contribution as withdrawn - allowance remains used`);
+      const updatedContributions = contributions.map(c =>
+        c.id === contributionId
+          ? { ...c, withdrawn: true, withdrawnDate: new Date().toISOString() }
+          : c
+      );
+      setContributions(updatedContributions);
+      await saveContributions(updatedContributions);
+      console.log('✅ Contribution marked as withdrawn:', contributionId);
     };
 
     // Use native browser confirm on web, Alert.alert on mobile
     if (Platform.OS === 'web') {
-      // Web: Use window.confirm
+      if (typeof window !== 'undefined' && window.confirm(message)) {
+        await performWithdraw();
+      }
+    } else {
+      Alert.alert(
+        'Withdraw Contribution',
+        message,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Withdraw',
+            style: 'default',
+            onPress: performWithdraw,
+          },
+        ]
+      );
+    }
+  };
+
+  const handleDeleteContribution = async (contributionId: string) => {
+    const contribution = contributions.find(c => c.id === contributionId);
+    if (!contribution) return;
+
+    const message = `Delete this ${formatCurrency(contribution.amount)} entry from ${contribution.provider}?\n\nThis will completely remove the entry and restore your allowance.\n\nOnly use this if the entry was added by mistake!`;
+
+    const performDelete = async () => {
+      console.log(`Deleting contribution - allowance will be restored`);
+      const updatedContributions = contributions.filter(c => c.id !== contributionId);
+      setContributions(updatedContributions);
+      await saveContributions(updatedContributions);
+      console.log('✅ Contribution deleted:', contributionId);
+    };
+
+    // Use native browser confirm on web, Alert.alert on mobile
+    if (Platform.OS === 'web') {
       if (typeof window !== 'undefined' && window.confirm(message)) {
         await performDelete();
       }
     } else {
-      // Mobile: Use Alert.alert
       Alert.alert(
-        'Delete Contribution',
+        'Delete Entry',
         message,
         [
           { text: 'Cancel', style: 'cancel' },
@@ -366,25 +377,41 @@ export default function DashboardScreen() {
                 </View>
               </View>
 
-              {expandedISA === 'cash' && filteredContributions.filter(c => c.isaType === 'cash' && !c.deleted).length > 0 && (
+              {expandedISA === 'cash' && filteredContributions.filter(c => c.isaType === 'cash').length > 0 && (
                 <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.glassLight }}>
                   <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Contributions:</Text>
-                  {filteredContributions.filter(c => c.isaType === 'cash' && !c.deleted).map((contribution) => (
-                    <View key={contribution.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingLeft: 12, paddingVertical: 8, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 8 }}>
+                  {filteredContributions.filter(c => c.isaType === 'cash').map((contribution) => (
+                    <View key={contribution.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingLeft: 12, paddingVertical: 8, backgroundColor: contribution.withdrawn ? 'rgba(255, 165, 0, 0.1)' : 'rgba(255, 255, 255, 0.05)', borderRadius: 8, borderWidth: contribution.withdrawn ? 1 : 0, borderColor: contribution.withdrawn ? 'rgba(255, 165, 0, 0.3)' : 'transparent' }}>
                       <View style={{ flex: 1 }}>
-                        <Text style={styles.sub}>{contribution.provider}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Text style={styles.sub}>{contribution.provider}</Text>
+                          {contribution.withdrawn && (
+                            <Text style={{ fontSize: 10, color: Colors.warning, fontWeight: '600', backgroundColor: 'rgba(255, 165, 0, 0.2)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>WITHDRAWN</Text>
+                          )}
+                        </View>
                         <Text style={[styles.sub, { fontSize: 12, opacity: 0.7, marginTop: 2 }]}>
                           {new Date(contribution.date).toLocaleDateString()}
                         </Text>
                       </View>
-                      <Text style={[styles.val, { marginRight: 8 }]}>{formatCurrency(contribution.amount)}</Text>
-                      <TouchableOpacity
-                        onPress={() => handleEditContribution(contribution)}
-                        style={{ padding: 8 }}
-                        activeOpacity={0.6}
-                      >
-                        <Ionicons name="create-outline" size={20} color={Colors.gold} />
-                      </TouchableOpacity>
+                      <Text style={[styles.val, { marginRight: 8, textDecorationLine: contribution.withdrawn ? 'line-through' : 'none', opacity: contribution.withdrawn ? 0.6 : 1 }]}>{formatCurrency(contribution.amount)}</Text>
+                      {!contribution.withdrawn && (
+                        <>
+                          <TouchableOpacity
+                            onPress={() => handleEditContribution(contribution)}
+                            style={{ padding: 8 }}
+                            activeOpacity={0.6}
+                          >
+                            <Ionicons name="create-outline" size={20} color={Colors.gold} />
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            onPress={() => handleWithdrawContribution(contribution.id)}
+                            style={{ padding: 8 }}
+                            activeOpacity={0.6}
+                          >
+                            <Ionicons name="arrow-undo-outline" size={20} color={Colors.warning} />
+                          </TouchableOpacity>
+                        </>
+                      )}
                       <TouchableOpacity
                         onPress={() => handleDeleteContribution(contribution.id)}
                         style={{ padding: 8 }}
@@ -427,25 +454,41 @@ export default function DashboardScreen() {
                 </View>
               </View>
 
-              {expandedISA === 'stocks_shares' && filteredContributions.filter(c => c.isaType === 'stocks_shares' && !c.deleted).length > 0 && (
+              {expandedISA === 'stocks_shares' && filteredContributions.filter(c => c.isaType === 'stocks_shares').length > 0 && (
                 <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.glassLight }}>
                   <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Contributions:</Text>
-                  {filteredContributions.filter(c => c.isaType === 'stocks_shares' && !c.deleted).map((contribution) => (
-                    <View key={contribution.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingLeft: 12, paddingVertical: 8, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 8 }}>
+                  {filteredContributions.filter(c => c.isaType === 'stocks_shares').map((contribution) => (
+                    <View key={contribution.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingLeft: 12, paddingVertical: 8, backgroundColor: contribution.withdrawn ? 'rgba(255, 165, 0, 0.1)' : 'rgba(255, 255, 255, 0.05)', borderRadius: 8, borderWidth: contribution.withdrawn ? 1 : 0, borderColor: contribution.withdrawn ? 'rgba(255, 165, 0, 0.3)' : 'transparent' }}>
                       <View style={{ flex: 1 }}>
-                        <Text style={styles.sub}>{contribution.provider}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Text style={styles.sub}>{contribution.provider}</Text>
+                          {contribution.withdrawn && (
+                            <Text style={{ fontSize: 10, color: Colors.warning, fontWeight: '600', backgroundColor: 'rgba(255, 165, 0, 0.2)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>WITHDRAWN</Text>
+                          )}
+                        </View>
                         <Text style={[styles.sub, { fontSize: 12, opacity: 0.7, marginTop: 2 }]}>
                           {new Date(contribution.date).toLocaleDateString()}
                         </Text>
                       </View>
-                      <Text style={[styles.val, { marginRight: 8 }]}>{formatCurrency(contribution.amount)}</Text>
-                      <TouchableOpacity
-                        onPress={() => handleEditContribution(contribution)}
-                        style={{ padding: 8 }}
-                        activeOpacity={0.6}
-                      >
-                        <Ionicons name="create-outline" size={20} color={Colors.gold} />
-                      </TouchableOpacity>
+                      <Text style={[styles.val, { marginRight: 8, textDecorationLine: contribution.withdrawn ? 'line-through' : 'none', opacity: contribution.withdrawn ? 0.6 : 1 }]}>{formatCurrency(contribution.amount)}</Text>
+                      {!contribution.withdrawn && (
+                        <>
+                          <TouchableOpacity
+                            onPress={() => handleEditContribution(contribution)}
+                            style={{ padding: 8 }}
+                            activeOpacity={0.6}
+                          >
+                            <Ionicons name="create-outline" size={20} color={Colors.gold} />
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            onPress={() => handleWithdrawContribution(contribution.id)}
+                            style={{ padding: 8 }}
+                            activeOpacity={0.6}
+                          >
+                            <Ionicons name="arrow-undo-outline" size={20} color={Colors.warning} />
+                          </TouchableOpacity>
+                        </>
+                      )}
                       <TouchableOpacity
                         onPress={() => handleDeleteContribution(contribution.id)}
                         style={{ padding: 8 }}
@@ -492,25 +535,41 @@ export default function DashboardScreen() {
               </View>
               <Text style={[styles.sub, { marginTop: 4 }]}>{formatCurrency(LIFETIME_ISA_MAX - groupedISAs.lifetime.total)} left for max bonus</Text>
 
-              {expandedISA === 'lifetime' && filteredContributions.filter(c => c.isaType === 'lifetime' && !c.deleted).length > 0 && (
+              {expandedISA === 'lifetime' && filteredContributions.filter(c => c.isaType === 'lifetime').length > 0 && (
                 <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.glassLight }}>
                   <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Contributions:</Text>
-                  {filteredContributions.filter(c => c.isaType === 'lifetime' && !c.deleted).map((contribution) => (
-                    <View key={contribution.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingLeft: 12, paddingVertical: 8, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 8 }}>
+                  {filteredContributions.filter(c => c.isaType === 'lifetime').map((contribution) => (
+                    <View key={contribution.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingLeft: 12, paddingVertical: 8, backgroundColor: contribution.withdrawn ? 'rgba(255, 165, 0, 0.1)' : 'rgba(255, 255, 255, 0.05)', borderRadius: 8, borderWidth: contribution.withdrawn ? 1 : 0, borderColor: contribution.withdrawn ? 'rgba(255, 165, 0, 0.3)' : 'transparent' }}>
                       <View style={{ flex: 1 }}>
-                        <Text style={styles.sub}>{contribution.provider}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Text style={styles.sub}>{contribution.provider}</Text>
+                          {contribution.withdrawn && (
+                            <Text style={{ fontSize: 10, color: Colors.warning, fontWeight: '600', backgroundColor: 'rgba(255, 165, 0, 0.2)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>WITHDRAWN</Text>
+                          )}
+                        </View>
                         <Text style={[styles.sub, { fontSize: 12, opacity: 0.7, marginTop: 2 }]}>
                           {new Date(contribution.date).toLocaleDateString()}
                         </Text>
                       </View>
-                      <Text style={[styles.val, { marginRight: 8 }]}>{formatCurrency(contribution.amount)}</Text>
-                      <TouchableOpacity
-                        onPress={() => handleEditContribution(contribution)}
-                        style={{ padding: 8 }}
-                        activeOpacity={0.6}
-                      >
-                        <Ionicons name="create-outline" size={20} color={Colors.gold} />
-                      </TouchableOpacity>
+                      <Text style={[styles.val, { marginRight: 8, textDecorationLine: contribution.withdrawn ? 'line-through' : 'none', opacity: contribution.withdrawn ? 0.6 : 1 }]}>{formatCurrency(contribution.amount)}</Text>
+                      {!contribution.withdrawn && (
+                        <>
+                          <TouchableOpacity
+                            onPress={() => handleEditContribution(contribution)}
+                            style={{ padding: 8 }}
+                            activeOpacity={0.6}
+                          >
+                            <Ionicons name="create-outline" size={20} color={Colors.gold} />
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            onPress={() => handleWithdrawContribution(contribution.id)}
+                            style={{ padding: 8 }}
+                            activeOpacity={0.6}
+                          >
+                            <Ionicons name="arrow-undo-outline" size={20} color={Colors.warning} />
+                          </TouchableOpacity>
+                        </>
+                      )}
                       <TouchableOpacity
                         onPress={() => handleDeleteContribution(contribution.id)}
                         style={{ padding: 8 }}
@@ -553,25 +612,41 @@ export default function DashboardScreen() {
                 </View>
               </View>
 
-              {expandedISA === 'innovative_finance' && filteredContributions.filter(c => c.isaType === 'innovative_finance' && !c.deleted).length > 0 && (
+              {expandedISA === 'innovative_finance' && filteredContributions.filter(c => c.isaType === 'innovative_finance').length > 0 && (
                 <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.glassLight }}>
                   <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Contributions:</Text>
-                  {filteredContributions.filter(c => c.isaType === 'innovative_finance' && !c.deleted).map((contribution) => (
-                    <View key={contribution.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingLeft: 12, paddingVertical: 8, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 8 }}>
+                  {filteredContributions.filter(c => c.isaType === 'innovative_finance').map((contribution) => (
+                    <View key={contribution.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingLeft: 12, paddingVertical: 8, backgroundColor: contribution.withdrawn ? 'rgba(255, 165, 0, 0.1)' : 'rgba(255, 255, 255, 0.05)', borderRadius: 8, borderWidth: contribution.withdrawn ? 1 : 0, borderColor: contribution.withdrawn ? 'rgba(255, 165, 0, 0.3)' : 'transparent' }}>
                       <View style={{ flex: 1 }}>
-                        <Text style={styles.sub}>{contribution.provider}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Text style={styles.sub}>{contribution.provider}</Text>
+                          {contribution.withdrawn && (
+                            <Text style={{ fontSize: 10, color: Colors.warning, fontWeight: '600', backgroundColor: 'rgba(255, 165, 0, 0.2)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>WITHDRAWN</Text>
+                          )}
+                        </View>
                         <Text style={[styles.sub, { fontSize: 12, opacity: 0.7, marginTop: 2 }]}>
                           {new Date(contribution.date).toLocaleDateString()}
                         </Text>
                       </View>
-                      <Text style={[styles.val, { marginRight: 8 }]}>{formatCurrency(contribution.amount)}</Text>
-                      <TouchableOpacity
-                        onPress={() => handleEditContribution(contribution)}
-                        style={{ padding: 8 }}
-                        activeOpacity={0.6}
-                      >
-                        <Ionicons name="create-outline" size={20} color={Colors.gold} />
-                      </TouchableOpacity>
+                      <Text style={[styles.val, { marginRight: 8, textDecorationLine: contribution.withdrawn ? 'line-through' : 'none', opacity: contribution.withdrawn ? 0.6 : 1 }]}>{formatCurrency(contribution.amount)}</Text>
+                      {!contribution.withdrawn && (
+                        <>
+                          <TouchableOpacity
+                            onPress={() => handleEditContribution(contribution)}
+                            style={{ padding: 8 }}
+                            activeOpacity={0.6}
+                          >
+                            <Ionicons name="create-outline" size={20} color={Colors.gold} />
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            onPress={() => handleWithdrawContribution(contribution.id)}
+                            style={{ padding: 8 }}
+                            activeOpacity={0.6}
+                          >
+                            <Ionicons name="arrow-undo-outline" size={20} color={Colors.warning} />
+                          </TouchableOpacity>
+                        </>
+                      )}
                       <TouchableOpacity
                         onPress={() => handleDeleteContribution(contribution.id)}
                         style={{ padding: 8 }}

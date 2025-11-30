@@ -41,7 +41,7 @@ const LEVELS = [
 const getMonthlyHeatmap = (contributions: ISAContribution[]) => {
   const currentTaxYear = getCurrentTaxYear();
   const yearContributions = contributions.filter(c =>
-    !c.deleted && isDateInTaxYear(new Date(c.date), currentTaxYear)
+    !c.withdrawn && isDateInTaxYear(new Date(c.date), currentTaxYear)
   );
 
   if (yearContributions.length === 0) {
@@ -70,9 +70,9 @@ const calculateConsistencyScore = (contributions: ISAContribution[]) => {
 
   const currentTaxYear = getCurrentTaxYear();
 
-  // Get contributions for current tax year only
+  // Get contributions for current tax year only (exclude withdrawn)
   const yearContributions = contributions.filter(c =>
-    !c.deleted && isDateInTaxYear(new Date(c.date), currentTaxYear)
+    !c.withdrawn && isDateInTaxYear(new Date(c.date), currentTaxYear)
   );
 
   if (yearContributions.length === 0) {
