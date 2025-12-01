@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
   Switch,
+  Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,8 +25,55 @@ import { ISAContribution } from '@/components/AddISAContributionModal';
 import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
 import { ISA_ANNUAL_ALLOWANCE, formatCurrency } from '@/constants/isaData';
 import { getCurrentTaxYear, isDateInTaxYear } from '@/utils/taxYear';
+import Svg, { Circle, Path } from 'react-native-svg';
 
 const CONTRIBUTIONS_STORAGE_KEY = '@finnest_contributions';
+
+// Circular Progress Component
+const CircularProgress = ({ value, max, size = 100, strokeWidth = 8, color = Colors.gold }: any) => {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const progress = (value / max) * 100;
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+  return (
+    <Svg width={size} height={size} style={{ transform: [{ rotate: '-90deg' }] }}>
+      {/* Background circle */}
+      <Circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        stroke="rgba(255, 255, 255, 0.1)"
+        strokeWidth={strokeWidth}
+        fill="none"
+      />
+      {/* Progress circle */}
+      <Circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        stroke={color}
+        strokeWidth={strokeWidth}
+        fill="none"
+        strokeDasharray={`${circumference} ${circumference}`}
+        strokeDashoffset={strokeDashoffset}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+};
+
+// Wavy Divider Component
+const WavyDivider = () => (
+  <Svg height="20" width="100%" style={{ marginVertical: Spacing.md }}>
+    <Path
+      d="M0,10 Q25,0 50,10 T100,10 T150,10 T200,10 T250,10 T300,10 T350,10 T400,10"
+      stroke="rgba(255, 255, 255, 0.1)"
+      strokeWidth="2"
+      fill="none"
+    />
+  </Svg>
+);
 
 // Get time-based greeting
 const getGreeting = () => {
@@ -56,6 +104,26 @@ export default function ProfileScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
   const [biometricsEnabled, setBiometricsEnabled] = React.useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = React.useState(true);
+
+  // Pulsing animation for avatar
+  const pulseAnim = React.useRef(new Animated.Value(1)).current;
+
+  React.useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.05,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
 
   // Modal states
   const [personalInfoVisible, setPersonalInfoVisible] = React.useState(false);
@@ -95,21 +163,18 @@ export default function ProfileScreen() {
   // Calculate real progress based on current tax year contributions
   const currentTaxYear = getCurrentTaxYear();
   const currentYearContributions = contributions.filter(
-    c => !c.deleted && isDateInTaxYear(new Date(c.date), currentTaxYear)
+    c => !c.withdrawn && isDateInTaxYear(new Date(c.date), currentTaxYear)
   );
   const totalContributed = currentYearContributions.reduce((sum, c) => sum + c.amount, 0);
   const progressPercentage = Math.min((totalContributed / ISA_ANNUAL_ALLOWANCE) * 100, 100);
   const progressMessage = getProgressMessage(progressPercentage);
 
   // Calculate stats for profile card
-  const activeContributions = contributions.filter(c => !c.deleted);
+  const activeContributions = contributions.filter(c => !c.withdrawn);
   const uniqueAccounts = new Set(
     activeContributions.map(c => `${c.provider}-${c.isaType}`)
   ).size;
   const totalAllTime = activeContributions.reduce((sum, c) => sum + c.amount, 0);
-  // Simplified tax benefit: Assume 4% annual growth, 20% tax rate
-  const estimatedAnnualGrowth = totalAllTime * 0.04;
-  const estimatedTaxSaved = estimatedAnnualGrowth * 0.2;
 
   return (
     <View style={styles.container}>
@@ -121,16 +186,13 @@ export default function ProfileScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Simple Greeting with Logo */}
-          <View style={styles.header}>
-            <Text style={styles.greeting}>{getGreeting()} 👋</Text>
-            <Image source={require('@/assets/logo.png')} style={styles.logo} resizeMode="contain" />
-          </View>
+          {/* Simple Greeting */}
+          <Text style={styles.greeting}>{getGreeting()} 👋</Text>
 
-          {/* Enhanced Profile Card */}
+          {/* Hero Profile Card */}
           <GlassCard style={styles.profileCard} intensity="dark">
-            <View style={styles.profileHeader}>
-              <View style={styles.avatarContainer}>
+            <View style={styles.profileTop}>
+              <Animated.View style={[styles.avatarContainer, { transform: [{ scale: pulseAnim }] }]}>
                 <LinearGradient
                   colors={Colors.goldGradient}
                   style={styles.avatarGradient}
@@ -138,107 +200,95 @@ export default function ProfileScreen() {
                   end={{ x: 1, y: 1 }}
                 >
                   <View style={styles.avatar}>
-                    <Ionicons name="person" size={40} color={Colors.white} />
+                    <Ionicons name="person" size={50} color={Colors.white} />
                   </View>
                 </LinearGradient>
                 <TouchableOpacity style={styles.avatarBadge}>
-                  <Ionicons name="camera" size={16} color={Colors.deepNavy} />
+                  <Ionicons name="camera" size={18} color={Colors.deepNavy} />
                 </TouchableOpacity>
-              </View>
+              </Animated.View>
 
               <View style={styles.userInfo}>
                 <Text style={styles.userName}>Alex Johnson</Text>
                 <Text style={styles.userEmail}>alex.johnson@email.com</Text>
                 <View style={styles.memberSince}>
                   <Ionicons name="calendar-outline" size={14} color={Colors.lightGray} />
-                  <Text style={styles.memberText}>ISA Saver since April 2022</Text>
+                  <Text style={styles.memberText}>Member since April 2022</Text>
                 </View>
               </View>
             </View>
 
-            <View style={styles.statsRow}>
-              <View style={styles.stat}>
-                <Ionicons name="wallet" size={20} color={Colors.gold} />
-                <Text style={styles.statValue}>{uniqueAccounts}</Text>
-                <Text style={styles.statLabel}>ISA Accounts</Text>
+            {/* Circular Stats with Progress Rings */}
+            <View style={styles.statsContainer}>
+              <View style={styles.statBox}>
+                <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
+                  <CircularProgress value={uniqueAccounts} max={10} size={120} strokeWidth={10} color={Colors.gold} />
+                  <View style={{ position: 'absolute', alignItems: 'center' }}>
+                    <Text style={[styles.statValue, { fontSize: Typography.sizes.xxxl }]}>{uniqueAccounts}</Text>
+                  </View>
+                </View>
+                <Text style={[styles.statLabel, { marginTop: Spacing.md }]}>ISA Accounts</Text>
               </View>
-              <View style={styles.statDivider} />
-              <View style={styles.stat}>
-                <Ionicons name="trending-up" size={20} color={Colors.success} />
-                <Text style={styles.statValue}>{formatCurrency(totalAllTime)}</Text>
-                <Text style={styles.statLabel}>Total Saved</Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.stat}>
-                <Ionicons name="shield-checkmark" size={20} color={Colors.info} />
-                <Text style={styles.statValue}>{formatCurrency(estimatedTaxSaved)}</Text>
-                <Text style={styles.statLabel}>Tax Saved (Est.)</Text>
-              </View>
-            </View>
 
-            {/* Progress Indicator */}
-            <View style={styles.progressSection}>
-              <View style={styles.progressHeader}>
-                <Text style={styles.progressTitle}>ISA Journey Progress</Text>
-                <Text style={styles.progressPercent}>{progressPercentage.toFixed(0)}%</Text>
+              <View style={styles.statBox}>
+                <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
+                  <CircularProgress
+                    value={totalAllTime}
+                    max={ISA_ANNUAL_ALLOWANCE}
+                    size={120}
+                    strokeWidth={10}
+                    color={Colors.success}
+                  />
+                  <View style={{ position: 'absolute', alignItems: 'center' }}>
+                    <Text style={[styles.statValue, { fontSize: Typography.sizes.lg }]}>{formatCurrency(totalAllTime)}</Text>
+                  </View>
+                </View>
+                <Text style={[styles.statLabel, { marginTop: Spacing.md }]}>Total Saved</Text>
               </View>
-              <View style={styles.progressBar}>
-                <LinearGradient
-                  colors={Colors.goldGradient}
-                  style={[styles.progressFill, { width: `${progressPercentage}%` }]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                />
-              </View>
-              <Text style={styles.progressSubtext}>{progressMessage}</Text>
             </View>
           </GlassCard>
+
+          <WavyDivider />
 
           {/* Account Section */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Account</Text>
 
-            <GlassCard style={styles.menuCard} intensity="medium">
-              <TouchableOpacity style={styles.menuItem} onPress={() => setPersonalInfoVisible(true)}>
-                <View style={styles.menuLeft}>
-                  <View style={[styles.menuIcon, { backgroundColor: Colors.gold + '30' }]}>
-                    <Ionicons name="person-outline" size={20} color={Colors.gold} />
-                  </View>
+            <TouchableOpacity onPress={() => setPersonalInfoVisible(true)}>
+              <GlassCard style={styles.menuCard} intensity="medium">
+                <View style={styles.menuItem}>
+                  <Ionicons name="person-outline" size={24} color={Colors.gold} />
                   <Text style={styles.menuText}>Personal Information</Text>
+                  <Ionicons name="chevron-forward" size={22} color={Colors.lightGray} />
                 </View>
-                <Ionicons name="chevron-forward" size={20} color={Colors.lightGray} />
-              </TouchableOpacity>
-            </GlassCard>
+              </GlassCard>
+            </TouchableOpacity>
 
-            <GlassCard style={styles.menuCard} intensity="medium">
-              <TouchableOpacity style={styles.menuItem} onPress={() => setIsaAccountsVisible(true)}>
-                <View style={styles.menuLeft}>
-                  <View style={[styles.menuIcon, { backgroundColor: Colors.success + '30' }]}>
-                    <Ionicons name="wallet-outline" size={20} color={Colors.success} />
-                  </View>
+            <TouchableOpacity onPress={() => setIsaAccountsVisible(true)}>
+              <GlassCard style={styles.menuCard} intensity="medium">
+                <View style={styles.menuItem}>
+                  <Ionicons name="wallet-outline" size={24} color={Colors.success} />
                   <Text style={styles.menuText}>Connected Accounts</Text>
-                </View>
-                <View style={styles.menuRight}>
                   <View style={styles.badge}>
-                    <Text style={styles.badgeText}>3</Text>
+                    <Text style={styles.badgeText}>{uniqueAccounts}</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color={Colors.lightGray} />
+                  <Ionicons name="chevron-forward" size={22} color={Colors.lightGray} />
                 </View>
-              </TouchableOpacity>
-            </GlassCard>
+              </GlassCard>
+            </TouchableOpacity>
 
-            <GlassCard style={styles.menuCard} intensity="medium">
-              <TouchableOpacity style={styles.menuItem} onPress={() => setSecurityVisible(true)}>
-                <View style={styles.menuLeft}>
-                  <View style={[styles.menuIcon, { backgroundColor: Colors.warning + '30' }]}>
-                    <Ionicons name="shield-checkmark-outline" size={20} color={Colors.warning} />
-                  </View>
+            <TouchableOpacity onPress={() => setSecurityVisible(true)}>
+              <GlassCard style={styles.menuCard} intensity="medium">
+                <View style={styles.menuItem}>
+                  <Ionicons name="shield-checkmark-outline" size={24} color={Colors.warning} />
                   <Text style={styles.menuText}>Security</Text>
+                  <Ionicons name="chevron-forward" size={22} color={Colors.lightGray} />
                 </View>
-                <Ionicons name="chevron-forward" size={20} color={Colors.lightGray} />
-              </TouchableOpacity>
-            </GlassCard>
+              </GlassCard>
+            </TouchableOpacity>
           </View>
+
+          <WavyDivider />
 
           {/* Preferences Section */}
           <View style={styles.section}>
@@ -246,12 +296,8 @@ export default function ProfileScreen() {
 
             <GlassCard style={styles.menuCard} intensity="medium">
               <View style={styles.menuItem}>
-                <View style={styles.menuLeft}>
-                  <View style={[styles.menuIcon, { backgroundColor: Colors.gold + '30' }]}>
-                    <Ionicons name="notifications-outline" size={20} color={Colors.gold} />
-                  </View>
-                  <Text style={styles.menuText}>Notifications</Text>
-                </View>
+                <Ionicons name="notifications-outline" size={24} color={Colors.gold} />
+                <Text style={styles.menuText}>Notifications</Text>
                 <Switch
                   value={notificationsEnabled}
                   onValueChange={setNotificationsEnabled}
@@ -264,12 +310,8 @@ export default function ProfileScreen() {
 
             <GlassCard style={styles.menuCard} intensity="medium">
               <View style={styles.menuItem}>
-                <View style={styles.menuLeft}>
-                  <View style={[styles.menuIcon, { backgroundColor: Colors.info + '30' }]}>
-                    <Ionicons name="finger-print" size={20} color={Colors.info} />
-                  </View>
-                  <Text style={styles.menuText}>Biometric Login</Text>
-                </View>
+                <Ionicons name="finger-print" size={24} color={Colors.info} />
+                <Text style={styles.menuText}>Biometric Login</Text>
                 <Switch
                   value={biometricsEnabled}
                   onValueChange={setBiometricsEnabled}
@@ -282,12 +324,8 @@ export default function ProfileScreen() {
 
             <GlassCard style={styles.menuCard} intensity="medium">
               <View style={styles.menuItem}>
-                <View style={styles.menuLeft}>
-                  <View style={[styles.menuIcon, { backgroundColor: Colors.success + '30' }]}>
-                    <Ionicons name="moon-outline" size={20} color={Colors.success} />
-                  </View>
-                  <Text style={styles.menuText}>Dark Mode</Text>
-                </View>
+                <Ionicons name="moon-outline" size={24} color={Colors.success} />
+                <Text style={styles.menuText}>Dark Mode</Text>
                 <Switch
                   value={darkModeEnabled}
                   onValueChange={setDarkModeEnabled}
@@ -298,82 +336,74 @@ export default function ProfileScreen() {
               </View>
             </GlassCard>
 
-            <GlassCard style={styles.menuCard} intensity="medium">
-              <TouchableOpacity style={styles.menuItem}>
-                <View style={styles.menuLeft}>
-                  <View style={[styles.menuIcon, { backgroundColor: Colors.warning + '30' }]}>
-                    <Ionicons name="language-outline" size={20} color={Colors.warning} />
-                  </View>
+            <TouchableOpacity>
+              <GlassCard style={styles.menuCard} intensity="medium">
+                <View style={styles.menuItem}>
+                  <Ionicons name="language-outline" size={24} color={Colors.warning} />
                   <Text style={styles.menuText}>Language</Text>
-                </View>
-                <View style={styles.menuRight}>
                   <Text style={styles.menuSubtext}>English</Text>
-                  <Ionicons name="chevron-forward" size={20} color={Colors.lightGray} />
+                  <Ionicons name="chevron-forward" size={22} color={Colors.lightGray} />
                 </View>
-              </TouchableOpacity>
-            </GlassCard>
+              </GlassCard>
+            </TouchableOpacity>
           </View>
+
+          <WavyDivider />
 
           {/* Support Section */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Support</Text>
 
-            <GlassCard style={styles.menuCard} intensity="medium">
-              <TouchableOpacity style={styles.menuItem}>
-                <View style={styles.menuLeft}>
-                  <View style={[styles.menuIcon, { backgroundColor: Colors.info + '30' }]}>
-                    <Ionicons name="help-circle-outline" size={20} color={Colors.info} />
-                  </View>
+            <TouchableOpacity>
+              <GlassCard style={styles.menuCard} intensity="medium">
+                <View style={styles.menuItem}>
+                  <Ionicons name="help-circle-outline" size={24} color={Colors.info} />
                   <Text style={styles.menuText}>Help Center</Text>
+                  <Ionicons name="chevron-forward" size={22} color={Colors.lightGray} />
                 </View>
-                <Ionicons name="chevron-forward" size={20} color={Colors.lightGray} />
-              </TouchableOpacity>
-            </GlassCard>
+              </GlassCard>
+            </TouchableOpacity>
 
-            <GlassCard style={styles.menuCard} intensity="medium">
-              <TouchableOpacity style={styles.menuItem}>
-                <View style={styles.menuLeft}>
-                  <View style={[styles.menuIcon, { backgroundColor: Colors.success + '30' }]}>
-                    <Ionicons name="chatbubble-outline" size={20} color={Colors.success} />
-                  </View>
+            <TouchableOpacity>
+              <GlassCard style={styles.menuCard} intensity="medium">
+                <View style={styles.menuItem}>
+                  <Ionicons name="chatbubble-outline" size={24} color={Colors.success} />
                   <Text style={styles.menuText}>Contact Support</Text>
+                  <Ionicons name="chevron-forward" size={22} color={Colors.lightGray} />
                 </View>
-                <Ionicons name="chevron-forward" size={20} color={Colors.lightGray} />
-              </TouchableOpacity>
-            </GlassCard>
+              </GlassCard>
+            </TouchableOpacity>
 
-            <GlassCard style={styles.menuCard} intensity="medium">
-              <TouchableOpacity style={styles.menuItem} onPress={() => setTermsVisible(true)}>
-                <View style={styles.menuLeft}>
-                  <View style={[styles.menuIcon, { backgroundColor: Colors.gold + '30' }]}>
-                    <Ionicons name="document-text-outline" size={20} color={Colors.gold} />
-                  </View>
+            <TouchableOpacity onPress={() => setTermsVisible(true)}>
+              <GlassCard style={styles.menuCard} intensity="medium">
+                <View style={styles.menuItem}>
+                  <Ionicons name="document-text-outline" size={24} color={Colors.gold} />
                   <Text style={styles.menuText}>Terms & Conditions</Text>
+                  <Ionicons name="chevron-forward" size={22} color={Colors.lightGray} />
                 </View>
-                <Ionicons name="chevron-forward" size={20} color={Colors.lightGray} />
-              </TouchableOpacity>
-            </GlassCard>
+              </GlassCard>
+            </TouchableOpacity>
 
-            <GlassCard style={styles.menuCard} intensity="medium">
-              <TouchableOpacity style={styles.menuItem} onPress={() => setPrivacyVisible(true)}>
-                <View style={styles.menuLeft}>
-                  <View style={[styles.menuIcon, { backgroundColor: Colors.warning + '30' }]}>
-                    <Ionicons name="shield-outline" size={20} color={Colors.warning} />
-                  </View>
+            <TouchableOpacity onPress={() => setPrivacyVisible(true)}>
+              <GlassCard style={styles.menuCard} intensity="medium">
+                <View style={styles.menuItem}>
+                  <Ionicons name="shield-outline" size={24} color={Colors.warning} />
                   <Text style={styles.menuText}>Privacy Policy</Text>
+                  <Ionicons name="chevron-forward" size={22} color={Colors.lightGray} />
                 </View>
-                <Ionicons name="chevron-forward" size={20} color={Colors.lightGray} />
-              </TouchableOpacity>
-            </GlassCard>
+              </GlassCard>
+            </TouchableOpacity>
           </View>
 
           {/* Logout Button */}
-          <GlassCard style={styles.logoutCard} intensity="medium">
-            <TouchableOpacity style={styles.logoutButton}>
-              <Ionicons name="log-out-outline" size={24} color={Colors.error} />
-              <Text style={styles.logoutText}>Log Out</Text>
-            </TouchableOpacity>
-          </GlassCard>
+          <TouchableOpacity>
+            <GlassCard style={styles.logoutCard} intensity="medium">
+              <View style={styles.logoutButton}>
+                <Ionicons name="log-out-outline" size={24} color={Colors.error} />
+                <Text style={styles.logoutText}>Log Out</Text>
+              </View>
+            </GlassCard>
+          </TouchableOpacity>
 
           {/* Version */}
           <Text style={styles.version}>FinNest v1.0.0</Text>
@@ -419,62 +449,45 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: Spacing.md,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.lg,
+    padding: Spacing.lg,
   },
   greeting: {
-    fontSize: Typography.sizes.xxl,
+    fontSize: Typography.sizes.xxxl,
     color: Colors.white,
-    fontWeight: Typography.weights.bold,
-  },
-  logo: {
-    width: 60,
-    height: 60,
+    fontWeight: Typography.weights.extrabold,
+    marginBottom: Spacing.xl,
   },
   profileCard: {
-    padding: Spacing.lg,
-    marginBottom: Spacing.lg,
+    padding: Spacing.xl,
+    marginBottom: Spacing.xl,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
   },
-  profileHeader: {
+  profileTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: Spacing.lg,
-    paddingBottom: Spacing.lg,
+    marginBottom: Spacing.xl,
+    paddingBottom: Spacing.xl,
     borderBottomWidth: 1,
     borderBottomColor: Colors.glassLight,
   },
   avatarContainer: {
     position: 'relative',
-    marginRight: Spacing.md,
-  },
-  userInfo: {
-    flex: 1,
-  },
-  memberSince: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 6,
-  },
-  memberText: {
-    fontSize: Typography.sizes.xs,
-    color: Colors.lightGray,
+    marginRight: Spacing.lg,
   },
   avatarGradient: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     padding: 4,
   },
   avatar: {
     width: '100%',
     height: '100%',
-    borderRadius: 48,
+    borderRadius: 56,
     backgroundColor: Colors.deepNavy,
     alignItems: 'center',
     justifyContent: 'center',
@@ -483,139 +496,98 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     right: 0,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: Colors.gold,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
     borderColor: Colors.deepNavy,
   },
+  userInfo: {
+    flex: 1,
+  },
   userName: {
-    fontSize: Typography.sizes.xl,
+    fontSize: Typography.sizes.xxl,
     color: Colors.white,
-    fontWeight: Typography.weights.bold,
-    marginBottom: Spacing.xs,
+    fontWeight: Typography.weights.extrabold,
+    marginBottom: 4,
   },
   userEmail: {
+    fontSize: Typography.sizes.md,
+    color: Colors.lightGray,
+    marginBottom: 8,
+  },
+  memberSince: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  memberText: {
     fontSize: Typography.sizes.sm,
     color: Colors.lightGray,
-    marginBottom: Spacing.lg,
   },
-  statsRow: {
+  statsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    marginBottom: Spacing.lg,
+    gap: Spacing.xl,
   },
-  stat: {
+  statBox: {
     alignItems: 'center',
-    gap: 4,
   },
   statValue: {
-    fontSize: Typography.sizes.lg,
-    color: Colors.gold,
-    fontWeight: Typography.weights.bold,
+    color: Colors.white,
+    fontWeight: Typography.weights.extrabold,
   },
   statLabel: {
-    fontSize: Typography.sizes.xs,
-    color: Colors.lightGray,
-  },
-  statDivider: {
-    width: 1,
-    height: 40,
-    backgroundColor: Colors.glassLight,
-  },
-  progressSection: {
-    paddingTop: Spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: Colors.glassLight,
-  },
-  progressHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.sm,
-  },
-  progressTitle: {
     fontSize: Typography.sizes.sm,
-    color: Colors.white,
-    fontWeight: Typography.weights.semibold,
-  },
-  progressPercent: {
-    fontSize: Typography.sizes.md,
-    color: Colors.gold,
-    fontWeight: Typography.weights.bold,
-  },
-  progressBar: {
-    height: 8,
-    backgroundColor: Colors.glassLight,
-    borderRadius: 4,
-    overflow: 'hidden',
-    marginBottom: Spacing.sm,
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  progressSubtext: {
-    fontSize: Typography.sizes.xs,
     color: Colors.lightGray,
-    lineHeight: 18,
+    fontWeight: Typography.weights.bold,
+    textAlign: 'center',
   },
   section: {
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.xl,
   },
   sectionTitle: {
-    fontSize: Typography.sizes.md,
-    color: Colors.lightGray,
-    fontWeight: Typography.weights.semibold,
+    fontSize: Typography.sizes.lg,
+    color: Colors.white,
+    fontWeight: Typography.weights.bold,
     marginBottom: Spacing.md,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
   },
   menuCard: {
-    marginBottom: Spacing.sm,
-    padding: Spacing.md,
+    marginBottom: Spacing.md,
+    padding: Spacing.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  menuLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  menuIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: Spacing.md,
+    gap: Spacing.md,
   },
   menuText: {
+    flex: 1,
     fontSize: Typography.sizes.md,
     color: Colors.white,
     fontWeight: Typography.weights.medium,
   },
-  menuRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
   menuSubtext: {
     fontSize: Typography.sizes.sm,
     color: Colors.lightGray,
+    marginRight: Spacing.xs,
   },
   badge: {
     backgroundColor: Colors.gold,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
-    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: 'auto',
+    marginRight: Spacing.xs,
   },
   badgeText: {
     fontSize: Typography.sizes.xs,
@@ -623,24 +595,29 @@ const styles = StyleSheet.create({
     fontWeight: Typography.weights.bold,
   },
   logoutCard: {
-    marginBottom: Spacing.md,
-    padding: Spacing.md,
+    marginBottom: Spacing.lg,
+    padding: Spacing.lg,
+    shadowColor: Colors.error,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 6,
   },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: Spacing.sm,
+    gap: Spacing.md,
   },
   logoutText: {
-    fontSize: Typography.sizes.md,
+    fontSize: Typography.sizes.lg,
     color: Colors.error,
-    fontWeight: Typography.weights.semibold,
+    fontWeight: Typography.weights.bold,
   },
   version: {
     fontSize: Typography.sizes.xs,
     color: Colors.mediumGray,
     textAlign: 'center',
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.xl,
   },
 });

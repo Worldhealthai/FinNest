@@ -234,11 +234,14 @@ export const EDUCATIONAL_CONTENT = {
 
 export function getTaxYearDates(year: number = new Date().getFullYear()) {
   const today = new Date();
-  const currentMonth = today.getMonth() + 1;
+  const currentMonth = today.getMonth() + 1; // 1-12
 
-  // If we're between April 6 and December 31, tax year is current year to next year
-  // If we're between January 1 and April 5, tax year is previous year to current year
-  const taxYearStart = currentMonth >= 4 && today.getDate() >= 6
+  // Tax year runs April 6 to April 5
+  // If we're after April 5 (month > April OR month == April with day >= 6), use current year
+  // Otherwise use previous year
+  const isAfterApril5 = currentMonth > 4 || (currentMonth === 4 && today.getDate() >= 6);
+
+  const taxYearStart = isAfterApril5
     ? new Date(year, 3, 6) // April 6 of current year
     : new Date(year - 1, 3, 6); // April 6 of previous year
 
