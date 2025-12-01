@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
   Switch,
+  Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,8 +25,55 @@ import { ISAContribution } from '@/components/AddISAContributionModal';
 import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
 import { ISA_ANNUAL_ALLOWANCE, formatCurrency } from '@/constants/isaData';
 import { getCurrentTaxYear, isDateInTaxYear } from '@/utils/taxYear';
+import Svg, { Circle, Path } from 'react-native-svg';
 
 const CONTRIBUTIONS_STORAGE_KEY = '@finnest_contributions';
+
+// Circular Progress Component
+const CircularProgress = ({ value, max, size = 100, strokeWidth = 8, color = Colors.gold }: any) => {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const progress = (value / max) * 100;
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+  return (
+    <Svg width={size} height={size} style={{ transform: [{ rotate: '-90deg' }] }}>
+      {/* Background circle */}
+      <Circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        stroke="rgba(255, 255, 255, 0.1)"
+        strokeWidth={strokeWidth}
+        fill="none"
+      />
+      {/* Progress circle */}
+      <Circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        stroke={color}
+        strokeWidth={strokeWidth}
+        fill="none"
+        strokeDasharray={`${circumference} ${circumference}`}
+        strokeDashoffset={strokeDashoffset}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+};
+
+// Wavy Divider Component
+const WavyDivider = () => (
+  <Svg height="20" width="100%" style={{ marginVertical: Spacing.md }}>
+    <Path
+      d="M0,10 Q25,0 50,10 T100,10 T150,10 T200,10 T250,10 T300,10 T350,10 T400,10"
+      stroke="rgba(255, 255, 255, 0.1)"
+      strokeWidth="2"
+      fill="none"
+    />
+  </Svg>
+);
 
 // Get time-based greeting
 const getGreeting = () => {
@@ -56,6 +104,26 @@ export default function ProfileScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
   const [biometricsEnabled, setBiometricsEnabled] = React.useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = React.useState(true);
+
+  // Pulsing animation for avatar
+  const pulseAnim = React.useRef(new Animated.Value(1)).current;
+
+  React.useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.05,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
 
   // Modal states
   const [personalInfoVisible, setPersonalInfoVisible] = React.useState(false);
@@ -124,7 +192,7 @@ export default function ProfileScreen() {
           {/* Hero Profile Card */}
           <GlassCard style={styles.profileCard} intensity="dark">
             <View style={styles.profileTop}>
-              <View style={styles.avatarContainer}>
+              <Animated.View style={[styles.avatarContainer, { transform: [{ scale: pulseAnim }] }]}>
                 <LinearGradient
                   colors={Colors.goldGradient}
                   style={styles.avatarGradient}
@@ -138,7 +206,7 @@ export default function ProfileScreen() {
                 <TouchableOpacity style={styles.avatarBadge}>
                   <Ionicons name="camera" size={18} color={Colors.deepNavy} />
                 </TouchableOpacity>
-              </View>
+              </Animated.View>
 
               <View style={styles.userInfo}>
                 <Text style={styles.userName}>Alex Johnson</Text>
@@ -150,19 +218,37 @@ export default function ProfileScreen() {
               </View>
             </View>
 
-            {/* Big Stats - 2 Column */}
+            {/* Circular Stats with Progress Rings */}
             <View style={styles.statsContainer}>
               <View style={styles.statBox}>
-                <Text style={styles.statValue}>{uniqueAccounts}</Text>
-                <Text style={styles.statLabel}>ISA Accounts</Text>
+                <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
+                  <CircularProgress value={uniqueAccounts} max={10} size={120} strokeWidth={10} color={Colors.gold} />
+                  <View style={{ position: 'absolute', alignItems: 'center' }}>
+                    <Text style={[styles.statValue, { fontSize: Typography.sizes.xxxl }]}>{uniqueAccounts}</Text>
+                  </View>
+                </View>
+                <Text style={[styles.statLabel, { marginTop: Spacing.md }]}>ISA Accounts</Text>
               </View>
-              <View style={styles.statDivider} />
+
               <View style={styles.statBox}>
-                <Text style={styles.statValue}>{formatCurrency(totalAllTime)}</Text>
-                <Text style={styles.statLabel}>Total Saved</Text>
+                <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
+                  <CircularProgress
+                    value={totalAllTime}
+                    max={ISA_ANNUAL_ALLOWANCE}
+                    size={120}
+                    strokeWidth={10}
+                    color={Colors.success}
+                  />
+                  <View style={{ position: 'absolute', alignItems: 'center' }}>
+                    <Text style={[styles.statValue, { fontSize: Typography.sizes.lg }]}>{formatCurrency(totalAllTime)}</Text>
+                  </View>
+                </View>
+                <Text style={[styles.statLabel, { marginTop: Spacing.md }]}>Total Saved</Text>
               </View>
             </View>
           </GlassCard>
+
+          <WavyDivider />
 
           {/* Account Section */}
           <View style={styles.section}>
@@ -201,6 +287,8 @@ export default function ProfileScreen() {
               </GlassCard>
             </TouchableOpacity>
           </View>
+
+          <WavyDivider />
 
           {/* Preferences Section */}
           <View style={styles.section}>
@@ -259,6 +347,8 @@ export default function ProfileScreen() {
               </GlassCard>
             </TouchableOpacity>
           </View>
+
+          <WavyDivider />
 
           {/* Support Section */}
           <View style={styles.section}>
@@ -370,6 +460,12 @@ const styles = StyleSheet.create({
   profileCard: {
     padding: Spacing.xl,
     marginBottom: Spacing.xl,
+    transform: [{ rotate: '-1deg' }],
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
   },
   profileTop: {
     flexDirection: 'row',
@@ -436,28 +532,21 @@ const styles = StyleSheet.create({
   statsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
+    gap: Spacing.xl,
   },
   statBox: {
-    flex: 1,
     alignItems: 'center',
   },
   statValue: {
-    fontSize: Typography.sizes.xxxl,
-    color: Colors.gold,
+    color: Colors.white,
     fontWeight: Typography.weights.extrabold,
-    marginBottom: 4,
   },
   statLabel: {
     fontSize: Typography.sizes.sm,
     color: Colors.lightGray,
-    fontWeight: Typography.weights.medium,
-  },
-  statDivider: {
-    width: 1,
-    height: 60,
-    backgroundColor: Colors.glassLight,
-    marginHorizontal: Spacing.lg,
+    fontWeight: Typography.weights.bold,
+    textAlign: 'center',
   },
   section: {
     marginBottom: Spacing.xl,
@@ -471,6 +560,11 @@ const styles = StyleSheet.create({
   menuCard: {
     marginBottom: Spacing.md,
     padding: Spacing.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
   menuItem: {
     flexDirection: 'row',
@@ -504,6 +598,12 @@ const styles = StyleSheet.create({
   logoutCard: {
     marginBottom: Spacing.lg,
     padding: Spacing.lg,
+    transform: [{ rotate: '1deg' }],
+    shadowColor: Colors.error,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 6,
   },
   logoutButton: {
     flexDirection: 'row',
