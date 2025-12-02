@@ -205,12 +205,14 @@ const styles = StyleSheet.create({
   },
   container: {
     maxHeight: '90%',
+    paddingHorizontal: Spacing.xs,
   },
   card: {
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
     padding: Spacing.xl,
     overflow: 'visible',
+    marginHorizontal: 0,
   },
   scrollContent: {
     paddingBottom: Spacing.xxl,
