@@ -346,16 +346,6 @@ export default function ProfileScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Support</Text>
 
-            <TouchableOpacity>
-              <GlassCard style={styles.menuCard} intensity="medium">
-                <View style={styles.menuItem}>
-                  <Ionicons name="help-circle-outline" size={24} color={Colors.info} />
-                  <Text style={styles.menuText}>Help Center</Text>
-                  <Ionicons name="chevron-forward" size={22} color={Colors.lightGray} />
-                </View>
-              </GlassCard>
-            </TouchableOpacity>
-
             <TouchableOpacity onPress={() => setContactSupportVisible(true)}>
               <GlassCard style={styles.menuCard} intensity="medium">
                 <View style={styles.menuItem}>

@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, Modal, TouchableOpacity, TextInput, ScrollView,
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
 import GlassCard from './GlassCard';
-import { supabase } from '@/lib/supabase';
 
 interface ContactSupportModalProps {
   visible: boolean;
@@ -33,26 +32,19 @@ export default function ContactSupportModal({ visible, onClose }: ContactSupport
 
     setIsSubmitting(true);
 
+    // TODO: Replace with your actual API endpoint
+    // For now, we'll simulate sending the message
     try {
-      // Insert support ticket into Supabase
-      const { data, error } = await supabase
-        .from('support_tickets')
-        .insert({
-          name: name.trim(),
-          email: email.trim().toLowerCase(),
-          subject: subject.trim(),
-          message: message.trim(),
-          status: 'open',
-        })
-        .select()
-        .single();
+      // Simulated API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
+      // In production, you would send this to your backend:
+      // const response = await fetch('https://your-api.com/support', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ name, email, subject, message }),
+      // });
 
-      // Success!
       Alert.alert(
         'Message Sent!',
         'Thank you for contacting us. Our support team will get back to you within 24 hours.',
@@ -71,11 +63,7 @@ export default function ContactSupportModal({ visible, onClose }: ContactSupport
         ]
       );
     } catch (error) {
-      console.error('Error submitting support ticket:', error);
-      Alert.alert(
-        'Error',
-        'Failed to send message. Please check your internet connection and try again.'
-      );
+      Alert.alert('Error', 'Failed to send message. Please try again later.');
     } finally {
       setIsSubmitting(false);
     }
