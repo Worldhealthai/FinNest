@@ -21,6 +21,7 @@ import ISAAccountsModal from '@/components/ISAAccountsModal';
 import SecurityModal from '@/components/SecurityModal';
 import TermsModal from '@/components/TermsModal';
 import PrivacyPolicyModal from '@/components/PrivacyPolicyModal';
+import ContactSupportModal from '@/components/ContactSupportModal';
 import { ISAContribution } from '@/components/AddISAContributionModal';
 import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
 import { ISA_ANNUAL_ALLOWANCE, formatCurrency } from '@/constants/isaData';
@@ -130,6 +131,7 @@ export default function ProfileScreen() {
   const [securityVisible, setSecurityVisible] = React.useState(false);
   const [termsVisible, setTermsVisible] = React.useState(false);
   const [privacyVisible, setPrivacyVisible] = React.useState(false);
+  const [contactSupportVisible, setContactSupportVisible] = React.useState(false);
 
   // Contributions state
   const [contributions, setContributions] = useState<ISAContribution[]>([]);
@@ -354,7 +356,7 @@ export default function ProfileScreen() {
               </GlassCard>
             </TouchableOpacity>
 
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => setContactSupportVisible(true)}>
               <GlassCard style={styles.menuCard} intensity="medium">
                 <View style={styles.menuItem}>
                   <Ionicons name="chatbubble-outline" size={24} color={Colors.success} />
@@ -423,6 +425,10 @@ export default function ProfileScreen() {
       <PrivacyPolicyModal
         visible={privacyVisible}
         onClose={() => setPrivacyVisible(false)}
+      />
+      <ContactSupportModal
+        visible={contactSupportVisible}
+        onClose={() => setContactSupportVisible(false)}
       />
     </View>
   );
