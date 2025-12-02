@@ -103,7 +103,6 @@ const getProgressMessage = (percentage: number) => {
 export default function ProfileScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
   const [biometricsEnabled, setBiometricsEnabled] = React.useState(true);
-  const [darkModeEnabled, setDarkModeEnabled] = React.useState(true);
 
   // Pulsing animation for avatar
   const pulseAnim = React.useRef(new Animated.Value(1)).current;
@@ -322,20 +321,6 @@ export default function ProfileScreen() {
                   onValueChange={setBiometricsEnabled}
                   trackColor={{ false: Colors.mediumGray, true: Colors.gold + '60' }}
                   thumbColor={biometricsEnabled ? Colors.gold : Colors.lightGray}
-                  ios_backgroundColor={Colors.mediumGray}
-                />
-              </View>
-            </GlassCard>
-
-            <GlassCard style={styles.menuCard} intensity="medium">
-              <View style={styles.menuItem}>
-                <Ionicons name="moon-outline" size={24} color={Colors.success} />
-                <Text style={styles.menuText}>Dark Mode</Text>
-                <Switch
-                  value={darkModeEnabled}
-                  onValueChange={setDarkModeEnabled}
-                  trackColor={{ false: Colors.mediumGray, true: Colors.gold + '60' }}
-                  thumbColor={darkModeEnabled ? Colors.gold : Colors.lightGray}
                   ios_backgroundColor={Colors.mediumGray}
                 />
               </View>
