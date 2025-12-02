@@ -188,7 +188,9 @@ export default function ProfileScreen() {
         >
           {/* Header with Greeting and Logo */}
           <View style={styles.header}>
-            <Text style={styles.greeting}>{getGreeting()} 👋</Text>
+            <View>
+              <Text style={styles.greeting}>{getGreeting()} 👋</Text>
+            </View>
             <Image source={require('@/assets/logo.png')} style={styles.logo} resizeMode="contain" />
           </View>
 
@@ -452,13 +454,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: Spacing.lg,
+    padding: Spacing.md,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
   greeting: {
     fontSize: Typography.sizes.xxxl,
