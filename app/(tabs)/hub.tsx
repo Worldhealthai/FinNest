@@ -282,16 +282,6 @@ export default function HubScreen() {
             </View>
           ))}
 
-          <View style={styles.card}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Ionicons name="school" size={24} color={Colors.gold} />
-              <Text style={[styles.name, { marginLeft: 12 }]}>Want to Learn More?</Text>
-            </View>
-            <Text style={[styles.sub, { marginTop: 8, lineHeight: 20 }]}>
-              FinNest provides comprehensive ISA education to help you make informed decisions about your financial future.
-            </Text>
-          </View>
-
           {/* The 4 ISA Types */}
           <Text style={styles.section}>ISA Types</Text>
 
