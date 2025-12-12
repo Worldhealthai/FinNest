@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Modal from './Modal';
 import GlassCard from './GlassCard';
 import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
+import { useOnboarding } from '@/contexts/OnboardingContext';
 
 interface PersonalInfoModalProps {
   visible: boolean;
@@ -19,20 +20,42 @@ interface PersonalInfoModalProps {
 }
 
 export default function PersonalInfoModal({ visible, onClose }: PersonalInfoModalProps) {
-  const [fullName, setFullName] = useState('Alex Johnson');
-  const [email, setEmail] = useState('alex.johnson@email.com');
-  const [phone, setPhone] = useState('+44 7700 900000');
-  const [address, setAddress] = useState('123 Financial Street');
-  const [city, setCity] = useState('London');
-  const [postcode, setPostcode] = useState('SW1A 1AA');
-  const [dateOfBirth, setDateOfBirth] = useState('15/04/1990');
-  const [nationalInsurance, setNationalInsurance] = useState('AB123456C');
+  const { userProfile, updateProfile } = useOnboarding();
 
-  const handleSave = () => {
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [postcode, setPostcode] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [nationalInsurance, setNationalInsurance] = useState('');
+
+  // Load user profile data when modal opens
+  useEffect(() => {
+    if (visible) {
+      setFullName(userProfile.fullName || '');
+      setEmail(userProfile.email || '');
+      setPhone(userProfile.phoneNumber || '');
+      setDateOfBirth(userProfile.dateOfBirth || '');
+      setNationalInsurance(userProfile.nationalInsuranceNumber || '');
+    }
+  }, [visible, userProfile]);
+
+  const handleSave = async () => {
     if (!fullName.trim() || !email.trim()) {
       Alert.alert('Error', 'Please fill in all required fields');
       return;
     }
+
+    // Update the user profile in context and AsyncStorage
+    updateProfile({
+      fullName,
+      email,
+      phoneNumber: phone,
+      dateOfBirth,
+      nationalInsuranceNumber: nationalInsurance,
+    });
 
     Alert.alert('Success', 'Personal information updated successfully!');
     onClose();

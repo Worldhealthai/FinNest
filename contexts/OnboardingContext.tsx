@@ -69,8 +69,16 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   };
 
-  const updateProfile = (updates: Partial<UserProfile>) => {
-    setUserProfile(prev => ({ ...prev, ...updates }));
+  const updateProfile = async (updates: Partial<UserProfile>) => {
+    const updatedProfile = { ...userProfile, ...updates };
+    setUserProfile(updatedProfile);
+
+    // Persist to AsyncStorage immediately
+    try {
+      await AsyncStorage.setItem(USER_PROFILE_KEY, JSON.stringify(updatedProfile));
+    } catch (error) {
+      console.error('Error saving profile updates:', error);
+    }
   };
 
   const completeOnboarding = async () => {
