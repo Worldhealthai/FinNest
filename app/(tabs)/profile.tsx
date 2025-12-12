@@ -26,6 +26,7 @@ import { ISAContribution } from '@/components/AddISAContributionModal';
 import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
 import { ISA_ANNUAL_ALLOWANCE, formatCurrency } from '@/constants/isaData';
 import { getCurrentTaxYear, isDateInTaxYear } from '@/utils/taxYear';
+import { useOnboarding } from '@/contexts/OnboardingContext';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 const CONTRIBUTIONS_STORAGE_KEY = '@finnest_contributions';
@@ -102,6 +103,7 @@ const getProgressMessage = (percentage: number) => {
 };
 
 export default function ProfileScreen() {
+  const { userProfile } = useOnboarding();
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
   const [biometricsEnabled, setBiometricsEnabled] = React.useState(true);
 
@@ -215,11 +217,13 @@ export default function ProfileScreen() {
               </Animated.View>
 
               <View style={styles.userInfo}>
-                <Text style={styles.userName}>Alex Johnson</Text>
-                <Text style={styles.userEmail}>alex.johnson@email.com</Text>
+                <Text style={styles.userName}>{userProfile.fullName || 'Welcome'}</Text>
+                <Text style={styles.userEmail}>{userProfile.email || 'user@finnest.com'}</Text>
                 <View style={styles.memberSince}>
                   <Ionicons name="calendar-outline" size={14} color={Colors.lightGray} />
-                  <Text style={styles.memberText}>Member since April 2022</Text>
+                  <Text style={styles.memberText}>
+                    Member since {new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
+                  </Text>
                 </View>
               </View>
             </View>
