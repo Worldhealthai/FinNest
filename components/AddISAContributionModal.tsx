@@ -234,6 +234,36 @@ export default function AddISAContributionModal({
     onClose();
   };
 
+  const handleFlexibilityDone = async () => {
+    // Save the flexibility setting
+    if (needsFlexibilityAnswer && isFlexible !== null) {
+      await setISASetting(provider.trim(), selectedType, isFlexible);
+      console.log(`✅ Saved flexibility setting: ${isFlexible}`);
+    }
+
+    const contributionAmount = parseFloat(amount);
+
+    const contribution: ISAContribution = {
+      id: Date.now().toString(),
+      provider: provider.trim(),
+      isaType: selectedType,
+      amount: contributionAmount,
+      date: contributionDate.toISOString(),
+      notes: notes.trim() || undefined,
+    };
+
+    console.log('Created contribution:', contribution);
+
+    // Call parent's onAdd
+    if (onAdd) {
+      console.log('Calling parent onAdd');
+      onAdd(contribution);
+    }
+
+    // Close modal directly instead of going to confirmation screen
+    handleDone();
+  };
+
   const getISAIcon = (type: string): keyof typeof Ionicons.glyphMap => {
     const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
       [ISA_TYPES.CASH]: 'cash',
@@ -737,7 +767,7 @@ export default function AddISAContributionModal({
 
             {isFlexible !== null && (
               <Pressable
-                onPress={handleSubmit}
+                onPress={handleFlexibilityDone}
                 style={({ pressed }) => [
                   styles.flexibilityConfirmButton,
                   { opacity: pressed ? 0.9 : 1 }
