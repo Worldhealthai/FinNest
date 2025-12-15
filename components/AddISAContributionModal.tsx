@@ -666,7 +666,11 @@ export default function AddISAContributionModal({
 
           <View style={styles.flexibilityOptions}>
             <Pressable
-              onPress={() => setIsFlexible(true)}
+              onPress={() => {
+                setIsFlexible(true);
+                // Automatically submit after a short delay to show selection
+                setTimeout(() => handleSubmit(), 300);
+              }}
               style={({ pressed }) => [
                 styles.flexibilityOption,
                 isFlexible === true && styles.flexibilityOptionSelected,
@@ -693,7 +697,11 @@ export default function AddISAContributionModal({
             </Pressable>
 
             <Pressable
-              onPress={() => setIsFlexible(false)}
+              onPress={() => {
+                setIsFlexible(false);
+                // Automatically submit after a short delay to show selection
+                setTimeout(() => handleSubmit(), 300);
+              }}
               style={({ pressed }) => [
                 styles.flexibilityOption,
                 isFlexible === false && styles.flexibilityOptionSelected,
@@ -733,25 +741,6 @@ export default function AddISAContributionModal({
               ]}
             >
               <Text style={styles.flexibilityCancelText}>Cancel</Text>
-            </Pressable>
-
-            <Pressable
-              onPress={handleSubmit}
-              disabled={isFlexible === null}
-              style={({ pressed }) => [
-                styles.flexibilityConfirmButton,
-                { opacity: pressed ? 0.9 : isFlexible === null ? 0.5 : 1 }
-              ]}
-            >
-              <LinearGradient
-                colors={isFlexible === null ? [Colors.mediumGray, Colors.mediumGray] : Colors.goldGradient}
-                style={styles.flexibilityConfirmGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-              >
-                <Text style={styles.flexibilityConfirmText}>Continue</Text>
-                <Ionicons name="arrow-forward" size={20} color={Colors.deepNavy} />
-              </LinearGradient>
             </Pressable>
           </View>
         </View>
