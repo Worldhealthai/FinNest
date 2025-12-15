@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -130,7 +130,11 @@ export default function WelcomeScreen() {
       <Animated.View style={[styles.glow, glowAnimatedStyle]} />
 
       {/* Content */}
-      <View style={styles.content}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Logo Section */}
         <View style={styles.logoSection}>
           <Animated.View style={[styles.logoContainer, logoAnimatedStyle]}>
@@ -151,7 +155,7 @@ export default function WelcomeScreen() {
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
             />
-            <Text style={styles.subtitle}>Your Smart ISA Management Platform</Text>
+            <Text style={styles.subtitle}>Your Smart ISA Tracker Platform</Text>
           </Animated.View>
         </View>
 
@@ -195,7 +199,7 @@ export default function WelcomeScreen() {
 
           <Text style={styles.footer}>Setup takes less than 2 minutes</Text>
         </Animated.View>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -240,11 +244,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 80,
   },
-  content: {
+  scrollView: {
     flex: 1,
+  },
+  content: {
+    flexGrow: 1,
     paddingHorizontal: Spacing.xl,
     paddingVertical: Spacing.xxl,
-    justifyContent: 'space-between',
+    paddingBottom: Spacing.xxxl,
   },
   logoSection: {
     alignItems: 'center',

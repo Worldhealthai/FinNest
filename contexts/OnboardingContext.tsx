@@ -8,6 +8,7 @@ export interface UserProfile {
   // Account Info
   fullName: string;
   email: string;
+  profilePhoto: string;
 
   // Personal Information
   dateOfBirth: string;
