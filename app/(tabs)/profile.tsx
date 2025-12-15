@@ -167,6 +167,36 @@ export default function ProfileScreen() {
     }, [])
   );
 
+  // Handle profile photo selection
+  const handlePickImage = async () => {
+    try {
+      // Request permission
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (permissionResult.granted === false) {
+        Alert.alert('Permission Required', 'Please allow access to your photo library to change your profile picture.');
+        return;
+      }
+
+      // Launch image picker
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        const photoUri = result.assets[0].uri;
+        await updateProfile({ profilePhoto: photoUri });
+        Alert.alert('Success', 'Profile photo updated!');
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to update profile photo. Please try again.');
+    }
+  };
+
   // Calculate real progress based on current tax year contributions
   const currentTaxYear = getCurrentTaxYear();
   const currentYearContributions = contributions.filter(
@@ -212,10 +242,17 @@ export default function ProfileScreen() {
                   end={{ x: 1, y: 1 }}
                 >
                   <View style={styles.avatar}>
-                    <Ionicons name="person" size={50} color={Colors.white} />
+                    {userProfile.profilePhoto ? (
+                      <Image
+                        source={{ uri: userProfile.profilePhoto }}
+                        style={styles.avatarImage}
+                      />
+                    ) : (
+                      <Ionicons name="person" size={50} color={Colors.white} />
+                    )}
                   </View>
                 </LinearGradient>
-                <TouchableOpacity style={styles.avatarBadge}>
+                <TouchableOpacity style={styles.avatarBadge} onPress={handlePickImage}>
                   <Ionicons name="camera" size={18} color={Colors.deepNavy} />
                 </TouchableOpacity>
               </Animated.View>
@@ -241,20 +278,20 @@ export default function ProfileScreen() {
                         end={{ x: 1, y: 1 }}
                       >
                         <View style={styles.targetGoalIconWrapper}>
-                          <Ionicons name="flag" size={16} color={Colors.gold} />
+                          <Ionicons name="flag" size={12} color={Colors.gold} />
                         </View>
                         <View style={styles.targetGoalContent}>
-                          <Text style={styles.targetGoalLabel}>SAVINGS GOAL</Text>
+                          <Text style={styles.targetGoalLabel}>GOAL</Text>
                           <Text style={styles.targetGoalAmount}>
                             {formatCurrency(userProfile.targetAmount)}
                           </Text>
                           {userProfile.targetDate && (
                             <Text style={styles.targetGoalDate}>
-                              by {new Date(userProfile.targetDate).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}
+                              {new Date(userProfile.targetDate).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}
                             </Text>
                           )}
                         </View>
-                        <Ionicons name="pencil" size={14} color={Colors.gold} style={styles.editIcon} />
+                        <Ionicons name="pencil" size={12} color={Colors.gold} style={styles.editIcon} />
                       </LinearGradient>
                     </TouchableOpacity>
                   )}
@@ -534,6 +571,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.deepNavy,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 56,
   },
   avatarBadge: {
     position: 'absolute',
@@ -571,7 +614,9 @@ const styles = StyleSheet.create({
     color: Colors.lightGray,
   },
   targetGoalBadge: {
-    borderRadius: BorderRadius.lg,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     overflow: 'hidden',
     borderWidth: 1.5,
     borderColor: 'rgba(255, 215, 0, 0.4)',
@@ -582,16 +627,20 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   targetGoalGradient: {
-    flexDirection: 'row',
+    width: '100%',
+    height: '100%',
     alignItems: 'center',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.md,
-    gap: Spacing.sm,
+    justifyContent: 'center',
+    padding: Spacing.sm,
+    position: 'relative',
   },
   targetGoalIconWrapper: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     backgroundColor: 'rgba(255, 215, 0, 0.3)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -599,29 +648,32 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 215, 0, 0.5)',
   },
   targetGoalContent: {
-    flex: 1,
-    alignItems: 'flex-end',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   targetGoalLabel: {
     fontSize: Typography.sizes.xxs,
     color: Colors.gold,
     fontWeight: Typography.weights.bold,
     textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 2,
+    letterSpacing: 0.8,
+    marginBottom: 4,
   },
   targetGoalAmount: {
-    fontSize: Typography.sizes.xl,
+    fontSize: Typography.sizes.lg,
     color: Colors.white,
     fontWeight: Typography.weights.extrabold,
     marginBottom: 2,
   },
   targetGoalDate: {
-    fontSize: Typography.sizes.xs,
+    fontSize: Typography.sizes.xxs,
     color: Colors.lightGray,
     fontWeight: Typography.weights.medium,
   },
   editIcon: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
     opacity: 0.7,
   },
   memberSince: {
