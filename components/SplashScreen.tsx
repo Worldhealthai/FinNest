@@ -211,7 +211,7 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
       <Animated.View style={[styles.taglineContainer, taglineAnimatedStyle]}>
         <View style={styles.taglineRow}>
           <View style={styles.taglineDot} />
-          <Text style={styles.tagline}>Smart ISA Management</Text>
+          <Text style={styles.tagline}>Smart ISA Tracker</Text>
           <View style={styles.taglineDot} />
         </View>
         <Text style={styles.taglineSecondary}>Your Financial Future, Secured</Text>
