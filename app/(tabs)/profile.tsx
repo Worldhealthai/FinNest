@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  Switch,
   Animated,
   Alert,
 } from 'react-native';
@@ -107,8 +106,6 @@ const getProgressMessage = (percentage: number) => {
 
 export default function ProfileScreen() {
   const { userProfile, updateProfile } = useOnboarding();
-  const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
-  const [biometricsEnabled, setBiometricsEnabled] = React.useState(true);
 
   // Pulsing animation for avatar
   const pulseAnim = React.useRef(new Animated.Value(1)).current;
@@ -384,48 +381,12 @@ export default function ProfileScreen() {
                 </View>
               </GlassCard>
             </TouchableOpacity>
-          </View>
-
-          <WavyDivider />
-
-          {/* Preferences Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Preferences</Text>
-
-            <GlassCard style={styles.menuCard} intensity="medium">
-              <View style={styles.menuItem}>
-                <Ionicons name="notifications-outline" size={24} color={Colors.gold} />
-                <Text style={styles.menuText}>Notifications</Text>
-                <Switch
-                  value={notificationsEnabled}
-                  onValueChange={setNotificationsEnabled}
-                  trackColor={{ false: Colors.mediumGray, true: Colors.gold + '60' }}
-                  thumbColor={notificationsEnabled ? Colors.gold : Colors.lightGray}
-                  ios_backgroundColor={Colors.mediumGray}
-                />
-              </View>
-            </GlassCard>
-
-            <GlassCard style={styles.menuCard} intensity="medium">
-              <View style={styles.menuItem}>
-                <Ionicons name="finger-print" size={24} color={Colors.info} />
-                <Text style={styles.menuText}>Biometric Login</Text>
-                <Switch
-                  value={biometricsEnabled}
-                  onValueChange={setBiometricsEnabled}
-                  trackColor={{ false: Colors.mediumGray, true: Colors.gold + '60' }}
-                  thumbColor={biometricsEnabled ? Colors.gold : Colors.lightGray}
-                  ios_backgroundColor={Colors.mediumGray}
-                />
-              </View>
-            </GlassCard>
 
             <TouchableOpacity>
               <GlassCard style={styles.menuCard} intensity="medium">
                 <View style={styles.menuItem}>
-                  <Ionicons name="language-outline" size={24} color={Colors.warning} />
-                  <Text style={styles.menuText}>Language</Text>
-                  <Text style={styles.menuSubtext}>English</Text>
+                  <Ionicons name="notifications-outline" size={24} color={Colors.info} />
+                  <Text style={styles.menuText}>Notifications</Text>
                   <Ionicons name="chevron-forward" size={22} color={Colors.lightGray} />
                 </View>
               </GlassCard>
