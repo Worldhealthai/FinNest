@@ -141,8 +141,29 @@ export default function PersonalScreen() {
   };
 
   const handleSkip = () => {
-    updateProfile({ phoneNumber: '' });
-    router.push('/(onboarding)/goals');
+    // Validate only required fields (DOB and NI Number), skip phone validation
+    const newErrors: Record<string, string> = {};
+
+    if (!dateOfBirth.trim()) {
+      newErrors.dateOfBirth = 'Date of birth is required';
+    } else if (dateOfBirth.length !== 10) {
+      newErrors.dateOfBirth = 'Please enter a valid date (DD/MM/YYYY)';
+    } else if (!validateAge(dateOfBirth)) {
+      newErrors.dateOfBirth = 'You must be 18 or older to open an ISA';
+    }
+
+    if (!nationalInsuranceNumber.trim()) {
+      newErrors.nationalInsuranceNumber = 'National Insurance Number is required';
+    } else if (!validateNINO(nationalInsuranceNumber)) {
+      newErrors.nationalInsuranceNumber = 'Please enter a valid UK NINO';
+    }
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      updateProfile({ dateOfBirth, nationalInsuranceNumber, phoneNumber: '' });
+      router.push('/(onboarding)/goals');
+    }
   };
 
   return (
