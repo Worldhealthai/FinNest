@@ -22,6 +22,8 @@ import Animated, {
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import TermsModal from '@/components/TermsModal';
+import PrivacyPolicyModal from '@/components/PrivacyPolicyModal';
 
 const { height } = Dimensions.get('window');
 
@@ -32,6 +34,9 @@ export default function AccountScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const contentOpacity = useSharedValue(0);
@@ -68,6 +73,10 @@ export default function AccountScreen() {
 
     if (password !== confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    if (!acceptedTerms) {
+      newErrors.terms = 'You must accept the Terms & Conditions and Privacy Policy';
     }
 
     setErrors(newErrors);
@@ -228,6 +237,40 @@ export default function AccountScreen() {
                     We follow recognised security best practices and use encryption designed to help protect sensitive data.
                   </Text>
                 </View>
+
+                {/* Terms & Privacy Policy Acceptance */}
+                <View style={styles.inputGroup}>
+                  <TouchableOpacity
+                    style={styles.checkboxContainer}
+                    onPress={() => setAcceptedTerms(!acceptedTerms)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
+                      {acceptedTerms && (
+                        <Ionicons name="checkmark" size={18} color={Colors.deepNavy} />
+                      )}
+                    </View>
+                    <View style={styles.termsTextContainer}>
+                      <Text style={styles.termsText}>
+                        I accept the{' '}
+                        <Text
+                          style={styles.termsLink}
+                          onPress={() => setShowTermsModal(true)}
+                        >
+                          Terms & Conditions
+                        </Text>
+                        {' '}and{' '}
+                        <Text
+                          style={styles.termsLink}
+                          onPress={() => setShowPrivacyModal(true)}
+                        >
+                          Privacy Policy
+                        </Text>
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                  {errors.terms && <Text style={styles.errorText}>{errors.terms}</Text>}
+                </View>
               </View>
 
               {/* Continue Button */}
@@ -250,6 +293,15 @@ export default function AccountScreen() {
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
+
+      {/* Terms & Conditions Modal */}
+      <TermsModal visible={showTermsModal} onClose={() => setShowTermsModal(false)} />
+
+      {/* Privacy Policy Modal */}
+      <PrivacyPolicyModal
+        visible={showPrivacyModal}
+        onClose={() => setShowPrivacyModal(false)}
+      />
     </View>
   );
 }
@@ -410,5 +462,38 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.lg,
     fontWeight: Typography.weights.extrabold,
     color: Colors.deepNavy,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.sm,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: Colors.gold,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  checkboxChecked: {
+    backgroundColor: Colors.gold,
+    borderColor: Colors.gold,
+  },
+  termsTextContainer: {
+    flex: 1,
+  },
+  termsText: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.lightGray,
+    lineHeight: 20,
+  },
+  termsLink: {
+    color: Colors.gold,
+    fontWeight: Typography.weights.semibold,
+    textDecorationLine: 'underline',
   },
 });
