@@ -27,6 +27,7 @@ import PrivacyPolicyModal from '@/components/PrivacyPolicyModal';
 import ContactSupportModal from '@/components/ContactSupportModal';
 import TargetGoalModal from '@/components/TargetGoalModal';
 import NotificationsModal from '@/components/NotificationsModal';
+import FlexibleCalculatorModal from '@/components/FlexibleCalculatorModal';
 import { ISAContribution } from '@/components/AddISAContributionModal';
 import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
 import { ISA_ANNUAL_ALLOWANCE, formatCurrency } from '@/constants/isaData';
@@ -141,6 +142,7 @@ export default function ProfileScreen() {
   const [targetGoalVisible, setTargetGoalVisible] = React.useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = React.useState(false);
   const [deleteText, setDeleteText] = React.useState('');
+  const [calculatorVisible, setCalculatorVisible] = React.useState(false);
 
   // Contributions state
   const [contributions, setContributions] = useState<ISAContribution[]>([]);
@@ -469,6 +471,16 @@ export default function ProfileScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Support</Text>
 
+            <TouchableOpacity onPress={() => setCalculatorVisible(true)}>
+              <GlassCard style={styles.menuCard} intensity="medium">
+                <View style={styles.menuItem}>
+                  <Ionicons name="calculator" size={24} color={Colors.info} />
+                  <Text style={styles.menuText}>Flexible ISA Calculator</Text>
+                  <Ionicons name="chevron-forward" size={22} color={Colors.lightGray} />
+                </View>
+              </GlassCard>
+            </TouchableOpacity>
+
             <TouchableOpacity onPress={() => setContactSupportVisible(true)}>
               <GlassCard style={styles.menuCard} intensity="medium">
                 <View style={styles.menuItem}>
@@ -561,6 +573,11 @@ export default function ProfileScreen() {
       <TargetGoalModal
         visible={targetGoalVisible}
         onClose={() => setTargetGoalVisible(false)}
+      />
+      <FlexibleCalculatorModal
+        visible={calculatorVisible}
+        onClose={() => setCalculatorVisible(false)}
+        currentContributions={totalAllTime}
       />
 
       {/* Delete Account Confirmation Modal */}

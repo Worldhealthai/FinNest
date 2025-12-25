@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Alert, Pressable, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert, Pressable, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,7 +9,7 @@ import GlassCard from '@/components/GlassCard';
 import AddISAContributionModal, { ISAContribution } from '@/components/AddISAContributionModal';
 import EditISAContributionModal from '@/components/EditISAContributionModal';
 import { Colors, Spacing, Typography } from '@/constants/theme';
-import { ISA_INFO, ISA_ANNUAL_ALLOWANCE, LIFETIME_ISA_MAX, getDaysUntilTaxYearEnd, formatCurrency, getTaxYearDates, calculateFlexibleISA } from '@/constants/isaData';
+import { ISA_INFO, ISA_ANNUAL_ALLOWANCE, LIFETIME_ISA_MAX, getDaysUntilTaxYearEnd, formatCurrency, getTaxYearDates } from '@/constants/isaData';
 import { getCurrentTaxYear, isDateInTaxYear } from '@/utils/taxYear';
 import { isISAFlexible } from '@/utils/isaSettings';
 
@@ -84,11 +84,6 @@ export default function DashboardScreen() {
   const [addContributionVisible, setAddContributionVisible] = useState(false);
   const [editContributionVisible, setEditContributionVisible] = useState(false);
   const [selectedContribution, setSelectedContribution] = useState<ISAContribution | null>(null);
-
-  // Flexible ISA Calculator State
-  const [withdrawals, setWithdrawals] = useState('2000');
-  const [depositAmount, setDepositAmount] = useState('5000');
-  const [calcResult, setCalcResult] = useState<any>(null);
 
   // Load saved ISA data on mount
   useEffect(() => {
@@ -168,18 +163,6 @@ export default function DashboardScreen() {
     } catch (error) {
       console.error('❌ Error saving contributions:', error);
     }
-  };
-
-  const handleCalculate = () => {
-    const result = calculateFlexibleISA(
-      {
-        annualAllowance: ISA_ANNUAL_ALLOWANCE,
-        contributionsThisYear: total,
-        withdrawalsThisYear: parseFloat(withdrawals) || 0,
-      },
-      parseFloat(depositAmount) || 0
-    );
-    setCalcResult(result);
   };
 
   const handleAddContribution = async (contribution: ISAContribution) => {
@@ -674,130 +657,6 @@ export default function DashboardScreen() {
             </GlassCard>
           </Pressable>
 
-          <Text style={styles.section}>Flexible ISA Calculator</Text>
-
-          <GlassCard style={styles.card} intensity="dark">
-            <View style={styles.row}>
-              <Ionicons name="calculator" size={24} color={Colors.info} />
-              <Text style={[styles.name, { marginLeft: 12 }]}>Check Your Deposit Capacity</Text>
-            </View>
-            <Text style={[styles.sub, { marginTop: 8, lineHeight: 20, marginBottom: 16 }]}>
-              Flexible ISAs let you withdraw and replace money in the same tax year without losing your allowance.
-            </Text>
-
-            {/* Current State */}
-            <View style={styles.calcRow}>
-              <View style={styles.calcItem}>
-                <Text style={styles.calcLabel}>Annual Allowance</Text>
-                <Text style={styles.calcValue}>{formatCurrency(ISA_ANNUAL_ALLOWANCE)}</Text>
-              </View>
-              <View style={styles.calcItem}>
-                <Text style={styles.calcLabel}>Contributed</Text>
-                <Text style={[styles.calcValue, { color: Colors.gold }]}>{formatCurrency(total)}</Text>
-              </View>
-            </View>
-
-            {/* Input: Withdrawals */}
-            <View style={{ marginTop: 16 }}>
-              <Text style={styles.inputLabel}>Withdrawals This Year (£)</Text>
-              <TextInput
-                style={styles.input}
-                value={withdrawals}
-                onChangeText={setWithdrawals}
-                keyboardType="numeric"
-                placeholder="0"
-                placeholderTextColor={Colors.mediumGray}
-              />
-            </View>
-
-            {/* Input: Deposit Amount */}
-            <View style={{ marginTop: 12 }}>
-              <Text style={styles.inputLabel}>Deposit Amount (£)</Text>
-              <TextInput
-                style={styles.input}
-                value={depositAmount}
-                onChangeText={setDepositAmount}
-                keyboardType="numeric"
-                placeholder="0"
-                placeholderTextColor={Colors.mediumGray}
-              />
-            </View>
-
-            {/* Calculate Button */}
-            <TouchableOpacity onPress={handleCalculate} style={styles.calcButton}>
-              <LinearGradient
-                colors={Colors.goldGradient}
-                style={styles.calcButtonGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-              >
-                <Ionicons name="checkmark-circle" size={20} color={Colors.deepNavy} />
-                <Text style={styles.calcButtonText}>Calculate Deposit</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-
-            {/* Results */}
-            {calcResult && (
-              <View style={[styles.resultCard, { backgroundColor: calcResult.allowed ? Colors.success + '20' : Colors.error + '20', marginTop: 16 }]}>
-                <View style={styles.row}>
-                  <Ionicons name={calcResult.allowed ? 'checkmark-circle' : 'close-circle'} size={24} color={calcResult.allowed ? Colors.success : Colors.error} />
-                  <Text style={[styles.name, { marginLeft: 12, color: calcResult.allowed ? Colors.success : Colors.error }]}>
-                    {calcResult.allowed ? 'Deposit Allowed' : 'Deposit Not Allowed'}
-                  </Text>
-                </View>
-
-                {calcResult.errorMessage && (
-                  <Text style={[styles.sub, { marginTop: 8, color: Colors.error }]}>
-                    {calcResult.errorMessage}
-                  </Text>
-                )}
-
-                {calcResult.allowed && (
-                  <>
-                    <View style={styles.divider} />
-
-                    <Text style={[styles.resultTitle, { marginTop: 12 }]}>Allocation Breakdown:</Text>
-                    {calcResult.amountAllocatedToReplacement! > 0 && (
-                      <View style={[styles.row, { justifyContent: 'space-between', marginTop: 8 }]}>
-                        <Text style={styles.sub}>From Replacement Allowance:</Text>
-                        <Text style={[styles.val, { color: Colors.info }]}>{formatCurrency(calcResult.amountAllocatedToReplacement!)}</Text>
-                      </View>
-                    )}
-                    {calcResult.amountAllocatedToUnused! > 0 && (
-                      <View style={[styles.row, { justifyContent: 'space-between', marginTop: 4 }]}>
-                        <Text style={styles.sub}>From Unused Allowance:</Text>
-                        <Text style={[styles.val, { color: Colors.gold }]}>{formatCurrency(calcResult.amountAllocatedToUnused!)}</Text>
-                      </View>
-                    )}
-
-                    <View style={styles.divider} />
-
-                    <Text style={[styles.resultTitle, { marginTop: 12 }]}>After Deposit:</Text>
-                    <View style={styles.calcRow}>
-                      <View style={styles.calcItem}>
-                        <Text style={styles.calcLabel}>Total Contributed</Text>
-                        <Text style={[styles.calcValue, { color: Colors.gold }]}>{formatCurrency(calcResult.updatedContributions!)}</Text>
-                      </View>
-                      <View style={styles.calcItem}>
-                        <Text style={styles.calcLabel}>Remaining Capacity</Text>
-                        <Text style={[styles.calcValue, { color: Colors.success }]}>{formatCurrency(calcResult.totalRemainingCapacity!)}</Text>
-                      </View>
-                    </View>
-
-                    <View style={[styles.row, { justifyContent: 'space-between', marginTop: 12 }]}>
-                      <Text style={styles.sub}>Unused Allowance:</Text>
-                      <Text style={styles.val}>{formatCurrency(calcResult.unusedAllowance!)}</Text>
-                    </View>
-                    <View style={[styles.row, { justifyContent: 'space-between', marginTop: 4 }]}>
-                      <Text style={styles.sub}>Replacement Allowance:</Text>
-                      <Text style={styles.val}>{formatCurrency(calcResult.replacementAllowance!)}</Text>
-                    </View>
-                  </>
-                )}
-              </View>
-            )}
-          </GlassCard>
-
           <View style={{ height: 100 }} />
         </ScrollView>
       </SafeAreaView>
@@ -870,16 +729,4 @@ const styles = StyleSheet.create({
   sub: { fontSize: Typography.sizes.xs, color: Colors.lightGray, marginTop: 2 },
   val: { fontSize: Typography.sizes.md, color: Colors.white, fontWeight: Typography.weights.bold, marginTop: 2 },
   warn: { fontSize: Typography.sizes.md, color: Colors.warning, fontWeight: Typography.weights.bold },
-  calcRow: { flexDirection: 'row', gap: Spacing.md, marginTop: 8 },
-  calcItem: { flex: 1, alignItems: 'center', padding: Spacing.sm, backgroundColor: Colors.glassLight, borderRadius: 8 },
-  calcLabel: { fontSize: Typography.sizes.xs, color: Colors.lightGray, marginBottom: 4 },
-  calcValue: { fontSize: Typography.sizes.lg, color: Colors.white, fontWeight: Typography.weights.bold },
-  inputLabel: { fontSize: Typography.sizes.sm, color: Colors.lightGray, marginBottom: 8, fontWeight: Typography.weights.semibold },
-  input: { backgroundColor: Colors.glassLight, borderRadius: 8, padding: Spacing.md, fontSize: Typography.sizes.md, color: Colors.white, fontWeight: Typography.weights.semibold, borderWidth: 1, borderColor: Colors.gold + '30' },
-  calcButton: { marginTop: 16, borderRadius: 8, overflow: 'hidden' },
-  calcButtonGradient: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: Spacing.md, gap: 8 },
-  calcButtonText: { fontSize: Typography.sizes.md, color: Colors.deepNavy, fontWeight: Typography.weights.bold },
-  resultCard: { padding: Spacing.md, borderRadius: 8, borderWidth: 1, borderColor: Colors.glassLight },
-  resultTitle: { fontSize: Typography.sizes.sm, color: Colors.white, fontWeight: Typography.weights.bold },
-  divider: { height: 1, backgroundColor: Colors.glassLight, marginVertical: 12 },
 });
