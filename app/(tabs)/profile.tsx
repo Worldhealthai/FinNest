@@ -109,7 +109,7 @@ const getProgressMessage = (percentage: number) => {
 };
 
 export default function ProfileScreen() {
-  const { userProfile, updateProfile, resetOnboarding } = useOnboarding();
+  const { userProfile, updateProfile, logout, resetOnboarding } = useOnboarding();
 
   // Pulsing animation for avatar
   const pulseAnim = React.useRef(new Animated.Value(1)).current;
@@ -227,7 +227,7 @@ export default function ProfileScreen() {
           text: 'Log Out',
           style: 'destructive',
           onPress: async () => {
-            await resetOnboarding();
+            await logout();
           },
         },
       ]
