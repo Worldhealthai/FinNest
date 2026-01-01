@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
+    "description": "Track all your ISAs in one place. Smart ISA allowance tracker for Cash ISAs, Stocks & Shares ISAs, Lifetime ISAs, and Innovative Finance ISAs.",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -16,14 +17,36 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.finnest.app"
+      "bundleIdentifier": "com.finnest.app",
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0A2540"
       },
-      "package": "com.finnest.app"
+      "package": "com.finnest.app",
+      "versionCode": 1,
+      "permissions": [
+        "INTERNET"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "*.finnest.app",
+              "pathPrefix": "/"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -35,6 +58,12 @@
     "scheme": "finnest",
     "experiments": {
       "typedRoutes": true
+    },
+    "privacy": "public",
+    "extra": {
+      "eas": {
+        "projectId": "236c15ec-ebc9-4ed6-8966-c0af534e0821"
+      }
     }
   }
 }

@@ -81,3 +81,9 @@ next-env.d.ts
 
 expo-env.d.ts
 # @end expo-cli
+
+# Google Play Service Account (sensitive credentials)
+google-service-account.json
+
+# Privacy policy (will be hosted elsewhere)
+privacy-policy.html
