@@ -291,6 +291,18 @@ export default function DashboardScreen() {
             <Image source={require('@/assets/logo.png')} style={styles.logo} resizeMode="contain" />
           </View>
 
+          {allowanceUsed > ISA_ANNUAL_ALLOWANCE && (
+            <GlassCard style={styles.card} intensity="dark">
+              <View style={styles.row}>
+                <Ionicons name="alert-circle" size={24} color={Colors.error} />
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={[styles.warn, { color: Colors.error }]}>Allowance Exceeded!</Text>
+                  <Text style={styles.sub}>You've exceeded the £20,000 annual limit by {formatCurrency(allowanceUsed - ISA_ANNUAL_ALLOWANCE)}</Text>
+                </View>
+              </View>
+            </GlassCard>
+          )}
+
           {days <= 30 && (
             <GlassCard style={styles.card} intensity="dark">
               <View style={styles.row}>
