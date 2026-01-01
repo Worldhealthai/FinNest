@@ -3,19 +3,6 @@ module.exports = function(api) {
 
   const plugins = [
     'react-native-reanimated/plugin',
-    [
-      'module-resolver',
-      {
-        root: ['./'],
-        alias: {
-          '@': './',
-          '@/components': './components',
-          '@/constants': './constants',
-          '@/hooks': './hooks',
-          '@/utils': './utils',
-        },
-      },
-    ],
   ];
 
   // Remove console.logs in production builds
