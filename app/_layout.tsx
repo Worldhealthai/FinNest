@@ -11,7 +11,7 @@ import { Colors } from '@/constants/theme';
 SplashScreen.preventAutoHideAsync();
 
 function RootLayoutNav() {
-  const { isOnboardingCompleted } = useOnboarding();
+  const { isOnboardingCompleted, isAuthenticated } = useOnboarding();
   const segments = useSegments();
   const router = useRouter();
 
@@ -20,17 +20,20 @@ function RootLayoutNav() {
     const timeout = setTimeout(() => {
       const inOnboarding = segments[0] === '(onboarding)';
 
-      if (!isOnboardingCompleted && !inOnboarding) {
-        // User hasn't completed onboarding, redirect to onboarding
-        router.replace('/(onboarding)/welcome');
-      } else if (isOnboardingCompleted && inOnboarding) {
-        // User completed onboarding but is in onboarding flow, redirect to tabs
+      if (!isAuthenticated && !inOnboarding) {
+        // User not authenticated, redirect to login
+        router.replace('/(onboarding)/login');
+      } else if (isAuthenticated && !isOnboardingCompleted && !inOnboarding) {
+        // User authenticated but hasn't completed onboarding, redirect to onboarding
+        router.replace('/(onboarding)/account');
+      } else if (isAuthenticated && isOnboardingCompleted && inOnboarding) {
+        // User authenticated and completed onboarding but is in onboarding flow, redirect to tabs
         router.replace('/(tabs)');
       }
     }, 100);
 
     return () => clearTimeout(timeout);
-  }, [isOnboardingCompleted, segments]);
+  }, [isOnboardingCompleted, isAuthenticated, segments]);
 
   return (
     <Stack

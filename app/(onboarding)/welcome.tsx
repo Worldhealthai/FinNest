@@ -183,7 +183,7 @@ export default function WelcomeScreen() {
         <Animated.View style={buttonAnimatedStyle}>
           <TouchableOpacity
             style={styles.button}
-            onPress={() => router.push('/(onboarding)/account')}
+            onPress={() => router.push('/(onboarding)/login')}
             activeOpacity={0.8}
           >
             <LinearGradient

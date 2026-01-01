@@ -109,7 +109,7 @@ const getProgressMessage = (percentage: number) => {
 };
 
 export default function ProfileScreen() {
-  const { userProfile, updateProfile, resetOnboarding } = useOnboarding();
+  const { userProfile, updateProfile, logout, resetOnboarding, isGuest } = useOnboarding();
 
   // Pulsing animation for avatar
   const pulseAnim = React.useRef(new Animated.Value(1)).current;
@@ -227,7 +227,7 @@ export default function ProfileScreen() {
           text: 'Log Out',
           style: 'destructive',
           onPress: async () => {
-            await resetOnboarding();
+            await logout();
           },
         },
       ]
@@ -310,6 +310,45 @@ export default function ProfileScreen() {
             </View>
             <Image source={require('@/assets/logo.png')} style={styles.logo} resizeMode="contain" />
           </View>
+
+          {/* Guest Mode Banner */}
+          {isGuest && (
+            <TouchableOpacity
+              onPress={() => {
+                Alert.alert(
+                  'Create an Account',
+                  'Sign up to save your data permanently and access your account from any device.',
+                  [
+                    { text: 'Not Now', style: 'cancel' },
+                    {
+                      text: 'Sign Up',
+                      onPress: async () => {
+                        await logout();
+                      },
+                    },
+                  ]
+                );
+              }}
+            >
+              <GlassCard style={styles.guestBanner} intensity="medium">
+                <LinearGradient
+                  colors={['rgba(33, 150, 243, 0.3)', 'rgba(33, 150, 243, 0.1)']}
+                  style={styles.guestBannerGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                >
+                  <Ionicons name="information-circle" size={24} color={Colors.info} />
+                  <View style={styles.guestBannerContent}>
+                    <Text style={styles.guestBannerTitle}>You're in Guest Mode</Text>
+                    <Text style={styles.guestBannerText}>
+                      Sign up to save your data permanently
+                    </Text>
+                  </View>
+                  <Ionicons name="arrow-forward" size={20} color={Colors.info} />
+                </LinearGradient>
+              </GlassCard>
+            </TouchableOpacity>
+          )}
 
           {/* Hero Profile Card */}
           <GlassCard style={styles.profileCard} intensity="dark">
@@ -1033,5 +1072,28 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.lg,
     color: Colors.white,
     fontWeight: Typography.weights.bold,
+  },
+  guestBanner: {
+    marginBottom: Spacing.lg,
+    overflow: 'hidden',
+  },
+  guestBannerGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.lg,
+    gap: Spacing.md,
+  },
+  guestBannerContent: {
+    flex: 1,
+  },
+  guestBannerTitle: {
+    fontSize: Typography.sizes.md,
+    color: Colors.white,
+    fontWeight: Typography.weights.bold,
+    marginBottom: 2,
+  },
+  guestBannerText: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.lightGray,
   },
 });
