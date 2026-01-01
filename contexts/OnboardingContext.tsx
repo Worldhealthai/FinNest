@@ -226,8 +226,10 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const continueAsGuest = async () => {
     try {
       await AsyncStorage.setItem(GUEST_MODE_KEY, 'true');
+      await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
       setIsGuest(true);
       setIsAuthenticated(true);
+      setIsOnboardingCompleted(true);
       setUserProfile({ fullName: 'Guest User' });
     } catch (error) {
       console.error('Error continuing as guest:', error);
