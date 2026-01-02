@@ -32,38 +32,51 @@ export default function ContactSupportModal({ visible, onClose }: ContactSupport
 
     setIsSubmitting(true);
 
-    // TODO: Replace with your actual API endpoint
-    // For now, we'll simulate sending the message
     try {
-      // Simulated API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // In production, you would send this to your backend:
-      // const response = await fetch('https://your-api.com/support', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ name, email, subject, message }),
-      // });
-
-      Alert.alert(
-        'Message Sent!',
-        'Thank you for contacting us. Our support team will get back to you within 24 hours.',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              // Reset form
-              setName('');
-              setEmail('');
-              setSubject('');
-              setMessage('');
-              onClose();
-            },
+      // Send email using EmailJS
+      const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          service_id: 'service_finnest', // You'll need to create this in EmailJS
+          template_id: 'template_finnest', // You'll need to create this in EmailJS
+          user_id: 'YOUR_EMAILJS_PUBLIC_KEY', // Replace with your EmailJS public key
+          template_params: {
+            to_email: 'kndevapp@gmail.com',
+            from_name: name,
+            from_email: email,
+            subject: subject,
+            message: message,
           },
-        ]
-      );
+        }),
+      });
+
+      if (response.ok) {
+        Alert.alert(
+          'Message Sent!',
+          'Thank you for contacting us. Our support team will get back to you within 24 hours.',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                // Reset form
+                setName('');
+                setEmail('');
+                setSubject('');
+                setMessage('');
+                onClose();
+              },
+            },
+          ]
+        );
+      } else {
+        throw new Error('Failed to send email');
+      }
     } catch (error) {
-      Alert.alert('Error', 'Failed to send message. Please try again later.');
+      console.error('Email error:', error);
+      Alert.alert('Error', 'Failed to send message. Please email us directly at kndevapp@gmail.com');
     } finally {
       setIsSubmitting(false);
     }
