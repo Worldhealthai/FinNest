@@ -314,8 +314,8 @@ export default function ProfileScreen() {
           {/* Guest Mode Banner */}
           {isGuest && (
             <TouchableOpacity
-              onPress={() => {
-                router.push('/(onboarding)/login');
+              onPress={async () => {
+                await logout();
               }}
               activeOpacity={0.7}
             >
