@@ -48,6 +48,21 @@ export default function PrivacyPolicyModal({ visible, onClose }: PrivacyPolicyMo
               <Text style={styles.paragraph}>
                 We may collect device type, operating system version, and app version for analytics purposes only.
               </Text>
+
+              <Text style={styles.subsectionTitle}>Registered User Accounts</Text>
+              <Text style={styles.paragraph}>
+                If you create a FinNest account, we may collect:
+              </Text>
+              <Text style={styles.bulletPoint}>• Email address and login credentials</Text>
+              <Text style={styles.bulletPoint}>• Financial tracking data associated with your account</Text>
+              <Text style={styles.paragraph}>
+                This data is stored securely on our servers and used only to provide features such as saving and syncing data across devices.
+              </Text>
+
+              <Text style={styles.subsectionTitle}>Future Optional Integrations</Text>
+              <Text style={styles.paragraph}>
+                If you choose to connect external services (such as ISA providers), we will only access and use that information with your explicit consent and solely to provide features you request.
+              </Text>
             </View>
           </View>
 
@@ -67,11 +82,6 @@ export default function PrivacyPolicyModal({ visible, onClose }: PrivacyPolicyMo
               <Text style={styles.paragraph}>
                 We process personal data based on your consent, our legitimate interest in operating and improving the app, and to comply with legal obligations where applicable.
               </Text>
-
-              <Text style={styles.subsectionTitle}>Future Optional Integrations</Text>
-              <Text style={styles.paragraph}>
-                If you choose to connect external services (such as ISA providers) in the future, we will only access and use that information with your explicit consent and solely to provide features you request.
-              </Text>
             </View>
           </View>
 
@@ -82,15 +92,17 @@ export default function PrivacyPolicyModal({ visible, onClose }: PrivacyPolicyMo
 
               <Text style={styles.subsectionTitle}>Local Storage</Text>
               <Text style={styles.paragraph}>
-                Financial tracking data (ISA contributions, amounts, dates) is stored locally on your device. This data:
+                Financial tracking data (ISA contributions, amounts, dates) for guest users is stored locally on your device. It will be lost if you delete the app or reset your device.
               </Text>
-              <Text style={styles.bulletPoint}>• Remains on your device unless you delete the app</Text>
-              <Text style={styles.bulletPoint}>• Will be lost if you delete the app or reset your device</Text>
-              <Text style={styles.bulletPoint}>• You control this data directly within the app</Text>
+
+              <Text style={styles.subsectionTitle}>Server Storage</Text>
+              <Text style={styles.paragraph}>
+                For registered users, account and financial tracking data is stored securely on our servers with encryption and access controls.
+              </Text>
 
               <Text style={styles.subsectionTitle}>Security Measures</Text>
               <Text style={styles.paragraph}>
-                We implement appropriate technical and organizational measures to protect your data, including secure coding standards and secure local storage practices. Where data is transmitted (such as analytics or future optional integrations), it is encrypted in transit.
+                We implement appropriate technical and organizational measures to protect your data. Where data is transmitted (such as analytics or optional integrations), it is encrypted in transit.
               </Text>
             </View>
           </View>
@@ -110,7 +122,7 @@ export default function PrivacyPolicyModal({ visible, onClose }: PrivacyPolicyMo
               <Text style={styles.bulletPoint}>• Right to Lodge a Complaint – Contact the ICO</Text>
 
               <Text style={styles.paragraph}>
-                Note: Where personal data is stored only on your device, FinNest may not be able to directly fulfil certain rights (such as access, portability, or erasure). In these cases, you can exercise your rights by managing or deleting the data within the app or by uninstalling the app.
+                Note: For data stored only on your device, you may need to manage or delete it directly in the app. Registered users may request deletion of account data through the app or by contacting us.
               </Text>
             </View>
           </View>
@@ -120,15 +132,15 @@ export default function PrivacyPolicyModal({ visible, onClose }: PrivacyPolicyMo
             <View style={styles.sectionBox}>
               <Text style={styles.sectionTitle}>5. Data Sharing</Text>
               <Text style={styles.paragraph}>
-                We may share limited data with trusted third-party service providers who assist us with analytics and app performance monitoring.
+                We may share limited data with trusted third-party service providers who assist us with analytics, hosting, authentication, or app performance monitoring.
               </Text>
               <Text style={styles.paragraph}>
-                We will NEVER sell, rent, or trade your personal information to third parties for marketing purposes.
+                We will never sell, rent, or trade your personal information for marketing purposes.
               </Text>
 
               <Text style={styles.subsectionTitle}>Future Optional Integrations</Text>
               <Text style={styles.paragraph}>
-                In the future, FinNest may offer optional integrations with regulated financial service providers (such as ISA platforms). Any such connection will only occur with your explicit consent, and we will clearly explain what data is accessed, how it is used, and how you can revoke access at any time.
+                Any connection to external financial services will only occur with your explicit consent, and you may revoke access at any time.
               </Text>
             </View>
           </View>
@@ -169,10 +181,10 @@ export default function PrivacyPolicyModal({ visible, onClose }: PrivacyPolicyMo
             <View style={styles.sectionBox}>
               <Text style={styles.sectionTitle}>9. Information Commissioner's Office</Text>
               <Text style={styles.paragraph}>
-                You have the right to lodge a complaint with the UK's supervisory authority for data protection:
+                You have the right to lodge a complaint with the UK's data protection authority:
               </Text>
-              <Text style={styles.bulletPoint}>• Website: https://ico.org.uk</Text>
-              <Text style={styles.bulletPoint}>• Helpline: 0303 123 1113</Text>
+              <Text style={styles.bulletPoint}>Website: https://ico.org.uk</Text>
+              <Text style={styles.bulletPoint}>Helpline: 0303 123 1113</Text>
             </View>
           </View>
         </View>

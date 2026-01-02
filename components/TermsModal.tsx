@@ -49,9 +49,20 @@ export default function TermsModal({ visible, onClose }: TermsModalProps) {
           {/* Section 3 */}
           <View style={styles.sectionContainer}>
             <View style={styles.sectionBox}>
-              <Text style={styles.sectionTitle}>3. User Accounts</Text>
+              <Text style={styles.sectionTitle}>3. User Accounts, Guest Mode & Data Storage</Text>
+              <Text style={styles.subsectionTitle}>Guest Mode</Text>
               <Text style={styles.paragraph}>
-                You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree to notify FinNest immediately of any unauthorized use of your account.
+                When using FinNest in Guest Mode, financial tracking data entered into the app (such as ISA contributions) is stored locally on your device. FinNest cannot access, retrieve, or delete this data on your behalf.
+              </Text>
+              <Text style={styles.subsectionTitle}>Registered User Accounts</Text>
+              <Text style={styles.paragraph}>
+                To save data, enable backups, or access your data across devices, you may create a registered user account. When you create an account:
+              </Text>
+              <Text style={styles.bulletPoint}>• Certain personal information, such as your email address and login credentials, will be collected.</Text>
+              <Text style={styles.bulletPoint}>• Financial tracking data associated with your account may be stored securely on FinNest servers.</Text>
+              <Text style={styles.bulletPoint}>• This data is used solely to provide the requested account functionality, including saving and syncing your data across devices.</Text>
+              <Text style={styles.paragraph}>
+                {'\n'}You are responsible for maintaining the confidentiality of your login credentials and for all activities that occur under your account. You agree to notify FinNest immediately of any unauthorized use of your account.
               </Text>
             </View>
           </View>
@@ -71,7 +82,7 @@ export default function TermsModal({ visible, onClose }: TermsModalProps) {
             <View style={styles.sectionBox}>
               <Text style={styles.sectionTitle}>5. Privacy and Data Protection</Text>
               <Text style={styles.paragraph}>
-                Your privacy is important to us. We collect, use, and protect your personal information in accordance with our Privacy Policy and applicable data protection laws including GDPR and UK Data Protection Act 2018.
+                Your privacy is important to us. We collect, use, and protect your personal information in accordance with our Privacy Policy and applicable data protection laws, including GDPR and the UK Data Protection Act 2018. Guest users' data is stored locally, while registered user account data is stored securely on our servers.
               </Text>
             </View>
           </View>
@@ -121,7 +132,7 @@ export default function TermsModal({ visible, onClose }: TermsModalProps) {
             <View style={styles.sectionBox}>
               <Text style={styles.sectionTitle}>10. Third-Party Services</Text>
               <Text style={styles.paragraph}>
-                FinNest may integrate with third-party financial institutions and services. We are not responsible for the availability, accuracy, or content of these third-party services.
+                FinNest may integrate with third-party financial institutions and services. We are not responsible for the availability, accuracy, or content of these third-party services. Any connection to external financial services (such as ISA providers) will only occur with your explicit consent, and you may revoke access at any time.
               </Text>
             </View>
           </View>
@@ -131,7 +142,7 @@ export default function TermsModal({ visible, onClose }: TermsModalProps) {
             <View style={styles.sectionBox}>
               <Text style={styles.sectionTitle}>11. Termination</Text>
               <Text style={styles.paragraph}>
-                We reserve the right to terminate or suspend your account at any time without notice for conduct that we believe violates these Terms or is harmful to other users, us, or third parties.
+                We reserve the right to terminate or suspend your account at any time without notice for conduct that we believe violates these Terms or is harmful to other users, us, or third parties. Registered users may also request deletion of their account and associated data through the app.
               </Text>
             </View>
           </View>
@@ -212,11 +223,25 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
     letterSpacing: 0.5,
   },
+  subsectionTitle: {
+    fontSize: Typography.sizes.md,
+    color: Colors.gold,
+    fontWeight: Typography.weights.bold,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.sm,
+  },
   paragraph: {
     fontSize: Typography.sizes.sm,
     color: Colors.lightGray,
     lineHeight: 22,
     textAlign: 'left',
+  },
+  bulletPoint: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.lightGray,
+    lineHeight: 22,
+    textAlign: 'left',
+    marginTop: Spacing.xs,
   },
   contactText: {
     fontSize: Typography.sizes.sm,
