@@ -20,7 +20,7 @@ export default function PrivacyPolicyModal({ visible, onClose }: PrivacyPolicyMo
         <View style={styles.content}>
           {/* Header Section */}
           <View style={styles.headerSection}>
-            <Text style={styles.lastUpdated}>Last Updated: December 2025</Text>
+            <Text style={styles.lastUpdated}>Last Updated: January 2026</Text>
             <Text style={styles.introText}>
               This Privacy Policy explains how FinNest collects, uses, stores, and protects your personal information. We are committed to protecting your privacy and complying with UK GDPR.
             </Text>

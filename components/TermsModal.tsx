@@ -20,7 +20,7 @@ export default function TermsModal({ visible, onClose }: TermsModalProps) {
         <View style={styles.content}>
           {/* Header Section */}
           <View style={styles.headerSection}>
-            <Text style={styles.lastUpdated}>Last Updated: December 2025</Text>
+            <Text style={styles.lastUpdated}>Last Updated: January 2026</Text>
             <Text style={styles.introText}>
               Welcome to FinNest. By using our services, you agree to these Terms & Conditions. Please read them carefully.
             </Text>
