@@ -315,20 +315,9 @@ export default function ProfileScreen() {
           {isGuest && (
             <TouchableOpacity
               onPress={() => {
-                Alert.alert(
-                  'Create an Account',
-                  'Sign up to save your data permanently and access your account from any device.',
-                  [
-                    { text: 'Not Now', style: 'cancel' },
-                    {
-                      text: 'Sign Up',
-                      onPress: () => {
-                        router.push('/(onboarding)/login');
-                      },
-                    },
-                  ]
-                );
+                router.push('/(onboarding)/login');
               }}
+              activeOpacity={0.7}
             >
               <GlassCard style={styles.guestBanner} intensity="medium">
                 <LinearGradient
@@ -341,7 +330,7 @@ export default function ProfileScreen() {
                   <View style={styles.guestBannerContent}>
                     <Text style={styles.guestBannerTitle}>You're in Guest Mode</Text>
                     <Text style={styles.guestBannerText}>
-                      Sign up to save your data permanently
+                      Tap here to sign up and save your data permanently
                     </Text>
                   </View>
                   <Ionicons name="arrow-forward" size={20} color={Colors.info} />
