@@ -465,8 +465,8 @@ const styles = StyleSheet.create({
     borderColor: Colors.gold + '40',
   },
   logoImage: {
-    width: 70,
-    height: 70,
+    width: 100,
+    height: 100,
     tintColor: Colors.gold,
   },
   title: {
