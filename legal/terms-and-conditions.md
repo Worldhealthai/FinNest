@@ -1,323 +1,87 @@
 # FinNest Terms & Conditions
 
-**DRAFT DOCUMENT - REQUIRES LEGAL REVIEW BEFORE PUBLICATION**
-
-**Last Updated:** [DATE TO BE ADDED]
+**Last Updated:** Jan 2026
 
 ---
 
-## ⚠️ LEGAL REVIEW REQUIRED
+## 1. Acceptance of Terms
 
-**This is a DRAFT template. Before publishing, you MUST have a qualified UK solicitor review:**
-- FCA regulatory compliance requirements
-- Consumer Rights Act 2015 compliance
-- Financial services disclaimers
-- Limitation of liability clauses
-- Data protection compliance
-- Geographic restrictions and licensing
+By accessing or using FinNest ("the Service"), you agree to be bound by these Terms & Conditions ("Terms"). If you do not agree to these Terms, you must not use the Service.
 
----
+## 2. Description of the Service
 
-## 1. Introduction
+FinNest provides a digital wealth tracking platform that enables users to monitor ISAs, investments, and financial goals.
 
-Welcome to FinNest ("we," "our," "us"). These Terms and Conditions ("Terms") govern your use of the FinNest mobile application and related services (collectively, the "Service").
+The Service is provided on an "as is" and "as available" basis. FinNest reserves the right to modify, suspend, or discontinue any part of the Service at any time without prior notice.
 
-By accessing or using FinNest, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use the Service.
+## 3. Eligibility
 
-**Company Information:**
-- Company Name: [COMPANY NAME TO BE ADDED]
-- Company Number: [COMPANIES HOUSE NUMBER TO BE ADDED]
-- Registered Address: [UK ADDRESS TO BE ADDED]
-- Contact Email: [EMAIL TO BE ADDED]
+You must be at least 18 years old and legally capable of entering into a binding contract to use FinNest.
 
----
+## 4. User Accounts, Guest Mode & Data Storage
 
-## 2. Service Description
+FinNest offers both Guest Mode and Registered User Accounts.
 
-FinNest is an **educational tracking tool** designed to help UK users monitor their Individual Savings Account (ISA) contributions and allowances.
+### Guest Mode
 
-### 2.1 What FinNest Does
-- Track ISA contributions across multiple providers
-- Calculate remaining annual allowance
-- Display historical contribution data
-- Provide educational information about ISA types
+When using FinNest in Guest Mode, financial tracking data entered into the app (such as ISA contributions) is stored locally on your device only. FinNest does not have access to this data and cannot retrieve or delete it on your behalf.
 
-### 2.2 What FinNest Does NOT Do
-- FinNest does NOT provide financial advice
-- FinNest does NOT manage or hold your ISA accounts
-- FinNest does NOT execute financial transactions
-- FinNest is NOT regulated by the Financial Conduct Authority (FCA)
-- FinNest does NOT connect to or access your actual ISA provider accounts
+### Registered User Accounts
 
----
+To save data, enable backups, or access features across devices, you may be required to create a registered user account. When you create an account:
 
-## 3. Important Disclaimers
+- We process certain personal information, such as your email address and authentication credentials
+- Financial tracking data associated with your account may be stored securely on FinNest servers
+- This data is used solely to provide the requested account functionality
 
-### 3.1 Not Financial Advice
-**THE SERVICE IS FOR INFORMATIONAL AND TRACKING PURPOSES ONLY.**
+You are responsible for maintaining the confidentiality of your login credentials and for all activities that occur under your account.
 
-All information provided through FinNest is for general educational purposes. We do not provide:
-- Investment advice
-- Tax advice
-- Financial planning services
-- Recommendations to buy, sell, or hold any financial products
+## 5. Financial Information & No Advice
 
-**You should consult with a qualified financial advisor** before making any financial decisions.
+All information provided through FinNest is for informational and tracking purposes only and does not constitute financial, investment, tax, or legal advice.
 
-### 3.2 Accuracy of Information
-While we strive to provide accurate information about ISA allowances and regulations:
-- ISA rules and allowances may change
-- We cannot guarantee the accuracy of third-party information
-- You are responsible for verifying all data you enter
-- **Always verify contribution limits and tax year dates with official HMRC sources**
+FinNest is not authorised or regulated by the Financial Conduct Authority (FCA). You should seek advice from a qualified professional before making any financial decisions.
 
-### 3.3 No Guarantee of Service
-We provide the Service "as is" without warranties of any kind. We do not guarantee:
-- Continuous, uninterrupted access to the Service
-- Error-free operation
-- Compatibility with all devices
-- That the Service will meet your specific needs
+## 6. ISA Regulations Disclaimer
 
----
+ISA eligibility, contributions, and allowances are subject to HMRC rules and annual limits. While FinNest provides tools to help track ISA usage, we do not guarantee accuracy or compliance with current or future HMRC regulations. You remain solely responsible for ensuring compliance.
 
-## 4. User Responsibilities
+## 7. Privacy & Data Protection
 
-### 4.1 Accurate Data Entry
-You are solely responsible for:
-- Entering accurate contribution amounts
-- Selecting correct ISA types and providers
-- Updating your information when changes occur
-- Verifying all calculations independently
+Your privacy is important to us. Personal data is processed in accordance with our Privacy Policy, the UK GDPR, and the Data Protection Act 2018. By using FinNest, you agree to such processing.
 
-### 4.2 Age Requirement
-You must be at least 18 years old to use FinNest. By using the Service, you confirm that you meet this age requirement.
+## 8. Intellectual Property
 
-**[LEGAL REVIEW NEEDED: Verify age requirements for ISA tracking services]**
+All content, software, features, and branding associated with FinNest are owned by or licensed to FinNest Ltd and are protected by intellectual property laws. You may not copy, distribute, modify, or reverse engineer any part of the Service without prior written consent.
 
-### 4.3 Account Security
-You are responsible for:
-- Maintaining the confidentiality of your account credentials
-- All activities that occur under your account
-- Notifying us immediately of any unauthorized access
+## 9. Third-Party Services
 
-### 4.4 Prohibited Use
-You may NOT:
-- Use the Service for illegal purposes
-- Attempt to gain unauthorized access to our systems
-- Reverse engineer, decompile, or disassemble the Service
-- Use automated systems to access the Service
-- Transmit viruses or malicious code
-- Violate any applicable laws or regulations
+FinNest may integrate with or link to third-party services (such as analytics providers or, in the future, financial institutions). We do not control and are not responsible for the availability, accuracy, or content of third-party services. Your use of such services is subject to their own terms.
 
----
+## 10. Limitation of Liability
 
-## 5. Data Storage and User Content
+To the fullest extent permitted by law, FinNest shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Service.
 
-### 5.1 Your Data
-All ISA contribution data you enter is stored locally on your device using AsyncStorage. We do not:
-- Store your financial data on our servers
-- Share your contribution data with third parties
-- Access your ISA provider accounts
-
-**[LEGAL REVIEW NEEDED: Confirm data storage architecture and update if backend storage is added]**
-
-### 5.2 Data Accuracy
-You acknowledge that:
-- Data stored locally on your device may be lost if you delete the app
-- We are not responsible for data backup
-- You should maintain independent records of your ISA contributions
-
----
-
-## 6. Intellectual Property
-
-### 6.1 Our Rights
-All content, features, and functionality of FinNest, including but not limited to:
-- Software code
-- Design elements
-- Graphics and logos
-- Text and documentation
-
-Are owned by [COMPANY NAME] and protected by UK and international copyright, trademark, and other intellectual property laws.
-
-### 6.2 License to Use
-We grant you a limited, non-exclusive, non-transferable, revocable license to use FinNest for personal, non-commercial purposes, subject to these Terms.
-
-### 6.3 Restrictions
-You may NOT:
-- Copy, modify, or create derivative works of the Service
-- Sell, rent, lease, or sublicense access to the Service
-- Remove or alter any proprietary notices
-- Use the Service for commercial purposes without written permission
-
----
-
-## 7. Limitation of Liability
-
-**[LEGAL REVIEW CRITICAL: Liability limitations must comply with UK consumer protection laws]**
-
-### 7.1 No Liability for Financial Decisions
-TO THE FULLEST EXTENT PERMITTED BY LAW, WE SHALL NOT BE LIABLE FOR:
-- Any financial losses resulting from your use of the Service
-- Decisions made based on information in FinNest
-- Errors in calculations or data entry
-- Missed contribution deadlines or allowance errors
-
-### 7.2 Exclusions and Limitations
-We do not exclude or limit liability for:
-- Death or personal injury caused by our negligence
-- Fraud or fraudulent misrepresentation
-- Any other liability that cannot be excluded under UK law
-
-### 7.3 Maximum Liability
-Subject to Section 7.2, our total liability to you for all claims arising from your use of the Service shall not exceed £100 GBP.
-
-**[LEGAL REVIEW NEEDED: Verify appropriate liability cap for this type of service]**
-
----
-
-## 8. Indemnification
-
-You agree to indemnify and hold harmless FinNest, its officers, directors, employees, and agents from any claims, damages, losses, or expenses (including legal fees) arising from:
-- Your use of the Service
-- Your violation of these Terms
-- Your violation of any rights of another party
-- Your breach of applicable laws or regulations
-
----
-
-## 9. Third-Party Links and Services
-
-FinNest may contain links to third-party websites or services (such as ISA provider websites referenced in the Hub section). We:
-- Do not endorse or control third-party sites
-- Are not responsible for their content or practices
-- Recommend reviewing their terms and privacy policies
-
----
-
-## 10. Changes to the Service
-
-We reserve the right to:
-- Modify or discontinue the Service at any time
-- Change features or functionality
-- Update ISA allowance amounts and tax year information
-- Refuse service to anyone for any reason
-
-We will attempt to provide reasonable notice of material changes, but are not obligated to do so.
-
----
+Our total liability shall not exceed the amount paid by you (if any) for use of the Service in the 12 months preceding the claim.
 
 ## 11. Termination
 
-### 11.1 By You
-You may stop using FinNest at any time by deleting the application from your device.
+We may suspend or terminate your access to the Service at any time, without notice, if we reasonably believe you have breached these Terms or used the Service unlawfully or harmfully.
 
-### 11.2 By Us
-We may suspend or terminate your access to the Service:
-- If you violate these Terms
-- If we suspect fraudulent or illegal activity
-- For any reason with or without notice
+## 12. Changes to These Terms
 
-### 11.3 Effect of Termination
-Upon termination:
-- Your license to use the Service ends immediately
-- You must cease all use of FinNest
-- Locally stored data will remain on your device until you delete the app
+We may update these Terms from time to time. Material changes will be communicated where reasonably practicable. Continued use of FinNest constitutes acceptance of the updated Terms.
 
----
+## 13. Governing Law
 
-## 12. Privacy and Data Protection
+These Terms are governed by and construed in accordance with the laws of England and Wales, and the courts of England and Wales shall have exclusive jurisdiction.
 
-Your use of FinNest is also governed by our Privacy Policy, which complies with UK GDPR and the Data Protection Act 2018. Please review the Privacy Policy to understand our data practices.
+## 14. Contact Information
 
-**[LEGAL REVIEW NEEDED: Ensure Privacy Policy integration is compliant]**
+If you have any questions about these Terms, please contact us:
+
+**Email:** FinNest Ltd, London, United Kingdom
 
 ---
 
-## 13. Governing Law and Jurisdiction
-
-### 13.1 Governing Law
-These Terms shall be governed by and construed in accordance with the laws of the United Kingdom.
-
-### 13.2 Dispute Resolution
-Any disputes arising from these Terms or your use of FinNest shall be subject to the exclusive jurisdiction of the courts of the United Kingdom.
-
-**[LEGAL REVIEW NEEDED: Consider alternative dispute resolution provisions]**
-
-### 13.3 Consumer Rights
-Nothing in these Terms affects your statutory rights as a consumer under UK law.
-
----
-
-## 14. General Provisions
-
-### 14.1 Entire Agreement
-These Terms, together with our Privacy Policy, constitute the entire agreement between you and FinNest.
-
-### 14.2 Severability
-If any provision of these Terms is found to be unenforceable, the remaining provisions shall remain in full effect.
-
-### 14.3 Waiver
-Our failure to enforce any right or provision of these Terms shall not constitute a waiver of such right or provision.
-
-### 14.4 Assignment
-You may not assign or transfer these Terms without our written consent. We may assign our rights and obligations without restriction.
-
-### 14.5 No Agency
-Nothing in these Terms creates a partnership, joint venture, or agency relationship between you and FinNest.
-
-### 14.6 Force Majeure
-We shall not be liable for any failure to perform our obligations due to circumstances beyond our reasonable control.
-
----
-
-## 15. Changes to Terms
-
-We reserve the right to update these Terms at any time. We will notify you of material changes by:
-- Updating the "Last Updated" date at the top of this document
-- Posting a notice in the app
-- Sending an email (if we have your email address)
-
-Your continued use of FinNest after changes constitutes acceptance of the updated Terms.
-
----
-
-## 16. Contact Information
-
-If you have questions about these Terms, please contact us at:
-
-**Email:** [EMAIL TO BE ADDED]
-**Address:** [UK ADDRESS TO BE ADDED]
-**Company Number:** [COMPANIES HOUSE NUMBER TO BE ADDED]
-
----
-
-## 17. Acknowledgment
-
-BY USING FINNEST, YOU ACKNOWLEDGE THAT:
-- You have read and understood these Terms
-- You agree to be bound by these Terms
-- FinNest is not a regulated financial service
-- You will seek professional advice for financial decisions
-- You are solely responsible for your financial decisions
-
----
-
-**END OF TERMS AND CONDITIONS**
-
----
-
-## LEGAL REVIEW CHECKLIST
-
-Before publishing, ensure legal review of:
-- [ ] Company registration details are accurate
-- [ ] FCA regulatory requirements (if applicable)
-- [ ] Consumer Rights Act 2015 compliance
-- [ ] Liability limitation enforceability
-- [ ] Data protection compliance
-- [ ] Financial services disclaimers adequacy
-- [ ] Age verification requirements
-- [ ] Geographic restrictions needed
-- [ ] Dispute resolution provisions
-- [ ] Accessibility requirements
-- [ ] App store compliance (Apple, Google)
+**Last Updated:** Jan 2026
