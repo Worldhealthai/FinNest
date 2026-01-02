@@ -33,55 +33,8 @@ import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
 import { ISA_ANNUAL_ALLOWANCE, formatCurrency } from '@/constants/isaData';
 import { getCurrentTaxYear, isDateInTaxYear } from '@/utils/taxYear';
 import { useOnboarding } from '@/contexts/OnboardingContext';
-import Svg, { Circle, Path } from 'react-native-svg';
 
 const CONTRIBUTIONS_STORAGE_KEY = '@finnest_contributions';
-
-// Circular Progress Component
-const CircularProgress = ({ value, max, size = 100, strokeWidth = 8, color = Colors.gold }: any) => {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
-  const progress = (value / max) * 100;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
-
-  return (
-    <Svg width={size} height={size} style={{ transform: [{ rotate: '-90deg' }] }}>
-      {/* Background circle */}
-      <Circle
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        stroke="rgba(255, 255, 255, 0.1)"
-        strokeWidth={strokeWidth}
-        fill="none"
-      />
-      {/* Progress circle */}
-      <Circle
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        stroke={color}
-        strokeWidth={strokeWidth}
-        fill="none"
-        strokeDasharray={`${circumference} ${circumference}`}
-        strokeDashoffset={strokeDashoffset}
-        strokeLinecap="round"
-      />
-    </Svg>
-  );
-};
-
-// Wavy Divider Component
-const WavyDivider = () => (
-  <Svg height="20" width="100%" style={{ marginVertical: Spacing.md }}>
-    <Path
-      d="M0,10 Q25,0 50,10 T100,10 T150,10 T200,10 T250,10 T300,10 T350,10 T400,10"
-      stroke="rgba(255, 255, 255, 0.1)"
-      strokeWidth="2"
-      fill="none"
-    />
-  </Svg>
-);
 
 // Get time-based greeting
 const getGreeting = () => {
@@ -110,6 +63,7 @@ const getProgressMessage = (percentage: number) => {
 
 export default function ProfileScreen() {
   const { userProfile, updateProfile, logout, resetOnboarding, isGuest } = useOnboarding();
+  const [hasError, setHasError] = React.useState(false);
 
   // Pulsing animation for avatar
   const pulseAnim = React.useRef(new Animated.Value(1)).current;
@@ -418,37 +372,26 @@ export default function ProfileScreen() {
               </View>
             </View>
 
-            {/* Circular Stats with Progress Rings */}
+            {/* Simple Stats without SVG */}
             <View style={styles.statsContainer}>
               <View style={styles.statBox}>
-                <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
-                  <CircularProgress value={uniqueAccounts} max={10} size={120} strokeWidth={10} color={Colors.gold} />
-                  <View style={{ position: 'absolute', alignItems: 'center' }}>
-                    <Text style={[styles.statValue, { fontSize: Typography.sizes.xxxl }]}>{uniqueAccounts}</Text>
-                  </View>
+                <View style={{ alignItems: 'center', justifyContent: 'center', height: 120 }}>
+                  <Text style={[styles.statValue, { fontSize: Typography.sizes.xxxl, color: Colors.gold }]}>{uniqueAccounts}</Text>
                 </View>
                 <Text style={[styles.statLabel, { marginTop: Spacing.md }]}>ISA Accounts</Text>
               </View>
 
               <View style={styles.statBox}>
-                <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
-                  <CircularProgress
-                    value={totalAllTime}
-                    max={ISA_ANNUAL_ALLOWANCE}
-                    size={120}
-                    strokeWidth={10}
-                    color={Colors.success}
-                  />
-                  <View style={{ position: 'absolute', alignItems: 'center' }}>
-                    <Text style={[styles.statValue, { fontSize: Typography.sizes.lg }]}>{formatCurrency(totalAllTime)}</Text>
-                  </View>
+                <View style={{ alignItems: 'center', justifyContent: 'center', height: 120 }}>
+                  <Text style={[styles.statValue, { fontSize: Typography.sizes.lg, color: Colors.success }]}>{formatCurrency(totalAllTime)}</Text>
                 </View>
                 <Text style={[styles.statLabel, { marginTop: Spacing.md }]}>Total Saved</Text>
               </View>
             </View>
           </GlassCard>
 
-          <WavyDivider />
+          {/* Simple divider instead of SVG */}
+          <View style={{ height: 20, marginVertical: Spacing.md }} />
 
           {/* Account Section */}
           <View style={styles.section}>
@@ -498,7 +441,8 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
 
-          <WavyDivider />
+          {/* Simple divider instead of SVG */}
+          <View style={{ height: 20, marginVertical: Spacing.md }} />
 
           {/* Support Section */}
           <View style={styles.section}>
