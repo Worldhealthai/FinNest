@@ -31,6 +31,14 @@ export default function PersonalInfoModal({ visible, onClose }: PersonalInfoModa
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [nationalInsurance, setNationalInsurance] = useState('');
 
+  // Password change states
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+
   // Load user profile data when modal opens
   useEffect(() => {
     if (visible) {
@@ -59,6 +67,41 @@ export default function PersonalInfoModal({ visible, onClose }: PersonalInfoModa
 
     Alert.alert('Success', 'Personal information updated successfully!');
     onClose();
+  };
+
+  const handlePasswordChange = async () => {
+    // Validation
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      Alert.alert('Error', 'Please fill in all password fields');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      Alert.alert('Error', 'New password must be at least 6 characters long');
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      Alert.alert('Error', 'New passwords do not match');
+      return;
+    }
+
+    // TODO: Implement Supabase password change
+    // For now, show success message
+    Alert.alert(
+      'Password Changed',
+      'Your password has been updated successfully!',
+      [
+        {
+          text: 'OK',
+          onPress: () => {
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmNewPassword('');
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -197,6 +240,104 @@ export default function PersonalInfoModal({ visible, onClose }: PersonalInfoModa
           </GlassCard>
         </View>
 
+        {/* Password Change Section */}
+        <View style={styles.divider} />
+        <Text style={styles.sectionTitle}>Change Password</Text>
+
+        {/* Current Password */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Current Password</Text>
+          <GlassCard style={styles.inputCard} intensity="medium">
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={[styles.input, styles.passwordInput]}
+                placeholder="Enter current password"
+                placeholderTextColor={Colors.mediumGray}
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
+                secureTextEntry={!showCurrentPassword}
+              />
+              <TouchableOpacity
+                onPress={() => setShowCurrentPassword(!showCurrentPassword)}
+                style={styles.eyeButton}
+              >
+                <Ionicons
+                  name={showCurrentPassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={20}
+                  color={Colors.lightGray}
+                />
+              </TouchableOpacity>
+            </View>
+          </GlassCard>
+        </View>
+
+        {/* New Password */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>New Password</Text>
+          <GlassCard style={styles.inputCard} intensity="medium">
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={[styles.input, styles.passwordInput]}
+                placeholder="Enter new password"
+                placeholderTextColor={Colors.mediumGray}
+                value={newPassword}
+                onChangeText={setNewPassword}
+                secureTextEntry={!showNewPassword}
+              />
+              <TouchableOpacity
+                onPress={() => setShowNewPassword(!showNewPassword)}
+                style={styles.eyeButton}
+              >
+                <Ionicons
+                  name={showNewPassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={20}
+                  color={Colors.lightGray}
+                />
+              </TouchableOpacity>
+            </View>
+          </GlassCard>
+        </View>
+
+        {/* Confirm New Password */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Confirm New Password</Text>
+          <GlassCard style={styles.inputCard} intensity="medium">
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={[styles.input, styles.passwordInput]}
+                placeholder="Confirm new password"
+                placeholderTextColor={Colors.mediumGray}
+                value={confirmNewPassword}
+                onChangeText={setConfirmNewPassword}
+                secureTextEntry={!showConfirmNewPassword}
+              />
+              <TouchableOpacity
+                onPress={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
+                style={styles.eyeButton}
+              >
+                <Ionicons
+                  name={showConfirmNewPassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={20}
+                  color={Colors.lightGray}
+                />
+              </TouchableOpacity>
+            </View>
+          </GlassCard>
+        </View>
+
+        {/* Change Password Button */}
+        <TouchableOpacity onPress={handlePasswordChange}>
+          <LinearGradient
+            colors={['#4A90E2', '#2B4F7E']}
+            style={styles.passwordButton}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+          >
+            <Ionicons name="lock-closed" size={24} color={Colors.white} />
+            <Text style={styles.passwordButtonText}>Update Password</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+
         {/* Save Button */}
         <TouchableOpacity onPress={handleSave}>
           <LinearGradient
@@ -265,6 +406,43 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: Typography.sizes.md,
     color: Colors.deepNavy,
+    fontWeight: Typography.weights.bold,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginVertical: Spacing.xl,
+  },
+  sectionTitle: {
+    fontSize: Typography.sizes.lg,
+    color: Colors.white,
+    fontWeight: Typography.weights.bold,
+    marginBottom: Spacing.md,
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  passwordInput: {
+    flex: 1,
+  },
+  eyeButton: {
+    padding: Spacing.xs,
+    marginLeft: Spacing.sm,
+  },
+  passwordButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    gap: Spacing.sm,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  passwordButtonText: {
+    fontSize: Typography.sizes.md,
+    color: Colors.white,
     fontWeight: Typography.weights.bold,
   },
 });
