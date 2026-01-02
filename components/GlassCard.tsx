@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
+import { View, StyleSheet, ViewStyle, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Colors, BorderRadius, Shadows, Spacing } from '@/constants/theme';
 
@@ -23,11 +23,20 @@ export default function GlassCard({
     dark: styles.glassDark,
   };
 
+  // Use regular View on Android if BlurView causes issues
+  const useBlur = Platform.OS === 'ios';
+
   return (
     <View style={[styles.container, intensityStyles[intensity], style]}>
-      <BlurView intensity={blur} style={styles.blur}>
-        {children}
-      </BlurView>
+      {useBlur ? (
+        <BlurView intensity={blur} style={styles.blur} tint="dark">
+          {children}
+        </BlurView>
+      ) : (
+        <View style={styles.blur}>
+          {children}
+        </View>
+      )}
     </View>
   );
 }

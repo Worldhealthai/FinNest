@@ -34,6 +34,8 @@ export default function Modal({
   icon,
   showCloseButton = true,
 }: ModalProps) {
+  const useBlur = Platform.OS === 'ios';
+
   return (
     <RNModal
       visible={visible}
@@ -43,7 +45,11 @@ export default function Modal({
       statusBarTranslucent
     >
       <View style={styles.overlay}>
-        <BlurView intensity={50} style={StyleSheet.absoluteFill} tint="dark" />
+        {useBlur ? (
+          <BlurView intensity={50} style={StyleSheet.absoluteFill} tint="dark" />
+        ) : (
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.7)' }]} />
+        )}
 
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
