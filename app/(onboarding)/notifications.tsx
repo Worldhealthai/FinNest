@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Switch,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,6 +22,11 @@ import Animated, {
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  requestNotificationPermissions,
+  saveNotificationSettings,
+  sendTestNotification,
+} from '@/utils/notificationService';
 
 const NOTIFICATION_OPTIONS = [
   {
@@ -90,8 +96,37 @@ export default function NotificationsScreen() {
       withSpring(1, { damping: 8 })
     );
 
+    // Request notification permissions
+    const hasPermission = await requestNotificationPermissions();
+
+    if (!hasPermission) {
+      Alert.alert(
+        'Notification Permission',
+        'Notifications are disabled. You can enable them later in Settings to get ISA reminders.',
+        [{ text: 'OK' }]
+      );
+    }
+
+    // Save notification settings
+    await saveNotificationSettings({
+      pushNotifications: hasPermission,
+      taxYearReminders: notifications.taxYearReminders,
+      contributionStreaks: notifications.contributionStreaks,
+      educationalTips: notifications.educationalTips,
+      isaReminders: notifications.taxYearReminders,
+      contributionAlerts: notifications.contributionStreaks,
+      monthlySummaries: true,
+      emailNotifications: true,
+      marketingEmails: false,
+    });
+
     // Update profile with notifications
     updateProfile({ notifications });
+
+    // Send test notification if permission granted
+    if (hasPermission) {
+      await sendTestNotification();
+    }
 
     // Wait a bit for animation
     await new Promise((resolve) => setTimeout(resolve, 800));
@@ -104,6 +139,19 @@ export default function NotificationsScreen() {
   };
 
   const handleSkip = async () => {
+    // Save all notifications as disabled
+    await saveNotificationSettings({
+      pushNotifications: false,
+      taxYearReminders: false,
+      contributionStreaks: false,
+      educationalTips: false,
+      isaReminders: false,
+      contributionAlerts: false,
+      monthlySummaries: false,
+      emailNotifications: false,
+      marketingEmails: false,
+    });
+
     // Set all notifications to false
     updateProfile({
       notifications: {

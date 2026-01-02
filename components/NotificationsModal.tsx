@@ -1,14 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Switch,
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Modal from './Modal';
 import GlassCard from './GlassCard';
 import { Colors, Spacing, Typography } from '@/constants/theme';
+import {
+  getNotificationSettings,
+  saveNotificationSettings,
+  requestNotificationPermissions,
+  sendTestNotification,
+  NotificationSettings,
+} from '@/utils/notificationService';
 
 interface NotificationsModalProps {
   visible: boolean;
@@ -16,12 +25,71 @@ interface NotificationsModalProps {
 }
 
 export default function NotificationsModal({ visible, onClose }: NotificationsModalProps) {
-  const [pushNotifications, setPushNotifications] = useState(true);
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [isaReminders, setIsaReminders] = useState(true);
-  const [contributionAlerts, setContributionAlerts] = useState(true);
-  const [monthlySummaries, setMonthlySummaries] = useState(true);
-  const [marketingEmails, setMarketingEmails] = useState(false);
+  const [settings, setSettings] = useState<NotificationSettings>({
+    pushNotifications: true,
+    emailNotifications: true,
+    isaReminders: true,
+    contributionAlerts: true,
+    monthlySummaries: true,
+    marketingEmails: false,
+    taxYearReminders: true,
+    contributionStreaks: true,
+    educationalTips: true,
+  });
+  const [loading, setLoading] = useState(true);
+  const [hasPermission, setHasPermission] = useState(false);
+
+  // Load settings when modal opens
+  useEffect(() => {
+    if (visible) {
+      loadSettings();
+    }
+  }, [visible]);
+
+  const loadSettings = async () => {
+    try {
+      setLoading(true);
+      const savedSettings = await getNotificationSettings();
+      setSettings(savedSettings);
+
+      // Check if we have notification permissions
+      const granted = await requestNotificationPermissions();
+      setHasPermission(granted);
+    } catch (error) {
+      console.error('Error loading notification settings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggle = async (key: keyof NotificationSettings) => {
+    // If enabling push notifications and we don't have permission, request it
+    if (key === 'pushNotifications' && !settings.pushNotifications && !hasPermission) {
+      const granted = await requestNotificationPermissions();
+      if (!granted) {
+        Alert.alert(
+          'Permission Required',
+          'Please enable notifications in your device settings to receive alerts.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+      setHasPermission(true);
+    }
+
+    const newSettings = {
+      ...settings,
+      [key]: !settings[key],
+    };
+
+    setSettings(newSettings);
+    await saveNotificationSettings(newSettings);
+
+    // If enabling push notifications, send a test notification
+    if (key === 'pushNotifications' && !settings.pushNotifications) {
+      await sendTestNotification();
+    }
+  };
 
   return (
     <Modal
@@ -47,11 +115,12 @@ export default function NotificationsModal({ visible, onClose }: NotificationsMo
               </View>
             </View>
             <Switch
-              value={pushNotifications}
-              onValueChange={setPushNotifications}
+              value={settings.pushNotifications}
+              onValueChange={() => handleToggle('pushNotifications')}
               trackColor={{ false: Colors.mediumGray, true: Colors.gold + '60' }}
-              thumbColor={pushNotifications ? Colors.gold : Colors.lightGray}
+              thumbColor={settings.pushNotifications ? Colors.gold : Colors.lightGray}
               ios_backgroundColor={Colors.mediumGray}
+              disabled={loading}
             />
           </View>
         </GlassCard>
@@ -70,11 +139,12 @@ export default function NotificationsModal({ visible, onClose }: NotificationsMo
               </View>
             </View>
             <Switch
-              value={emailNotifications}
-              onValueChange={setEmailNotifications}
+              value={settings.emailNotifications}
+              onValueChange={() => handleToggle('emailNotifications')}
               trackColor={{ false: Colors.mediumGray, true: Colors.gold + '60' }}
-              thumbColor={emailNotifications ? Colors.gold : Colors.lightGray}
+              thumbColor={settings.emailNotifications ? Colors.gold : Colors.lightGray}
               ios_backgroundColor={Colors.mediumGray}
+              disabled={loading}
             />
           </View>
         </GlassCard>
@@ -95,11 +165,12 @@ export default function NotificationsModal({ visible, onClose }: NotificationsMo
               </View>
             </View>
             <Switch
-              value={isaReminders}
-              onValueChange={setIsaReminders}
+              value={settings.isaReminders}
+              onValueChange={() => handleToggle('isaReminders')}
               trackColor={{ false: Colors.mediumGray, true: Colors.gold + '60' }}
-              thumbColor={isaReminders ? Colors.gold : Colors.lightGray}
+              thumbColor={settings.isaReminders ? Colors.gold : Colors.lightGray}
               ios_backgroundColor={Colors.mediumGray}
+              disabled={loading || !settings.pushNotifications}
             />
           </View>
         </GlassCard>
@@ -118,11 +189,12 @@ export default function NotificationsModal({ visible, onClose }: NotificationsMo
               </View>
             </View>
             <Switch
-              value={contributionAlerts}
-              onValueChange={setContributionAlerts}
+              value={settings.contributionAlerts}
+              onValueChange={() => handleToggle('contributionAlerts')}
               trackColor={{ false: Colors.mediumGray, true: Colors.gold + '60' }}
-              thumbColor={contributionAlerts ? Colors.gold : Colors.lightGray}
+              thumbColor={settings.contributionAlerts ? Colors.gold : Colors.lightGray}
               ios_backgroundColor={Colors.mediumGray}
+              disabled={loading || !settings.pushNotifications}
             />
           </View>
         </GlassCard>
@@ -143,11 +215,12 @@ export default function NotificationsModal({ visible, onClose }: NotificationsMo
               </View>
             </View>
             <Switch
-              value={monthlySummaries}
-              onValueChange={setMonthlySummaries}
+              value={settings.monthlySummaries}
+              onValueChange={() => handleToggle('monthlySummaries')}
               trackColor={{ false: Colors.mediumGray, true: Colors.gold + '60' }}
-              thumbColor={monthlySummaries ? Colors.gold : Colors.lightGray}
+              thumbColor={settings.monthlySummaries ? Colors.gold : Colors.lightGray}
               ios_backgroundColor={Colors.mediumGray}
+              disabled={loading || !settings.pushNotifications}
             />
           </View>
         </GlassCard>
@@ -168,11 +241,12 @@ export default function NotificationsModal({ visible, onClose }: NotificationsMo
               </View>
             </View>
             <Switch
-              value={marketingEmails}
-              onValueChange={setMarketingEmails}
+              value={settings.marketingEmails}
+              onValueChange={() => handleToggle('marketingEmails')}
               trackColor={{ false: Colors.mediumGray, true: Colors.gold + '60' }}
-              thumbColor={marketingEmails ? Colors.gold : Colors.lightGray}
+              thumbColor={settings.marketingEmails ? Colors.gold : Colors.lightGray}
               ios_backgroundColor={Colors.mediumGray}
+              disabled={loading}
             />
           </View>
         </GlassCard>
@@ -184,6 +258,20 @@ export default function NotificationsModal({ visible, onClose }: NotificationsMo
             You can customize your notification preferences at any time. Important security alerts will always be sent regardless of these settings.
           </Text>
         </View>
+
+        {/* Test Notification Button */}
+        {settings.pushNotifications && hasPermission && (
+          <TouchableOpacity
+            style={styles.testButton}
+            onPress={async () => {
+              await sendTestNotification();
+              Alert.alert('Test Notification Sent', 'You should receive a notification in a few seconds!');
+            }}
+          >
+            <Ionicons name="paper-plane" size={20} color={Colors.gold} />
+            <Text style={styles.testButtonText}>Send Test Notification</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </Modal>
   );
@@ -252,5 +340,22 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.sm,
     color: Colors.lightGray,
     lineHeight: 20,
+  },
+  testButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.gold + '20',
+    padding: Spacing.md,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.gold + '40',
+    marginTop: Spacing.sm,
+    gap: Spacing.sm,
+  },
+  testButtonText: {
+    fontSize: Typography.sizes.md,
+    color: Colors.gold,
+    fontWeight: Typography.weights.semibold,
   },
 });
