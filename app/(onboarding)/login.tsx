@@ -150,8 +150,9 @@ export default function LoginScreen() {
       setIsLoading(false);
 
       if (success) {
-        // Navigate to onboarding flow
-        router.replace('/(onboarding)/account');
+        // Skip account screen since we already collected this info
+        // Navigate directly to personal information screen
+        router.replace('/(onboarding)/personal');
       } else {
         Alert.alert('Signup Failed', 'An account with this email already exists.');
       }
