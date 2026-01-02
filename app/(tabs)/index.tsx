@@ -12,6 +12,8 @@ import { Colors, Spacing, Typography } from '@/constants/theme';
 import { ISA_INFO, ISA_ANNUAL_ALLOWANCE, LIFETIME_ISA_MAX, getDaysUntilTaxYearEnd, formatCurrency, getTaxYearDates } from '@/constants/isaData';
 import { getCurrentTaxYear, isDateInTaxYear } from '@/utils/taxYear';
 import { isISAFlexible } from '@/utils/isaSettings';
+import { loadContributions, saveContribution, updateContribution as updateContributionDB, deleteContribution as deleteContributionDB } from '@/lib/contributions';
+import { useOnboarding } from '@/contexts/OnboardingContext';
 
 const CONTRIBUTIONS_STORAGE_KEY = '@finnest_contributions';
 
@@ -59,6 +61,7 @@ const calculateAllowanceUsed = (contributions: ISAContribution[]) => {
 };
 
 export default function DashboardScreen() {
+  const { isGuest } = useOnboarding();
   const [contributions, setContributions] = useState<ISAContribution[]>([]);
   const [expandedISA, setExpandedISA] = useState<string | null>(null);
   const [allowanceUsed, setAllowanceUsed] = useState<number>(0);
@@ -98,40 +101,24 @@ export default function DashboardScreen() {
 
   const loadISAData = async () => {
     try {
-      console.log('=== Loading contributions from AsyncStorage ===');
-      console.log('Storage key:', CONTRIBUTIONS_STORAGE_KEY);
+      // Guest users: load from AsyncStorage
+      if (isGuest) {
+        console.log('=== Loading contributions from AsyncStorage (Guest Mode) ===');
+        const savedData = await AsyncStorage.getItem(CONTRIBUTIONS_STORAGE_KEY);
 
-      const savedData = await AsyncStorage.getItem(CONTRIBUTIONS_STORAGE_KEY);
-      console.log('Raw saved data:', savedData);
-
-      if (savedData) {
-        const parsed = JSON.parse(savedData);
-        console.log('✅ Parsed contributions:', parsed);
-        console.log('✅ Number of contributions loaded:', parsed.length);
-        setContributions(parsed);
-
-        // Also save to localStorage as backup (web only)
-        if (typeof window !== 'undefined' && window.localStorage) {
-          window.localStorage.setItem('finnest_contributions_backup', savedData);
-          console.log('💾 Backup saved to localStorage');
+        if (savedData) {
+          const parsed = JSON.parse(savedData);
+          console.log('✅ Loaded', parsed.length, 'contributions');
+          setContributions(parsed);
         }
-      } else {
-        console.log('❌ No saved contributions found in AsyncStorage');
-
-        // Try to restore from localStorage backup (web only)
-        if (typeof window !== 'undefined' && window.localStorage) {
-          const backup = window.localStorage.getItem('finnest_contributions_backup');
-          if (backup) {
-            console.log('🔄 Restoring from localStorage backup');
-            const parsed = JSON.parse(backup);
-            setContributions(parsed);
-            await AsyncStorage.setItem(CONTRIBUTIONS_STORAGE_KEY, backup);
-            console.log('✅ Restored', parsed.length, 'contributions from backup');
-          } else {
-            console.log('❌ No backup found in localStorage either');
-          }
-        }
+        return;
       }
+
+      // Authenticated users: load from Supabase
+      console.log('=== Loading contributions from Supabase ===');
+      const data = await loadContributions();
+      console.log('✅ Loaded', data.length, 'contributions from Supabase');
+      setContributions(data);
     } catch (error) {
       console.error('❌ Error loading contributions:', error);
     }
@@ -139,27 +126,14 @@ export default function DashboardScreen() {
 
   const saveContributions = async (contributionsData: ISAContribution[]) => {
     try {
-      console.log('=== Saving contributions ===');
-      console.log('Number of contributions to save:', contributionsData.length);
-      console.log('Contributions:', contributionsData);
-
-      const jsonData = JSON.stringify(contributionsData);
-      await AsyncStorage.setItem(CONTRIBUTIONS_STORAGE_KEY, jsonData);
-      console.log('✅ Saved to AsyncStorage');
-
-      // Also save to localStorage as backup (web only)
-      if (typeof window !== 'undefined' && window.localStorage) {
-        window.localStorage.setItem('finnest_contributions_backup', jsonData);
-        console.log('💾 Backup saved to localStorage');
+      // Only used for guest mode - save to AsyncStorage
+      if (isGuest) {
+        console.log('=== Saving contributions (Guest Mode) ===');
+        const jsonData = JSON.stringify(contributionsData);
+        await AsyncStorage.setItem(CONTRIBUTIONS_STORAGE_KEY, jsonData);
+        console.log('✅ Saved to AsyncStorage');
       }
-
-      // Verify the save
-      const verification = await AsyncStorage.getItem(CONTRIBUTIONS_STORAGE_KEY);
-      if (verification) {
-        console.log('✅ Save verified - data persisted successfully');
-      } else {
-        console.error('❌ Save verification failed!');
-      }
+      // For authenticated users, contributions are saved individually to Supabase
     } catch (error) {
       console.error('❌ Error saving contributions:', error);
     }
@@ -169,14 +143,19 @@ export default function DashboardScreen() {
     console.log('=== handleAddContribution called ===');
     console.log('Contribution received:', contribution);
 
-    // Add new contribution to the array
-    const updatedContributions = [...contributions, contribution];
-
-    console.log('Updating state with:', updatedContributions);
-    setContributions(updatedContributions);
-
-    // Save to AsyncStorage
-    await saveContributions(updatedContributions);
+    if (isGuest) {
+      // Guest mode: save to AsyncStorage
+      const updatedContributions = [...contributions, contribution];
+      setContributions(updatedContributions);
+      await saveContributions(updatedContributions);
+    } else {
+      // Authenticated: save to Supabase
+      const saved = await saveContribution(contribution);
+      if (saved) {
+        // Reload all contributions from Supabase to ensure sync
+        await loadISAData();
+      }
+    }
 
     console.log('Contribution added and saved successfully');
   };
@@ -190,16 +169,20 @@ export default function DashboardScreen() {
     console.log('=== handleUpdateContribution called ===');
     console.log('Updated contribution received:', updatedContribution);
 
-    // Update the contribution in the array
-    const updatedContributions = contributions.map(c =>
-      c.id === updatedContribution.id ? updatedContribution : c
-    );
-
-    console.log('Updating state with:', updatedContributions);
-    setContributions(updatedContributions);
-
-    // Save to AsyncStorage
-    await saveContributions(updatedContributions);
+    if (isGuest) {
+      // Guest mode: update in AsyncStorage
+      const updatedContributions = contributions.map(c =>
+        c.id === updatedContribution.id ? updatedContribution : c
+      );
+      setContributions(updatedContributions);
+      await saveContributions(updatedContributions);
+    } else {
+      // Authenticated: update in Supabase
+      const success = await updateContributionDB(updatedContribution.id, updatedContribution);
+      if (success) {
+        await loadISAData();
+      }
+    }
 
     console.log('Contribution updated and saved successfully');
   };
@@ -212,13 +195,24 @@ export default function DashboardScreen() {
 
     const performWithdraw = async () => {
       console.log(`Marking contribution as withdrawn - allowance remains used`);
-      const updatedContributions = contributions.map(c =>
-        c.id === contributionId
-          ? { ...c, withdrawn: true, withdrawnDate: new Date().toISOString() }
-          : c
-      );
-      setContributions(updatedContributions);
-      await saveContributions(updatedContributions);
+
+      if (isGuest) {
+        // Guest mode: update in AsyncStorage
+        const updatedContributions = contributions.map(c =>
+          c.id === contributionId
+            ? { ...c, withdrawn: true, withdrawnDate: new Date().toISOString() }
+            : c
+        );
+        setContributions(updatedContributions);
+        await saveContributions(updatedContributions);
+      } else {
+        // Authenticated: update in Supabase
+        const success = await updateContributionDB(contributionId, { withdrawn: true });
+        if (success) {
+          await loadISAData();
+        }
+      }
+
       console.log('✅ Contribution marked as withdrawn:', contributionId);
     };
 
@@ -251,9 +245,20 @@ export default function DashboardScreen() {
 
     const performDelete = async () => {
       console.log(`Deleting contribution - allowance will be restored`);
-      const updatedContributions = contributions.filter(c => c.id !== contributionId);
-      setContributions(updatedContributions);
-      await saveContributions(updatedContributions);
+
+      if (isGuest) {
+        // Guest mode: delete from AsyncStorage
+        const updatedContributions = contributions.filter(c => c.id !== contributionId);
+        setContributions(updatedContributions);
+        await saveContributions(updatedContributions);
+      } else {
+        // Authenticated: delete from Supabase
+        const success = await deleteContributionDB(contributionId);
+        if (success) {
+          await loadISAData();
+        }
+      }
+
       console.log('✅ Contribution deleted:', contributionId);
     };
 

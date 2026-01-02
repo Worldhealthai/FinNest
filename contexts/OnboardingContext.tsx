@@ -1,10 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '@/lib/supabase';
+import type { User, Session } from '@supabase/supabase-js';
 
-const ONBOARDING_KEY = '@finnest_onboarding_completed';
-const USER_PROFILE_KEY = '@finnest_user_profile';
-const AUTH_KEY = '@finnest_auth';
-const USERS_KEY = '@finnest_users';
 const GUEST_MODE_KEY = '@finnest_guest_mode';
 
 export interface UserProfile {
@@ -53,31 +51,45 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [isGuest, setIsGuest] = useState(false);
   const [userProfile, setUserProfile] = useState<Partial<UserProfile>>({});
   const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     loadOnboardingStatus();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session) {
+        loadUserProfile(session.user.id);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const loadOnboardingStatus = async () => {
     try {
-      const authData = await AsyncStorage.getItem(AUTH_KEY);
       const guestMode = await AsyncStorage.getItem(GUEST_MODE_KEY);
-      const completed = await AsyncStorage.getItem(ONBOARDING_KEY);
-      const profileData = await AsyncStorage.getItem(USER_PROFILE_KEY);
 
       if (guestMode === 'true') {
         setIsGuest(true);
-        setIsAuthenticated(true); // Guests are treated as authenticated for navigation
-      } else if (authData) {
         setIsAuthenticated(true);
-      }
-
-      if (completed === 'true') {
         setIsOnboardingCompleted(true);
+        setUserProfile({ fullName: 'Guest User' });
+        setLoading(false);
+        return;
       }
 
-      if (profileData) {
-        setUserProfile(JSON.parse(profileData));
+      // Check for existing Supabase session
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session) {
+        setSession(session);
+        setUser(session.user);
+        setIsAuthenticated(true);
+        await loadUserProfile(session.user.id);
       }
     } catch (error) {
       console.error('Error loading onboarding status:', error);
@@ -86,13 +98,67 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   };
 
+  const loadUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setUserProfile({
+          fullName: data.full_name,
+          email: data.email,
+          profilePhoto: data.profile_photo || '',
+          dateOfBirth: data.date_of_birth || '',
+          nationalInsuranceNumber: data.national_insurance_number || '',
+          phoneNumber: data.phone_number || '',
+          savingsGoals: data.savings_goals as any || [],
+          targetAmount: data.target_amount || 0,
+          targetDate: data.target_date || '',
+          notifications: {
+            taxYearReminders: data.notifications_tax_year_reminders,
+            contributionStreaks: data.notifications_contribution_streaks,
+            educationalTips: data.notifications_educational_tips,
+          },
+        });
+        setIsOnboardingCompleted(data.onboarding_completed);
+      }
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    }
+  };
+
   const updateProfile = async (updates: Partial<UserProfile>) => {
     const updatedProfile = { ...userProfile, ...updates };
     setUserProfile(updatedProfile);
 
-    // Persist to AsyncStorage immediately
+    // Don't save to Supabase if guest
+    if (isGuest || !user) return;
+
+    // Persist to Supabase immediately
     try {
-      await AsyncStorage.setItem(USER_PROFILE_KEY, JSON.stringify(updatedProfile));
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: updatedProfile.fullName || '',
+          date_of_birth: updatedProfile.dateOfBirth || null,
+          national_insurance_number: updatedProfile.nationalInsuranceNumber || null,
+          phone_number: updatedProfile.phoneNumber || null,
+          profile_photo: updatedProfile.profilePhoto || null,
+          savings_goals: updatedProfile.savingsGoals || [],
+          target_amount: updatedProfile.targetAmount || null,
+          target_date: updatedProfile.targetDate || null,
+          notifications_tax_year_reminders: updatedProfile.notifications?.taxYearReminders ?? true,
+          notifications_contribution_streaks: updatedProfile.notifications?.contributionStreaks ?? true,
+          notifications_educational_tips: updatedProfile.notifications?.educationalTips ?? true,
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
     } catch (error) {
       console.error('Error saving profile updates:', error);
     }
@@ -100,9 +166,18 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const completeOnboarding = async () => {
     try {
-      await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
-      await AsyncStorage.setItem(USER_PROFILE_KEY, JSON.stringify(userProfile));
       setIsOnboardingCompleted(true);
+
+      // Don't save to Supabase if guest
+      if (isGuest || !user) return;
+
+      // Update onboarding status in Supabase
+      const { error } = await supabase
+        .from('profiles')
+        .update({ onboarding_completed: true })
+        .eq('id', user.id);
+
+      if (error) throw error;
     } catch (error) {
       console.error('Error completing onboarding:', error);
     }
@@ -110,12 +185,17 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const resetOnboarding = async () => {
     try {
-      await AsyncStorage.removeItem(ONBOARDING_KEY);
-      await AsyncStorage.removeItem(USER_PROFILE_KEY);
-      await AsyncStorage.removeItem(AUTH_KEY);
       setIsOnboardingCompleted(false);
       setIsAuthenticated(false);
       setUserProfile({});
+
+      if (user) {
+        // Reset onboarding in Supabase
+        await supabase
+          .from('profiles')
+          .update({ onboarding_completed: false })
+          .eq('id', user.id);
+      }
     } catch (error) {
       console.error('Error resetting onboarding:', error);
     }
@@ -123,39 +203,25 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      // Get stored users
-      const usersData = await AsyncStorage.getItem(USERS_KEY);
-      if (!usersData) {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.toLowerCase(),
+        password,
+      });
+
+      if (error) {
+        console.error('Login error:', error.message);
         return false;
       }
 
-      const users = JSON.parse(usersData);
-      const user = users[email.toLowerCase()];
-
-      if (!user || user.password !== password) {
-        return false;
+      if (data.session) {
+        setSession(data.session);
+        setUser(data.user);
+        setIsAuthenticated(true);
+        await loadUserProfile(data.user.id);
+        return true;
       }
 
-      // Set auth state
-      await AsyncStorage.setItem(AUTH_KEY, email.toLowerCase());
-      setIsAuthenticated(true);
-
-      // Load user's profile and onboarding status
-      const userProfileKey = `${USER_PROFILE_KEY}_${email.toLowerCase()}`;
-      const userOnboardingKey = `${ONBOARDING_KEY}_${email.toLowerCase()}`;
-
-      const profileData = await AsyncStorage.getItem(userProfileKey);
-      const completedData = await AsyncStorage.getItem(userOnboardingKey);
-
-      if (profileData) {
-        setUserProfile(JSON.parse(profileData));
-      }
-
-      if (completedData === 'true') {
-        setIsOnboardingCompleted(true);
-      }
-
-      return true;
+      return false;
     } catch (error) {
       console.error('Error logging in:', error);
       return false;
@@ -166,30 +232,37 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     try {
       const emailLower = email.toLowerCase();
 
-      // Get existing users
-      const usersData = await AsyncStorage.getItem(USERS_KEY);
-      const users = usersData ? JSON.parse(usersData) : {};
+      const { data, error } = await supabase.auth.signUp({
+        email: emailLower,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+          },
+        },
+      });
 
-      // Check if user already exists
-      if (users[emailLower]) {
+      if (error) {
+        console.error('Signup error:', error.message);
         return false;
       }
 
-      // Store new user
-      users[emailLower] = {
-        email: emailLower,
-        password, // NOTE: In production, use proper password hashing
-        fullName,
-        createdAt: new Date().toISOString(),
-      };
+      if (data.session) {
+        setSession(data.session);
+        setUser(data.user!);
+        setIsAuthenticated(true);
+        setUserProfile({ email: emailLower, fullName });
+        return true;
+      }
 
-      await AsyncStorage.setItem(USERS_KEY, JSON.stringify(users));
-      await AsyncStorage.setItem(AUTH_KEY, emailLower);
+      // Email confirmation might be required
+      if (data.user && !data.session) {
+        console.log('Email confirmation required');
+        // For development, you can auto-confirm in Supabase settings
+        return true;
+      }
 
-      setIsAuthenticated(true);
-      setUserProfile({ email: emailLower, fullName });
-
-      return true;
+      return false;
     } catch (error) {
       console.error('Error signing up:', error);
       return false;
@@ -198,22 +271,17 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const logout = async () => {
     try {
-      // Save current user's data before logging out (if not guest)
-      const currentEmail = await AsyncStorage.getItem(AUTH_KEY);
-      if (currentEmail && !isGuest) {
-        const userProfileKey = `${USER_PROFILE_KEY}_${currentEmail}`;
-        const userOnboardingKey = `${ONBOARDING_KEY}_${currentEmail}`;
-
-        await AsyncStorage.setItem(userProfileKey, JSON.stringify(userProfile));
-        await AsyncStorage.setItem(userOnboardingKey, isOnboardingCompleted ? 'true' : 'false');
-      }
-
-      // Clear auth state
-      await AsyncStorage.removeItem(AUTH_KEY);
-      await AsyncStorage.removeItem(ONBOARDING_KEY);
-      await AsyncStorage.removeItem(USER_PROFILE_KEY);
+      // Clear guest mode
       await AsyncStorage.removeItem(GUEST_MODE_KEY);
 
+      // Sign out from Supabase (if not guest)
+      if (!isGuest) {
+        await supabase.auth.signOut();
+      }
+
+      // Clear state
+      setSession(null);
+      setUser(null);
       setIsAuthenticated(false);
       setIsOnboardingCompleted(false);
       setIsGuest(false);
