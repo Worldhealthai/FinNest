@@ -458,7 +458,7 @@ const styles = StyleSheet.create({
   logoContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.xxl,
   },
   hexagon1: {
     position: 'absolute',
