@@ -10,6 +10,7 @@ import {
   Platform,
   ScrollView,
   Alert,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -186,7 +187,11 @@ export default function LoginScreen() {
         {/* Logo Section */}
         <Animated.View style={[styles.logoSection, logoAnimatedStyle]}>
           <View style={styles.logoContainer}>
-            <Ionicons name="shield-checkmark" size={60} color={Colors.gold} />
+            <Image
+              source={require('@/assets/logo.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
           </View>
           <Text style={styles.title}>FinNest</Text>
           <LinearGradient
@@ -458,6 +463,11 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
     borderWidth: 2,
     borderColor: Colors.gold + '40',
+  },
+  logoImage: {
+    width: 70,
+    height: 70,
+    tintColor: Colors.gold,
   },
   title: {
     fontSize: Typography.sizes.xxxl,
