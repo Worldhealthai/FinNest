@@ -174,59 +174,30 @@ export default function ProfileScreen() {
   };
 
   // Handle logout with confirmation
-  const handleLogout = () => {
-    Alert.alert(
-      'Log Out',
-      'Are you sure you want to log out?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Log Out',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await logout();
-              setTimeout(() => {
-                router.replace('/(onboarding)/login');
-              }, 150);
-            } catch (error) {
-              console.error('Logout error:', error);
-              Alert.alert('Error', 'Failed to log out. Please try again.');
-            }
-          },
-        },
-      ]
-    );
+  const handleLogout = async () => {
+    console.log('Logout button clicked');
+    try {
+      await logout();
+      console.log('Logout successful, navigating to login');
+      router.replace('/(onboarding)/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      Alert.alert('Error', 'Failed to log out. Please try again.');
+    }
   };
 
-  // Handle delete account - first confirmation
+  // Handle delete account - show confirmation modal
   const handleDeleteAccount = () => {
-    Alert.alert(
-      'Delete Account',
-      'Are you sure you want to delete your account? This action cannot be undone.',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Continue',
-          style: 'destructive',
-          onPress: () => {
-            setDeleteModalVisible(true);
-          },
-        },
-      ]
-    );
+    console.log('Delete account button clicked');
+    setDeleteModalVisible(true);
   };
 
   // Handle delete account - final confirmation with text input
   const handleDeleteAccountConfirm = async () => {
+    console.log('Delete confirm clicked, deleteText:', deleteText);
     if (deleteText.toUpperCase() === 'DELETE') {
       try {
+        console.log('Deleting account...');
         // Clear all user data including contributions
         await AsyncStorage.removeItem(CONTRIBUTIONS_STORAGE_KEY);
         await AsyncStorage.removeItem('@finnest_isa_accounts');
@@ -237,10 +208,8 @@ export default function ProfileScreen() {
         setDeleteModalVisible(false);
         setDeleteText('');
 
-        // Navigate to login screen after state clears
-        setTimeout(() => {
-          router.replace('/(onboarding)/login');
-        }, 150);
+        console.log('Account deleted, navigating to login');
+        router.replace('/(onboarding)/login');
       } catch (error) {
         console.error('Error deleting account:', error);
         Alert.alert('Error', 'Failed to delete account. Please try again.');
@@ -333,9 +302,6 @@ export default function ProfileScreen() {
                     )}
                   </View>
                 </LinearGradient>
-                <TouchableOpacity style={styles.avatarBadge} onPress={handlePickImage}>
-                  <Ionicons name="camera" size={18} color={Colors.deepNavy} />
-                </TouchableOpacity>
               </Animated.View>
 
               <View style={styles.userInfo}>
