@@ -1,8 +1,47 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import { StyleSheet, Platform } from 'react-native';
+import { StyleSheet, Platform, Pressable, Animated } from 'react-native';
 import { Colors, Typography } from '@/constants/theme';
+import { useRef } from 'react';
+
+function TabBarButton(props: any) {
+  const scaleValue = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleValue, {
+      toValue: 0.85,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 4,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleValue, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 4,
+    }).start();
+  };
+
+  return (
+    <Pressable
+      {...props}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      style={({ pressed }) => [
+        props.style,
+        { opacity: pressed ? 0.7 : 1 }
+      ]}
+    >
+      <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
+        {props.children}
+      </Animated.View>
+    </Pressable>
+  );
+}
 
 export default function TabLayout() {
   return (
@@ -51,6 +90,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="grid" size={size} color={color} />
           ),
+          tabBarButton: (props) => <TabBarButton {...props} />,
         }}
       />
       <Tabs.Screen
@@ -60,6 +100,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="stats-chart" size={size} color={color} />
           ),
+          tabBarButton: (props) => <TabBarButton {...props} />,
         }}
       />
       <Tabs.Screen
@@ -69,6 +110,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="school" size={size} color={color} />
           ),
+          tabBarButton: (props) => <TabBarButton {...props} />,
         }}
       />
       <Tabs.Screen
@@ -78,6 +120,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person" size={size} color={color} />
           ),
+          tabBarButton: (props) => <TabBarButton {...props} />,
         }}
       />
     </Tabs>
