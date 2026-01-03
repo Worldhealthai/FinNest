@@ -13,6 +13,7 @@ import Modal from './Modal';
 import GlassCard from './GlassCard';
 import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
 import { useOnboarding } from '@/contexts/OnboardingContext';
+import { supabase } from '@/lib/supabase';
 
 interface PersonalInfoModalProps {
   visible: boolean;
@@ -20,7 +21,7 @@ interface PersonalInfoModalProps {
 }
 
 export default function PersonalInfoModal({ visible, onClose }: PersonalInfoModalProps) {
-  const { userProfile, updateProfile } = useOnboarding();
+  const { userProfile, updateProfile, isGuest } = useOnboarding();
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -70,6 +71,12 @@ export default function PersonalInfoModal({ visible, onClose }: PersonalInfoModa
   };
 
   const handlePasswordChange = async () => {
+    // Guest users can't change password
+    if (isGuest) {
+      Alert.alert('Not Available', 'Password change is not available in guest mode. Please create an account.');
+      return;
+    }
+
     // Validation
     if (!currentPassword || !newPassword || !confirmNewPassword) {
       Alert.alert('Error', 'Please fill in all password fields');
@@ -86,22 +93,45 @@ export default function PersonalInfoModal({ visible, onClose }: PersonalInfoModa
       return;
     }
 
-    // TODO: Implement Supabase password change
-    // For now, show success message
-    Alert.alert(
-      'Password Changed',
-      'Your password has been updated successfully!',
-      [
-        {
-          text: 'OK',
-          onPress: () => {
-            setCurrentPassword('');
-            setNewPassword('');
-            setConfirmNewPassword('');
+    try {
+      // First verify current password by attempting to sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: userProfile.email || '',
+        password: currentPassword,
+      });
+
+      if (signInError) {
+        Alert.alert('Error', 'Current password is incorrect');
+        return;
+      }
+
+      // Update password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      Alert.alert(
+        'Password Changed',
+        'Your password has been updated successfully!',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              setCurrentPassword('');
+              setNewPassword('');
+              setConfirmNewPassword('');
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+    } catch (error: any) {
+      console.error('Password change error:', error);
+      Alert.alert('Error', error.message || 'Failed to change password. Please try again.');
+    }
   };
 
   return (

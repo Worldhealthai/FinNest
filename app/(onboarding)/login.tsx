@@ -119,10 +119,14 @@ export default function LoginScreen() {
       setIsLoading(false);
 
       if (!success) {
-        Alert.alert(
-          'Login Failed',
-          'Invalid email or password. Please try again or sign up if you don\'t have an account.'
-        );
+        const errorMessage = 'Invalid email or password. Please try again or sign up if you don\'t have an account.';
+        if (Platform.OS === 'web') {
+          if (typeof window !== 'undefined') {
+            window.alert(errorMessage);
+          }
+        } else {
+          Alert.alert('Login Failed', errorMessage);
+        }
       }
     } else {
       // Signup

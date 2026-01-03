@@ -32,6 +32,7 @@ import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
 import { ISA_ANNUAL_ALLOWANCE, formatCurrency } from '@/constants/isaData';
 import { getCurrentTaxYear, isDateInTaxYear } from '@/utils/taxYear';
 import { useOnboarding } from '@/contexts/OnboardingContext';
+import { loadContributions as loadContributionsDB } from '@/lib/contributions';
 
 const CONTRIBUTIONS_STORAGE_KEY = '@finnest_contributions';
 
@@ -99,13 +100,20 @@ export default function ProfileScreen() {
   // Contributions state
   const [contributions, setContributions] = useState<ISAContribution[]>([]);
 
-  // Load contributions from AsyncStorage
+  // Load contributions from Supabase (authenticated) or AsyncStorage (guest)
   const loadContributions = async () => {
     try {
-      const savedData = await AsyncStorage.getItem(CONTRIBUTIONS_STORAGE_KEY);
-      if (savedData) {
-        const parsed = JSON.parse(savedData);
-        setContributions(parsed);
+      if (isGuest) {
+        // Guest mode: load from AsyncStorage
+        const savedData = await AsyncStorage.getItem(CONTRIBUTIONS_STORAGE_KEY);
+        if (savedData) {
+          const parsed = JSON.parse(savedData);
+          setContributions(parsed);
+        }
+      } else {
+        // Authenticated: load from Supabase
+        const data = await loadContributionsDB();
+        setContributions(data);
       }
     } catch (error) {
       console.error('Error loading contributions:', error);
@@ -115,7 +123,7 @@ export default function ProfileScreen() {
   // Load contributions on mount and when screen comes into focus
   useEffect(() => {
     loadContributions();
-  }, []);
+  }, [isGuest]);
 
   // Reload contributions whenever the profile tab is focused
   useFocusEffect(

@@ -18,7 +18,7 @@ export interface UserProfile {
 
   // Goals
   savingsGoals: ('first_home' | 'retirement' | 'emergency' | 'education' | 'general' | 'other')[];
-  targetAmount: number;
+  targetAmount: number | null;
   targetDate: string;
 
   // Preferences
@@ -117,7 +117,7 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           nationalInsuranceNumber: data.national_insurance_number || '',
           phoneNumber: data.phone_number || '',
           savingsGoals: data.savings_goals as any || [],
-          targetAmount: data.target_amount || 0,
+          targetAmount: data.target_amount,
           targetDate: data.target_date || '',
           notifications: {
             taxYearReminders: data.notifications_tax_year_reminders,
