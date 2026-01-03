@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AppState, AppStateStatus } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
 
@@ -68,6 +69,27 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Clear guest data when app goes to background
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', async (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'background' && isGuest) {
+        // Clear all guest data when app is backgrounded
+        try {
+          await AsyncStorage.removeItem(GUEST_MODE_KEY);
+          await AsyncStorage.removeItem('@finnest_contributions');
+          await AsyncStorage.removeItem('@finnest_isa_accounts');
+          console.log('Guest data cleared on app background');
+        } catch (error) {
+          console.error('Error clearing guest data:', error);
+        }
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [isGuest]);
 
   const loadOnboardingStatus = async () => {
     try {

@@ -198,27 +198,21 @@ export default function EditISAContributionModal({
       </View>
 
       {/* Amount Input */}
-      <View style={styles.amountCard}>
+      <View style={styles.amountSection}>
         <Text style={styles.amountLabel}>CONTRIBUTION AMOUNT</Text>
-        <View style={styles.amountInputContainer}>
+        <View style={styles.amountInputBox}>
           <Text style={styles.currencySymbol}>£</Text>
           <TextInput
             style={styles.amountInput}
-            placeholder="0.00"
+            placeholder="0"
             placeholderTextColor={Colors.mediumGray}
             value={amount}
             onChangeText={setAmount}
             keyboardType="decimal-pad"
             autoFocus
+            textAlign="left"
           />
         </View>
-        {parseFloat(amount) > 0 && (
-          <View style={styles.amountDisplay}>
-            <Text style={styles.amountDisplayText}>
-              {formatCurrency(parseFloat(amount))}
-            </Text>
-          </View>
-        )}
         <View style={styles.amountHint}>
           <Ionicons name="information-circle-outline" size={16} color={Colors.info} />
           <Text style={styles.amountHintText}>
@@ -637,52 +631,41 @@ const styles = StyleSheet.create({
     color: Colors.gold,
     fontWeight: Typography.weights.bold,
   },
-  amountCard: {
-    padding: Spacing.xl,
-    marginBottom: Spacing.md,
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 215, 0, 0.2)',
+  amountSection: {
+    marginBottom: Spacing.lg,
   },
   amountLabel: {
     fontSize: Typography.sizes.xs,
     color: Colors.gold,
     fontWeight: Typography.weights.bold,
     letterSpacing: 1.5,
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.md,
+    textAlign: 'center',
   },
-  amountInputContainer: {
+  amountInputBox: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: BorderRadius.xl,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 215, 0, 0.3)',
+    paddingVertical: Spacing.xl,
+    paddingHorizontal: Spacing.xxl,
     marginBottom: Spacing.md,
   },
   currencySymbol: {
-    fontSize: 48,
+    fontSize: Typography.sizes.xxxl,
     color: Colors.gold,
     fontWeight: Typography.weights.extrabold,
-    marginRight: Spacing.sm,
+    marginRight: Spacing.xs,
   },
   amountInput: {
-    fontSize: 48,
-    color: Colors.white,
-    fontWeight: Typography.weights.extrabold,
-    minWidth: 120,
-  },
-  amountDisplay: {
-    backgroundColor: Colors.gold + '20',
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: Colors.gold + '40',
-    marginBottom: Spacing.md,
-  },
-  amountDisplayText: {
-    fontSize: Typography.sizes.xl,
+    fontSize: Typography.sizes.xxxl,
     color: Colors.gold,
-    fontWeight: Typography.weights.bold,
+    fontWeight: Typography.weights.extrabold,
+    minWidth: 100,
+    maxWidth: 200,
   },
   amountHint: {
     flexDirection: 'row',

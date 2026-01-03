@@ -197,6 +197,7 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
         bounces={false}
         overScrollMode="never"
+        alwaysBounceVertical={false}
       >
         {/* Logo Section */}
         <Animated.View style={[styles.logoSection, logoAnimatedStyle]}>
@@ -541,11 +542,12 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    backgroundColor: Colors.deepNavy,
   },
   content: {
-    flexGrow: 1,
     paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.xxl,
+    paddingTop: Spacing.xxl,
+    paddingBottom: Spacing.md,
   },
   logoSection: {
     alignItems: 'center',
@@ -602,6 +604,7 @@ const styles = StyleSheet.create({
   },
   formSection: {
     gap: Spacing.lg,
+    paddingBottom: Spacing.xxl,
   },
   toggleContainer: {
     flexDirection: 'row',
