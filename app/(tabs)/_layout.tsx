@@ -31,12 +31,12 @@ function TabBarButton(props: any) {
       {...props}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      style={({ pressed }) => [
-        props.style,
-        { opacity: pressed ? 0.7 : 1 }
-      ]}
     >
-      <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
+      <Animated.View style={[{
+        transform: [{ scale: scaleValue }],
+        alignItems: 'center',
+        justifyContent: 'center',
+      }]}>
         {props.children}
       </Animated.View>
     </Pressable>
