@@ -46,14 +46,23 @@ const groupContributions = (contributions: ISAContribution[]) => {
 };
 
 // Helper to calculate total allowance used
-// Withdrawn contributions still count toward allowance
-// Only truly deleted entries don't count
+// For flexible ISAs: withdrawn contributions free up allowance (don't count)
+// For non-flexible ISAs: withdrawn contributions still count toward allowance
+// Only truly deleted entries never count
 const calculateAllowanceUsed = (contributions: ISAContribution[]) => {
   let totalUsed = 0;
 
   for (const contribution of contributions) {
-    // All contributions count toward allowance (even withdrawn ones)
-    // Only deleted entries (mistakes) don't count
+    // For flexible ISAs, withdrawn contributions don't count toward allowance
+    // For non-flexible ISAs, withdrawn contributions still count
+    const isaFlexible = isISAFlexible(contribution.isaType, contribution.provider);
+
+    if (contribution.withdrawn && isaFlexible) {
+      // Flexible ISA withdrawal - doesn't count toward allowance
+      continue;
+    }
+
+    // Add to allowance used
     totalUsed += contribution.amount;
   }
 
@@ -191,10 +200,13 @@ export default function DashboardScreen() {
     const contribution = contributions.find(c => c.id === contributionId);
     if (!contribution) return;
 
-    const message = `Withdraw this ${formatCurrency(contribution.amount)} contribution from ${contribution.provider}?\n\nThe contribution will be marked as withdrawn, but the allowance remains used for this tax year (ISA rules).`;
+    const isaFlexible = isISAFlexible(contribution.isaType, contribution.provider);
+    const message = isaFlexible
+      ? `Withdraw this ${formatCurrency(contribution.amount)} contribution from ${contribution.provider}?\n\nThis is a flexible ISA - withdrawing will free up ${formatCurrency(contribution.amount)} of your allowance for re-contribution this tax year.`
+      : `Withdraw this ${formatCurrency(contribution.amount)} contribution from ${contribution.provider}?\n\nThe contribution will be marked as withdrawn, but the allowance remains used for this tax year (non-flexible ISA rules).`;
 
     const performWithdraw = async () => {
-      console.log(`Marking contribution as withdrawn - allowance remains used`);
+      console.log(`Marking contribution as withdrawn - ${isaFlexible ? 'allowance freed up (flexible ISA)' : 'allowance remains used (non-flexible ISA)'}`);
 
       if (isGuest) {
         // Guest mode: update in AsyncStorage
