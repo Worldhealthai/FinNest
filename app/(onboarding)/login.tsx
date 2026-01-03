@@ -44,6 +44,7 @@ export default function LoginScreen() {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [termsError, setTermsError] = useState(false);
+  const [loginError, setLoginError] = useState(false);
 
   const { login, signup, continueAsGuest } = useOnboarding();
 
@@ -114,15 +115,13 @@ export default function LoginScreen() {
 
     if (isLogin) {
       // Login
+      setLoginError(false);
       setIsLoading(true);
       const success = await login(email, password);
       setIsLoading(false);
 
       if (!success) {
-        Alert.alert(
-          'Login Failed',
-          'Invalid email or password. Please try again or sign up if you don\'t have an account.'
-        );
+        setLoginError(true);
       }
     } else {
       // Signup
@@ -285,14 +284,17 @@ export default function LoginScreen() {
           {/* Password Input */}
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Password</Text>
-            <View style={styles.inputWrapper}>
+            <View style={[styles.inputWrapper, loginError && isLogin && styles.inputError]}>
               <Ionicons name="lock-closed-outline" size={20} color={Colors.lightGray} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Enter your password"
                 placeholderTextColor={Colors.mediumGray}
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  setLoginError(false);
+                }}
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -310,6 +312,14 @@ export default function LoginScreen() {
                 />
               </TouchableOpacity>
             </View>
+            {loginError && isLogin && (
+              <View style={styles.errorContainer}>
+                <Ionicons name="alert-circle" size={16} color={Colors.error} />
+                <Text style={styles.errorText}>
+                  Invalid email or password. Please try again.
+                </Text>
+              </View>
+            )}
           </View>
 
           {/* Confirm Password Input (Signup only) */}
@@ -633,6 +643,10 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: BorderRadius.md,
     paddingHorizontal: Spacing.md,
+  },
+  inputError: {
+    borderColor: Colors.error,
+    borderWidth: 2,
   },
   inputIcon: {
     marginRight: Spacing.sm,

@@ -377,9 +377,9 @@ export default function ProfileScreen() {
               </View>
 
               <View style={styles.statBox}>
-                <View style={{ alignItems: 'center', justifyContent: 'center', height: 120 }}>
-                  <View style={[styles.statCircle, { backgroundColor: 'rgba(33, 150, 243, 0.15)', borderColor: '#2196F3' }]}>
-                    <Text style={[styles.statValue, { fontSize: Typography.sizes.xxxl, color: '#2196F3' }]}>{formatCurrency(totalAllTime)}</Text>
+                <View style={{ alignItems: 'center', justifyContent: 'center', height: 140 }}>
+                  <View style={[styles.statCircleLarge, { backgroundColor: 'rgba(33, 150, 243, 0.15)', borderColor: '#2196F3' }]}>
+                    <Text style={[styles.statValue, { fontSize: Typography.sizes.xl, color: '#2196F3' }]} numberOfLines={1} adjustsFontSizeToFit>{formatCurrency(totalAllTime)}</Text>
                   </View>
                 </View>
                 <Text style={[styles.statLabel, { marginTop: Spacing.md }]}>Total Saved</Text>
@@ -399,19 +399,6 @@ export default function ProfileScreen() {
                 <View style={styles.menuItem}>
                   <Ionicons name="person-outline" size={24} color={Colors.gold} />
                   <Text style={styles.menuText}>Personal Information</Text>
-                  <Ionicons name="chevron-forward" size={22} color={Colors.lightGray} />
-                </View>
-              </GlassCard>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => setIsaAccountsVisible(true)}>
-              <GlassCard style={styles.menuCard} intensity="medium">
-                <View style={styles.menuItem}>
-                  <Ionicons name="wallet-outline" size={24} color={Colors.success} />
-                  <Text style={styles.menuText}>Connected Accounts</Text>
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{uniqueAccounts}</Text>
-                  </View>
                   <Ionicons name="chevron-forward" size={22} color={Colors.lightGray} />
                 </View>
               </GlassCard>
@@ -801,6 +788,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
+  },
+  statCircleLarge: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    paddingHorizontal: 8,
   },
   statValue: {
     color: Colors.white,
