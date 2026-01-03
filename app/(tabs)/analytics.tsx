@@ -12,6 +12,8 @@ import { Colors, Spacing, Typography } from '@/constants/theme';
 import { formatCurrency, ISA_INFO, ISA_ANNUAL_ALLOWANCE } from '@/constants/isaData';
 import { Dimensions } from 'react-native';
 import { getCurrentTaxYear, isDateInTaxYear, getTaxYearFromDate, getTaxYearBoundaries } from '@/utils/taxYear';
+import { useOnboarding } from '@/contexts/OnboardingContext';
+import { loadContributions as loadContributionsDB } from '@/lib/contributions';
 
 const { width } = Dimensions.get('window');
 const CONTRIBUTIONS_STORAGE_KEY = '@finnest_contributions';
@@ -156,13 +158,14 @@ const calculateContributionTrend = (contributions: ISAContribution[]) => {
 };
 
 export default function AnalyticsScreen() {
+  const { isGuest } = useOnboarding();
   const [contributions, setContributions] = useState<ISAContribution[]>([]);
   const [showInfoModal, setShowInfoModal] = useState(false);
 
   // Load saved ISA data on mount
   useEffect(() => {
     loadISAData();
-  }, []);
+  }, [isGuest]);
 
   // Reload contributions whenever the analytics tab is focused
   useFocusEffect(
@@ -173,10 +176,17 @@ export default function AnalyticsScreen() {
 
   const loadISAData = async () => {
     try {
-      const savedData = await AsyncStorage.getItem(CONTRIBUTIONS_STORAGE_KEY);
-      if (savedData) {
-        const parsed = JSON.parse(savedData);
-        setContributions(parsed);
+      if (isGuest) {
+        // Guest mode: load from AsyncStorage
+        const savedData = await AsyncStorage.getItem(CONTRIBUTIONS_STORAGE_KEY);
+        if (savedData) {
+          const parsed = JSON.parse(savedData);
+          setContributions(parsed);
+        }
+      } else {
+        // Authenticated: load from Supabase
+        const data = await loadContributionsDB();
+        setContributions(data);
       }
     } catch (error) {
       console.error('Error loading contributions:', error);

@@ -369,14 +369,18 @@ export default function ProfileScreen() {
             <View style={styles.statsContainer}>
               <View style={styles.statBox}>
                 <View style={{ alignItems: 'center', justifyContent: 'center', height: 120 }}>
-                  <Text style={[styles.statValue, { fontSize: Typography.sizes.xxxl, color: Colors.gold }]}>{uniqueAccounts}</Text>
+                  <View style={[styles.statCircle, { backgroundColor: 'rgba(255, 215, 0, 0.15)', borderColor: Colors.gold }]}>
+                    <Text style={[styles.statValue, { fontSize: Typography.sizes.xxxl, color: Colors.gold }]}>{uniqueAccounts}</Text>
+                  </View>
                 </View>
                 <Text style={[styles.statLabel, { marginTop: Spacing.md }]}>ISA Accounts</Text>
               </View>
 
               <View style={styles.statBox}>
                 <View style={{ alignItems: 'center', justifyContent: 'center', height: 120 }}>
-                  <Text style={[styles.statValue, { fontSize: Typography.sizes.lg, color: Colors.success }]}>{formatCurrency(totalAllTime)}</Text>
+                  <View style={[styles.statCircle, { backgroundColor: 'rgba(33, 150, 243, 0.15)', borderColor: '#2196F3' }]}>
+                    <Text style={[styles.statValue, { fontSize: Typography.sizes.xxxl, color: '#2196F3' }]}>{formatCurrency(totalAllTime)}</Text>
+                  </View>
                 </View>
                 <Text style={[styles.statLabel, { marginTop: Spacing.md }]}>Total Saved</Text>
               </View>
@@ -789,6 +793,14 @@ const styles = StyleSheet.create({
   },
   statBox: {
     alignItems: 'center',
+  },
+  statCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
   },
   statValue: {
     color: Colors.white,
