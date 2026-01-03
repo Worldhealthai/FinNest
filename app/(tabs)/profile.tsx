@@ -865,7 +865,6 @@ const styles = StyleSheet.create({
     fontWeight: Typography.weights.bold,
   },
   logoutCard: {
-    marginBottom: Spacing.lg,
     padding: Spacing.md,
     shadowColor: Colors.error,
     shadowOffset: { width: 0, height: 4 },

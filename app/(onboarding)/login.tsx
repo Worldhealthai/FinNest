@@ -195,6 +195,7 @@ export default function LoginScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        bounces={false}
       >
         {/* Logo Section */}
         <Animated.View style={[styles.logoSection, logoAnimatedStyle]}>
@@ -479,8 +480,6 @@ export default function LoginScreen() {
             <Text style={styles.guestButtonSubtext}>Try the app without signing up</Text>
           </TouchableOpacity>
         </Animated.View>
-
-        <View style={{ height: 20 }} />
       </ScrollView>
 
       {/* Terms & Conditions Modal */}
@@ -501,6 +500,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.deepNavy,
   },
   gradient: {
     ...StyleSheet.absoluteFillObject,
