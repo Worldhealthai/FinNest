@@ -292,26 +292,6 @@ export default function ProfileScreen() {
           {/* Hero Profile Card */}
           <GlassCard style={styles.profileCard} intensity="dark">
             <View style={styles.profileTop}>
-              <Animated.View style={[styles.avatarContainer, { transform: [{ scale: pulseAnim }] }]}>
-                <LinearGradient
-                  colors={Colors.goldGradient}
-                  style={styles.avatarGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                >
-                  <View style={styles.avatar}>
-                    {userProfile.profilePhoto ? (
-                      <Image
-                        source={{ uri: userProfile.profilePhoto }}
-                        style={styles.avatarImage}
-                      />
-                    ) : (
-                      <Ionicons name="person" size={40} color={Colors.white} />
-                    )}
-                  </View>
-                </LinearGradient>
-              </Animated.View>
-
               <View style={styles.userInfo}>
                 <View style={styles.userInfoHeader}>
                   <View style={styles.userNameSection}>
@@ -634,52 +614,13 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   profileTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
     marginBottom: Spacing.lg,
     paddingBottom: Spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: Colors.glassLight,
   },
-  avatarContainer: {
-    position: 'relative',
-    marginRight: Spacing.md,
-  },
-  avatarGradient: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    padding: 3,
-  },
-  avatar: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 42,
-    backgroundColor: Colors.deepNavy,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 42,
-  },
-  avatarBadge: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: Colors.gold,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: Colors.deepNavy,
-  },
   userInfo: {
-    flex: 1,
+    width: '100%',
   },
   userInfoHeader: {
     flexDirection: 'row',

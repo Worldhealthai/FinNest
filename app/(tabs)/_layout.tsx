@@ -76,10 +76,15 @@ export default function TabLayout() {
         tabBarLabelStyle: {
           fontSize: Typography.sizes.xs,
           fontWeight: Typography.weights.semibold,
-          marginBottom: Platform.OS === 'ios' ? 0 : 8,
+          marginTop: 4,
+          marginBottom: 4,
         },
         tabBarIconStyle: {
-          marginTop: Platform.OS === 'ios' ? 0 : 8,
+          marginTop: 8,
+          marginBottom: 0,
+        },
+        tabBarItemStyle: {
+          paddingVertical: 4,
         },
       }}
     >

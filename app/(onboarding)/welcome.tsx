@@ -134,6 +134,9 @@ export default function WelcomeScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
+        bounces={false}
+        overScrollMode="never"
+        alwaysBounceVertical={false}
       >
         {/* Logo Section */}
         <View style={styles.logoSection}>
@@ -207,6 +210,7 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.deepNavy,
   },
   gradient: {
     ...StyleSheet.absoluteFillObject,
@@ -246,12 +250,12 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    backgroundColor: Colors.deepNavy,
   },
   content: {
-    flexGrow: 1,
     paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.xxl,
-    paddingBottom: Spacing.xxxl,
+    paddingTop: Spacing.xxl,
+    paddingBottom: Spacing.md,
   },
   logoSection: {
     alignItems: 'center',
