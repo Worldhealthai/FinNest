@@ -50,6 +50,7 @@ export default function TabLayout() {
         headerShown: false,
         tabBarActiveTintColor: Colors.gold,
         tabBarInactiveTintColor: Colors.mediumGray,
+        tabBarLabelPosition: 'below-icon',
         tabBarStyle: {
           position: 'absolute',
           bottom: 20,
