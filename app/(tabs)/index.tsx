@@ -321,7 +321,7 @@ export default function DashboardScreen() {
             <GlassCard style={styles.card} intensity="dark">
               <View style={styles.row}>
                 <Ionicons
-                  name={allowanceUsed > ISA_ANNUAL_ALLOWANCE ? "alert-circle" : "flag"}
+                  name={allowanceUsed > ISA_ANNUAL_ALLOWANCE ? "alert-circle" : "checkmark-circle"}
                   size={24}
                   color={allowanceUsed > ISA_ANNUAL_ALLOWANCE ? Colors.error : Colors.gold}
                 />
@@ -343,7 +343,7 @@ export default function DashboardScreen() {
           {allowanceUsed >= ISA_ANNUAL_ALLOWANCE * 0.9 && allowanceUsed < ISA_ANNUAL_ALLOWANCE && (
             <GlassCard style={styles.card} intensity="dark">
               <View style={styles.row}>
-                <Ionicons name="flag" size={24} color={Colors.gold} />
+                <Ionicons name="trending-up" size={24} color={Colors.gold} />
                 <View style={{ flex: 1, marginLeft: 12 }}>
                   <Text style={[styles.warn, { color: Colors.gold }]}>🚩 Nearly There!</Text>
                   <Text style={styles.sub}>
