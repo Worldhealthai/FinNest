@@ -387,3 +387,56 @@ export async function getAllScheduledNotifications(): Promise<any[]> {
     return [];
   }
 }
+
+/**
+ * Send ISA limit notification when approaching or reaching £20,000
+ */
+export async function sendISALimitNotification(totalContributed: number, maxAllowance: number = 20000): Promise<void> {
+  if (Platform.OS === 'web') return;
+
+  try {
+    const Notifications = await import('expo-notifications');
+    const percentageUsed = (totalContributed / maxAllowance) * 100;
+
+    let title = '';
+    let body = '';
+
+    // Reached or exceeded limit
+    if (totalContributed >= maxAllowance) {
+      title = '🎯 ISA Limit Reached!';
+      body = `You've reached your £${maxAllowance.toLocaleString()} annual ISA allowance. Well done on maximizing your tax-free savings!`;
+    }
+    // 90% milestone (£18,000)
+    else if (percentageUsed >= 90) {
+      const remaining = maxAllowance - totalContributed;
+      title = '🚩 Nearly There!';
+      body = `You're at 90% of your ISA limit! Only £${remaining.toLocaleString()} remaining.`;
+    }
+    // 75% milestone (£15,000)
+    else if (percentageUsed >= 75) {
+      const remaining = maxAllowance - totalContributed;
+      title = '📈 Great Progress!';
+      body = `You've used 75% of your ISA allowance. £${remaining.toLocaleString()} left to maximize.`;
+    }
+    // 50% milestone (£10,000)
+    else if (percentageUsed >= 50) {
+      title = '🎉 Halfway There!';
+      body = `You've contributed 50% of your annual ISA allowance. Keep it up!`;
+    }
+
+    if (title && body) {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title,
+          body,
+          data: { type: 'isa_limit', totalContributed, percentageUsed },
+        },
+        trigger: {
+          seconds: 1,
+        },
+      });
+    }
+  } catch (error) {
+    console.error('Error sending ISA limit notification:', error);
+  }
+}
