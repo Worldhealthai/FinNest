@@ -14,6 +14,7 @@ import { getCurrentTaxYear, isDateInTaxYear } from '@/utils/taxYear';
 import { isISAFlexible } from '@/utils/isaSettings';
 import { loadContributions, saveContribution, updateContribution as updateContributionDB, deleteContribution as deleteContributionDB } from '@/lib/contributions';
 import { useOnboarding } from '@/contexts/OnboardingContext';
+import { sendISALimitNotification } from '@/utils/notificationService';
 
 const CONTRIBUTIONS_STORAGE_KEY = '@finnest_contributions';
 
@@ -166,6 +167,14 @@ export default function DashboardScreen() {
       }
     }
 
+    // Calculate new total and send notification if milestone reached
+    const allContributions = isGuest ? [...contributions, contribution] : contributions;
+    const currentYearContributions = allContributions.filter(c =>
+      isDateInTaxYear(new Date(c.date), currentTaxYear)
+    );
+    const newTotal = calculateAllowanceUsed(currentYearContributions);
+    await sendISALimitNotification(newTotal, ISA_ANNUAL_ALLOWANCE);
+
     console.log('Contribution added and saved successfully');
   };
 
@@ -308,13 +317,38 @@ export default function DashboardScreen() {
             <Image source={require('@/assets/logo.png')} style={styles.logo} resizeMode="contain" />
           </View>
 
-          {allowanceUsed > ISA_ANNUAL_ALLOWANCE && (
+          {allowanceUsed >= ISA_ANNUAL_ALLOWANCE && (
             <GlassCard style={styles.card} intensity="dark">
               <View style={styles.row}>
-                <Ionicons name="alert-circle" size={24} color={Colors.error} />
+                <Ionicons
+                  name={allowanceUsed > ISA_ANNUAL_ALLOWANCE ? "alert-circle" : "flag"}
+                  size={24}
+                  color={allowanceUsed > ISA_ANNUAL_ALLOWANCE ? Colors.error : Colors.gold}
+                />
                 <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={[styles.warn, { color: Colors.error }]}>Allowance Exceeded!</Text>
-                  <Text style={styles.sub}>You've exceeded the £20,000 annual limit by {formatCurrency(allowanceUsed - ISA_ANNUAL_ALLOWANCE)}</Text>
+                  <Text style={[styles.warn, { color: allowanceUsed > ISA_ANNUAL_ALLOWANCE ? Colors.error : Colors.gold }]}>
+                    {allowanceUsed > ISA_ANNUAL_ALLOWANCE ? 'Allowance Exceeded!' : '🎯 ISA Limit Reached!'}
+                  </Text>
+                  <Text style={styles.sub}>
+                    {allowanceUsed > ISA_ANNUAL_ALLOWANCE
+                      ? `You've exceeded the £20,000 annual limit by ${formatCurrency(allowanceUsed - ISA_ANNUAL_ALLOWANCE)}`
+                      : 'Congratulations! You\'ve maximized your £20,000 annual ISA allowance.'
+                    }
+                  </Text>
+                </View>
+              </View>
+            </GlassCard>
+          )}
+
+          {allowanceUsed >= ISA_ANNUAL_ALLOWANCE * 0.9 && allowanceUsed < ISA_ANNUAL_ALLOWANCE && (
+            <GlassCard style={styles.card} intensity="dark">
+              <View style={styles.row}>
+                <Ionicons name="flag" size={24} color={Colors.gold} />
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={[styles.warn, { color: Colors.gold }]}>🚩 Nearly There!</Text>
+                  <Text style={styles.sub}>
+                    You're at {Math.round(percent)}% of your ISA limit! Only {formatCurrency(remaining)} remaining.
+                  </Text>
                 </View>
               </View>
             </GlassCard>
