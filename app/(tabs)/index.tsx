@@ -320,12 +320,7 @@ export default function DashboardScreen() {
           {allowanceUsed >= ISA_ANNUAL_ALLOWANCE && (
             <GlassCard style={styles.card} intensity="dark">
               <View style={styles.row}>
-                <Ionicons
-                  name={allowanceUsed > ISA_ANNUAL_ALLOWANCE ? "alert-circle" : "checkmark-circle"}
-                  size={24}
-                  color={allowanceUsed > ISA_ANNUAL_ALLOWANCE ? Colors.error : Colors.gold}
-                />
-                <View style={{ flex: 1, marginLeft: 12 }}>
+                <View style={{ flex: 1 }}>
                   <Text style={[styles.warn, { color: allowanceUsed > ISA_ANNUAL_ALLOWANCE ? Colors.error : Colors.gold }]}>
                     {allowanceUsed > ISA_ANNUAL_ALLOWANCE ? 'Allowance Exceeded!' : '🎯 ISA Limit Reached!'}
                   </Text>
@@ -343,8 +338,7 @@ export default function DashboardScreen() {
           {allowanceUsed >= ISA_ANNUAL_ALLOWANCE * 0.9 && allowanceUsed < ISA_ANNUAL_ALLOWANCE && (
             <GlassCard style={styles.card} intensity="dark">
               <View style={styles.row}>
-                <Ionicons name="trending-up" size={24} color={Colors.gold} />
-                <View style={{ flex: 1, marginLeft: 12 }}>
+                <View style={{ flex: 1 }}>
                   <Text style={[styles.warn, { color: Colors.gold }]}>🚩 Nearly There!</Text>
                   <Text style={styles.sub}>
                     You're at {Math.round(percent)}% of your ISA limit! Only {formatCurrency(remaining)} remaining.

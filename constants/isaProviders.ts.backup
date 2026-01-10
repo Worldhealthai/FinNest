@@ -30,6 +30,49 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "category": "investment-platform"
   },
   {
+    "name": "25 Bank Street",
+    "types": [
+      "Lifetime ISA",
+      "Stocks & Shares ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "4 Northumberland Buildings",
+    "types": [
+      "Stocks & Shares ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "40 Bank Street",
+    "types": [
+      "Stocks & Shares ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "40 Bank Street",
+    "types": [
+      "Innovative Finance ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "5 Bank Street",
+    "types": [
+      "Stocks & Shares ISA"
+    ],
+    "category": "bank"
+  },
+  {
+    "name": "7 Harbour Buildings",
+    "types": [
+      "Cash ISA"
+    ],
+    "category": "fintech"
+  },
+  {
     "name": "Abrdn Fund Managers",
     "types": [
       "Stocks & Shares ISA"
@@ -68,13 +111,6 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "category": "investment-platform"
   },
   {
-    "name": "AIB Group (UK) Plc",
-    "types": [
-      "Cash ISA"
-    ],
-    "category": "bank"
-  },
-  {
     "name": "Al Rayan Bank",
     "types": [
       "Cash ISA",
@@ -98,14 +134,22 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "category": "bank"
   },
   {
-    "name": "Allianz Global Investors UK Limited",
+    "name": "Alexandra Buildings",
+    "types": [
+      "Cash ISA",
+      "Stocks & Shares ISA"
+    ],
+    "category": "fintech"
+  },
+  {
+    "name": "Allianz Global Investors UK Limited (trading as Allianz",
     "types": [
       "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
   {
-    "name": "Alpha Real property Investment Advisers LLP",
+    "name": "Alpha Real property Investment Advisers LLP (trading",
     "types": [
       "Stocks & Shares ISA"
     ],
@@ -313,13 +357,6 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "category": "building-society"
   },
   {
-    "name": "Birmingham Bank Ltd",
-    "types": [
-      "Cash ISA"
-    ],
-    "category": "bank"
-  },
-  {
     "name": "Blackfinch Investments",
     "types": [
       "Stocks & Shares ISA"
@@ -435,7 +472,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "category": "fintech"
   },
   {
-    "name": "Capital Credit Union Limited",
+    "name": "Capital Credit Union Limited (trading as Capital Credit",
     "types": [
       "Cash ISA"
     ],
@@ -471,7 +508,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "category": "investment-platform"
   },
   {
-    "name": "Causeway Securities Limited",
+    "name": "Causeway Securities Limited (trading as Causeway",
     "types": [
       "Cash ISA",
       "Stocks & Shares ISA"
@@ -504,13 +541,6 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "name": "Chetwood Financial",
     "types": [
       "Cash ISA"
-    ],
-    "category": "fintech"
-  },
-  {
-    "name": "Chip Financial (Investments) Limited",
-    "types": [
-      "Stocks & Shares ISA"
     ],
     "category": "fintech"
   },
@@ -628,14 +658,6 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "category": "investment-platform"
   },
   {
-    "name": "Coutts & Company",
-    "types": [
-      "Cash ISA",
-      "Stocks & Shares ISA"
-    ],
-    "category": "bank"
-  },
-  {
     "name": "Coventry Building Society",
     "types": [
       "Cash ISA",
@@ -650,13 +672,6 @@ export const ISA_PROVIDERS: ISAProvider[] = [
       "Stocks & Shares Junior ISA"
     ],
     "category": "investment-platform"
-  },
-  {
-    "name": "Credit Suisse International",
-    "types": [
-      "Stocks & Shares ISA"
-    ],
-    "category": "bank"
   },
   {
     "name": "Crowd for Angels (UK)",
@@ -799,7 +814,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "category": "investment-platform"
   },
   {
-    "name": "Edinburgh Alternative Finance Ltd",
+    "name": "Edinburgh Alternative Finance Ltd (trading as Lending",
     "types": [
       "Innovative Finance ISA"
     ],
@@ -1948,13 +1963,6 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "category": "fintech"
   },
   {
-    "name": "National Savings and Investments",
-    "types": [
-      "Cash ISA"
-    ],
-    "category": "bank"
-  },
-  {
     "name": "National Westminster Bank",
     "types": [
       "Cash ISA",
@@ -2080,6 +2088,15 @@ export const ISA_PROVIDERS: ISAProvider[] = [
       "Stocks & Shares ISA"
     ],
     "category": "investment-platform"
+  },
+  {
+    "name": "One Bank Street",
+    "types": [
+      "Cash ISA",
+      "Cash Junior ISA",
+      "Stocks & Shares ISA"
+    ],
+    "category": "bank"
   },
   {
     "name": "OneSavings Bank",
@@ -2486,7 +2503,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "category": "building-society"
   },
   {
-    "name": "Saltus Partners LLP",
+    "name": "Saltus Partners LLP (trading as Saltus Investment",
     "types": [
       "Cash ISA",
       "Cash Junior ISA",
@@ -2931,7 +2948,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "category": "building-society"
   },
   {
-    "name": "Titan Pensions & Investments Ltd",
+    "name": "Titan Pensions & Investments Ltd (trading as Titan",
     "types": [
       "Stocks & Shares ISA",
       "Stocks & Shares Junior ISA"
@@ -3063,15 +3080,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "category": "investment-platform"
   },
   {
-    "name": "Vanguard Asset Management Limited",
-    "types": [
-      "Stocks & Shares ISA",
-      "Stocks & Shares Junior ISA"
-    ],
-    "category": "investment-platform"
-  },
-  {
-    "name": "Vanquis Bank Limited",
+    "name": "Vanquis Bank Limited (trading as Vanquis Bank",
     "types": [
       "Cash ISA"
     ],
@@ -3093,7 +3102,7 @@ export const ISA_PROVIDERS: ISAProvider[] = [
     "category": "building-society"
   },
   {
-    "name": "Verso Investment Management LLP",
+    "name": "Verso Investment Management LLP (trading as Verso",
     "types": [
       "Stocks & Shares ISA"
     ],
@@ -3373,11 +3382,6 @@ const PROVIDER_ALIASES: Record<string, string[]> = {
   'Freetrade': ['free trade'],
   'Trading 212 UK': ['trading 212', 'trading212'],
   'eToro (UK)': ['etoro', 'e-toro'],
-  'Vanguard Asset Management Limited': ['vanguard'],
-  'National Savings and Investments': ['ns&i', 'nsi', 'premium bonds', 'national savings'],
-  'Coutts & Company': ['coutts'],
-  'Chip Financial (Investments) Limited': ['chip'],
-  'AIB Group (UK) Plc': ['aib'],
 };
 
 // Helper function to search providers by name
