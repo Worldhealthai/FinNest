@@ -97,6 +97,7 @@ export default function DashboardScreen() {
   const [addContributionVisible, setAddContributionVisible] = useState(false);
   const [editContributionVisible, setEditContributionVisible] = useState(false);
   const [selectedContribution, setSelectedContribution] = useState<ISAContribution | null>(null);
+  const [preSelectedISAType, setPreSelectedISAType] = useState<string | undefined>(undefined);
 
   // Load saved ISA data on mount
   useEffect(() => {
@@ -304,6 +305,13 @@ export default function DashboardScreen() {
     }
   };
 
+  const handleAddISA = (isaType: string, event: any) => {
+    // Stop event propagation to prevent card from expanding
+    event?.stopPropagation?.();
+    setPreSelectedISAType(isaType);
+    setAddContributionVisible(true);
+  };
+
   return (
     <View style={styles.container}>
       <AnimatedBackground />
@@ -404,6 +412,13 @@ export default function DashboardScreen() {
                       : 'No contributions yet'}
                   </Text>
                 </View>
+                <TouchableOpacity
+                  onPress={(e) => handleAddISA('cash', e)}
+                  style={{ padding: 8, marginRight: 4 }}
+                  activeOpacity={0.6}
+                >
+                  <Ionicons name="add-circle-outline" size={24} color={Colors.gold} />
+                </TouchableOpacity>
                 <Ionicons name={expandedISA === 'cash' ? "chevron-up" : "chevron-down"} size={20} color={Colors.lightGray} />
               </View>
               <View style={[styles.row, { marginTop: 12 }]}>
@@ -481,6 +496,13 @@ export default function DashboardScreen() {
                       : 'No contributions yet'}
                   </Text>
                 </View>
+                <TouchableOpacity
+                  onPress={(e) => handleAddISA('stocks_shares', e)}
+                  style={{ padding: 8, marginRight: 4 }}
+                  activeOpacity={0.6}
+                >
+                  <Ionicons name="add-circle-outline" size={24} color={Colors.gold} />
+                </TouchableOpacity>
                 <Ionicons name={expandedISA === 'stocks_shares' ? "chevron-up" : "chevron-down"} size={20} color={Colors.lightGray} />
               </View>
               <View style={[styles.row, { marginTop: 12 }]}>
@@ -558,6 +580,13 @@ export default function DashboardScreen() {
                       : 'No contributions yet'}
                   </Text>
                 </View>
+                <TouchableOpacity
+                  onPress={(e) => handleAddISA('lifetime', e)}
+                  style={{ padding: 8, marginRight: 4 }}
+                  activeOpacity={0.6}
+                >
+                  <Ionicons name="add-circle-outline" size={24} color={Colors.gold} />
+                </TouchableOpacity>
                 <Ionicons name={expandedISA === 'lifetime' ? "chevron-up" : "chevron-down"} size={20} color={Colors.lightGray} />
               </View>
               <View style={[styles.row, { marginTop: 12 }]}>
@@ -639,6 +668,13 @@ export default function DashboardScreen() {
                       : 'No contributions yet'}
                   </Text>
                 </View>
+                <TouchableOpacity
+                  onPress={(e) => handleAddISA('innovative_finance', e)}
+                  style={{ padding: 8, marginRight: 4 }}
+                  activeOpacity={0.6}
+                >
+                  <Ionicons name="add-circle-outline" size={24} color={Colors.gold} />
+                </TouchableOpacity>
                 <Ionicons name={expandedISA === 'innovative_finance' ? "chevron-up" : "chevron-down"} size={20} color={Colors.lightGray} />
               </View>
               <View style={[styles.row, { marginTop: 12 }]}>
@@ -702,7 +738,10 @@ export default function DashboardScreen() {
           </Pressable>
 
           <Pressable
-            onPress={() => setAddContributionVisible(true)}
+            onPress={() => {
+              setPreSelectedISAType(undefined);
+              setAddContributionVisible(true);
+            }}
             style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
           >
             <GlassCard style={styles.card} intensity="light">
@@ -721,8 +760,12 @@ export default function DashboardScreen() {
       {/* Add ISA Contribution Modal */}
       <AddISAContributionModal
         visible={addContributionVisible}
-        onClose={() => setAddContributionVisible(false)}
+        onClose={() => {
+          setAddContributionVisible(false);
+          setPreSelectedISAType(undefined);
+        }}
         onAdd={handleAddContribution}
+        preSelectedType={preSelectedISAType}
         currentISAs={{
           cash: {
             contributed: groupedISAs.cash.total,
