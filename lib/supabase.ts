@@ -7,15 +7,25 @@ import { Database } from './database.types';
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase URL or Anon Key not found. Please add them to your .env file.');
+// Check if Supabase credentials are available
+export const hasSupabaseCredentials = !!(supabaseUrl && supabaseAnonKey &&
+  supabaseUrl !== 'your-project-url-here' &&
+  supabaseAnonKey !== 'your-anon-key-here');
+
+if (!hasSupabaseCredentials) {
+  console.warn('Supabase credentials not configured. App will run in offline/guest mode only.');
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    storage: AsyncStorage,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false,
-  },
-});
+// Create client with safe fallback values to prevent crashes
+export const supabase = createClient<Database>(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder-key',
+  {
+    auth: {
+      storage: AsyncStorage,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: false,
+    },
+  }
+);
