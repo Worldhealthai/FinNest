@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppState, AppStateStatus } from 'react-native';
-import { supabase } from '@/lib/supabase';
+import { supabase, hasSupabaseCredentials } from '@/lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
 
 const GUEST_MODE_KEY = '@finnest_guest_mode';
@@ -58,6 +58,11 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   useEffect(() => {
     loadOnboardingStatus();
 
+    // Only listen for auth state changes if Supabase is configured
+    if (!hasSupabaseCredentials) {
+      return;
+    }
+
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
@@ -104,14 +109,19 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         return;
       }
 
-      // Check for existing Supabase session
-      const { data: { session } } = await supabase.auth.getSession();
+      // Only check Supabase session if credentials are configured
+      if (hasSupabaseCredentials) {
+        const { data: { session } } = await supabase.auth.getSession();
 
-      if (session) {
-        setSession(session);
-        setUser(session.user);
-        setIsAuthenticated(true);
-        await loadUserProfile(session.user.id);
+        if (session) {
+          setSession(session);
+          setUser(session.user);
+          setIsAuthenticated(true);
+          await loadUserProfile(session.user.id);
+        }
+      } else {
+        // No Supabase credentials - app can still work in guest mode
+        console.log('Running without Supabase - guest mode only');
       }
     } catch (error) {
       console.error('Error loading onboarding status:', error);
@@ -121,6 +131,10 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   };
 
   const loadUserProfile = async (userId: string) => {
+    if (!hasSupabaseCredentials) {
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -158,8 +172,8 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const updatedProfile = { ...userProfile, ...updates };
     setUserProfile(updatedProfile);
 
-    // Don't save to Supabase if guest
-    if (isGuest || !user) return;
+    // Don't save to Supabase if guest or credentials not configured
+    if (isGuest || !user || !hasSupabaseCredentials) return;
 
     // Persist to Supabase immediately
     try {
@@ -190,8 +204,8 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     try {
       setIsOnboardingCompleted(true);
 
-      // Don't save to Supabase if guest
-      if (isGuest || !user) return;
+      // Don't save to Supabase if guest or credentials not configured
+      if (isGuest || !user || !hasSupabaseCredentials) return;
 
       // Update onboarding status in Supabase
       const { error } = await supabase
@@ -211,7 +225,7 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       setIsAuthenticated(false);
       setUserProfile({});
 
-      if (user) {
+      if (user && hasSupabaseCredentials) {
         // Reset onboarding in Supabase
         await supabase
           .from('profiles')
@@ -224,6 +238,11 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   };
 
   const login = async (email: string, password: string): Promise<boolean> => {
+    if (!hasSupabaseCredentials) {
+      console.warn('Cannot login: Supabase credentials not configured');
+      return false;
+    }
+
     try {
       // Clear guest mode flag first
       await AsyncStorage.removeItem(GUEST_MODE_KEY);
@@ -255,6 +274,11 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   };
 
   const signup = async (email: string, password: string, fullName: string): Promise<boolean> => {
+    if (!hasSupabaseCredentials) {
+      console.warn('Cannot signup: Supabase credentials not configured');
+      return false;
+    }
+
     try {
       // Clear guest mode flag first
       await AsyncStorage.removeItem(GUEST_MODE_KEY);
@@ -304,8 +328,8 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       // Clear guest mode
       await AsyncStorage.removeItem(GUEST_MODE_KEY);
 
-      // Sign out from Supabase (if not guest)
-      if (!isGuest) {
+      // Sign out from Supabase (if not guest and credentials are configured)
+      if (!isGuest && hasSupabaseCredentials) {
         await supabase.auth.signOut();
       }
 
