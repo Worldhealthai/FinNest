@@ -7,7 +7,10 @@
       "@/components/*": ["./components/*"],
       "@/constants/*": ["./constants/*"],
       "@/hooks/*": ["./hooks/*"],
-      "@/utils/*": ["./utils/*"]
+      "@/utils/*": ["./utils/*"],
+      "@/lib/*": ["./lib/*"],
+      "@/contexts/*": ["./contexts/*"],
+      "@/assets/*": ["./assets/*"]
     }
   },
   "include": [
