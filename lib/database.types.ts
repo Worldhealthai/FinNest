@@ -72,6 +72,7 @@ export interface Database {
           isa_type: 'cash' | 'stocks_shares' | 'lifetime' | 'innovative_finance'
           provider: string
           amount: number
+          /** ISO date string in YYYY-MM-DD format (PostgreSQL date column) */
           date: string
           withdrawn: boolean
           created_at: string
@@ -83,6 +84,7 @@ export interface Database {
           isa_type: 'cash' | 'stocks_shares' | 'lifetime' | 'innovative_finance'
           provider: string
           amount: number
+          /** YYYY-MM-DD format required */
           date: string
           withdrawn?: boolean
           created_at?: string
@@ -94,6 +96,7 @@ export interface Database {
           isa_type?: 'cash' | 'stocks_shares' | 'lifetime' | 'innovative_finance'
           provider?: string
           amount?: number
+          /** YYYY-MM-DD format required */
           date?: string
           withdrawn?: boolean
           created_at?: string
