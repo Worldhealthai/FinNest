@@ -14,7 +14,6 @@ export interface UserProfile {
 
   // Personal Information
   dateOfBirth: string;
-  nationalInsuranceNumber: string;
   phoneNumber: string;
 
   // Goals
@@ -150,7 +149,6 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           email: data.email,
           profilePhoto: data.profile_photo || '',
           dateOfBirth: data.date_of_birth || '',
-          nationalInsuranceNumber: data.national_insurance_number || '',
           phoneNumber: data.phone_number || '',
           savingsGoals: data.savings_goals as any || [],
           targetAmount: data.target_amount,
@@ -182,7 +180,6 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         .update({
           full_name: updatedProfile.fullName || '',
           date_of_birth: updatedProfile.dateOfBirth || null,
-          national_insurance_number: updatedProfile.nationalInsuranceNumber || null,
           phone_number: updatedProfile.phoneNumber || null,
           profile_photo: updatedProfile.profilePhoto || null,
           savings_goals: updatedProfile.savingsGoals || [],

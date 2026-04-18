@@ -15,7 +15,6 @@ export interface Database {
           email: string
           full_name: string
           date_of_birth: string | null
-          national_insurance_number: string | null
           phone_number: string | null
           profile_photo: string | null
           savings_goals: string[] | null
@@ -33,7 +32,6 @@ export interface Database {
           email: string
           full_name: string
           date_of_birth?: string | null
-          national_insurance_number?: string | null
           phone_number?: string | null
           profile_photo?: string | null
           savings_goals?: string[] | null
@@ -51,7 +49,6 @@ export interface Database {
           email?: string
           full_name?: string
           date_of_birth?: string | null
-          national_insurance_number?: string | null
           phone_number?: string | null
           profile_photo?: string | null
           savings_goals?: string[] | null

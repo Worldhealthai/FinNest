@@ -12,7 +12,7 @@ import { Colors, Spacing, Typography } from '@/constants/theme';
 import { ISA_INFO, ISA_ANNUAL_ALLOWANCE, LIFETIME_ISA_MAX, getDaysUntilTaxYearEnd, formatCurrency, getTaxYearDates } from '@/constants/isaData';
 import { getCurrentTaxYear, isDateInTaxYear } from '@/utils/taxYear';
 import { isISAFlexible } from '@/utils/isaSettings';
-import { loadContributions, saveContribution, updateContribution as updateContributionDB, deleteContribution as deleteContributionDB } from '@/lib/contributions';
+import { loadContributions, saveContribution, updateContribution as updateContributionDB, deleteContribution as deleteContributionDB, SaveContributionResult } from '@/lib/contributions';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import { sendISALimitNotification } from '@/utils/notificationService';
 
@@ -160,12 +160,14 @@ export default function DashboardScreen() {
       setContributions(updatedContributions);
       await saveContributions(updatedContributions);
     } else {
-      // Authenticated: save to Supabase
-      const saved = await saveContribution(contribution);
-      if (saved) {
-        // Reload all contributions from Supabase to ensure sync
-        await loadISAData();
+      // Authenticated: save via Edge Function (validates allowance limits)
+      const result: SaveContributionResult = await saveContribution(contribution);
+      if (result.error) {
+        Alert.alert('Cannot Add Contribution', result.error);
+        return;
       }
+      // Reload all contributions from Supabase to ensure sync
+      await loadISAData();
     }
 
     // Calculate new total and send notification if milestone reached
