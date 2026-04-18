@@ -187,7 +187,7 @@ export default function AddISAContributionModal({
         provider: provider.trim(),
         isaType: selectedType,
         amount: contributionAmount,
-        date: contributionDate.toISOString(),
+        date: contributionDate.toISOString().split('T')[0],
         notes: notes.trim() || undefined,
       };
 
@@ -229,7 +229,7 @@ export default function AddISAContributionModal({
       provider: provider.trim(),
       isaType: selectedType,
       amount: contributionAmount,
-      date: contributionDate.toISOString(),
+      date: contributionDate.toISOString().split('T')[0],
       notes: notes.trim() || undefined,
     };
 
@@ -264,7 +264,7 @@ export default function AddISAContributionModal({
       provider: provider.trim(),
       isaType: selectedType,
       amount: contributionAmount,
-      date: contributionDate.toISOString(),
+      date: contributionDate.toISOString().split('T')[0],
       notes: notes.trim() || undefined,
     };
 

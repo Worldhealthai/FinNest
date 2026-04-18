@@ -110,7 +110,7 @@ export default function EditISAContributionModal({
     const updated: ISAContribution = {
       ...contribution,
       amount: contributionAmount,
-      date: contributionDate.toISOString(),
+      date: contributionDate.toISOString().split('T')[0],
       notes: notes.trim() || undefined,
     };
 
