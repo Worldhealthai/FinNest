@@ -11,7 +11,7 @@ import GlassCard from '@/components/GlassCard';
 import { Colors, Spacing, Typography } from '@/constants/theme';
 import { formatCurrency, ISA_INFO, ISA_ANNUAL_ALLOWANCE } from '@/constants/isaData';
 import { Dimensions } from 'react-native';
-import { getCurrentTaxYear, isDateInTaxYear, getTaxYearFromDate, getTaxYearBoundaries } from '@/utils/taxYear';
+import { getCurrentTaxYear, isDateInTaxYear, getTaxYearFromDate, getTaxYearBoundaries, parseDateKey } from '@/utils/taxYear';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import { loadContributions as loadContributionsDB } from '@/lib/contributions';
 
@@ -64,7 +64,7 @@ const calculateHistoricalPerformance = (contributions: ISAContribution[]) => {
     // Skip deleted contributions
     if (contribution.deleted) return;
 
-    const taxYear = getTaxYearFromDate(new Date(contribution.date));
+    const taxYear = getTaxYearFromDate(parseDateKey(contribution.date));
     const yearLabel = taxYear.label;
 
     if (!byTaxYear[yearLabel]) {
@@ -103,7 +103,7 @@ const calculateContributionTrend = (contributions: ISAContribution[]) => {
     // Skip deleted contributions
     if (contribution.deleted) return;
 
-    const taxYear = getTaxYearFromDate(new Date(contribution.date));
+    const taxYear = getTaxYearFromDate(parseDateKey(contribution.date));
     const yearLabel = taxYear.label;
 
     if (!byTaxYear[yearLabel]) {
@@ -196,7 +196,7 @@ export default function AnalyticsScreen() {
   // Filter contributions by current tax year for allowance tracking
   const currentTaxYear = getCurrentTaxYear();
   const currentYearContributions = contributions.filter(contribution =>
-    isDateInTaxYear(new Date(contribution.date), currentTaxYear)
+    isDateInTaxYear(parseDateKey(contribution.date), currentTaxYear)
   );
 
   // For ISA breakdown, show all contributions across all years
@@ -225,7 +225,7 @@ export default function AnalyticsScreen() {
 
     // Get contributions for current tax year only (exclude withdrawn)
     const yearContributions = contributions.filter(c =>
-      !c.withdrawn && isDateInTaxYear(new Date(c.date), currentTaxYear)
+      !c.withdrawn && isDateInTaxYear(parseDateKey(c.date), currentTaxYear)
     );
 
     if (yearContributions.length === 0) {
@@ -242,7 +242,7 @@ export default function AnalyticsScreen() {
     // BASE SCORE: Simple monthly coverage (0-100%)
     const monthsWithContributions = new Set(
       yearContributions.map(c => {
-        const date = new Date(c.date);
+        const date = parseDateKey(c.date);
         return date.getMonth(); // 0-11 for Jan-Dec
       })
     );
@@ -262,7 +262,7 @@ export default function AnalyticsScreen() {
     const bonuses: Array<{ name: string; value: number; earned: boolean }> = [];
 
     // 1. EARLY BIRD BONUS (+10%)
-    const firstContribution = new Date(Math.min(...yearContributions.map(c => new Date(c.date).getTime())));
+    const firstContribution = new Date(Math.min(...yearContributions.map(c => parseDateKey(c.date).getTime())));
     const monthsSinceStart = Math.max(0,
       (firstContribution.getFullYear() - currentTaxYear.startDate.getFullYear()) * 12 +
       (firstContribution.getMonth() - currentTaxYear.startDate.getMonth())

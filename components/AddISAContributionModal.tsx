@@ -23,7 +23,7 @@ import {
   formatCurrency,
 } from '@/constants/isaData';
 import { searchProviders, getPopularProviders, ISAProvider } from '@/constants/isaProviders';
-import { getAvailableTaxYears, getTaxYearLabel, getTaxYearFromDate, type TaxYear } from '@/utils/taxYear';
+import { getAvailableTaxYears, getTaxYearLabel, getTaxYearFromDate, formatDateKey, type TaxYear } from '@/utils/taxYear';
 import { getISASetting, setISASetting } from '@/utils/isaSettings';
 
 const { width } = Dimensions.get('window');
@@ -187,7 +187,7 @@ export default function AddISAContributionModal({
         provider: provider.trim(),
         isaType: selectedType,
         amount: contributionAmount,
-        date: contributionDate.toISOString().split('T')[0],
+        date: formatDateKey(contributionDate),
         notes: notes.trim() || undefined,
       };
 
@@ -229,7 +229,7 @@ export default function AddISAContributionModal({
       provider: provider.trim(),
       isaType: selectedType,
       amount: contributionAmount,
-      date: contributionDate.toISOString().split('T')[0],
+      date: formatDateKey(contributionDate),
       notes: notes.trim() || undefined,
     };
 
@@ -264,7 +264,7 @@ export default function AddISAContributionModal({
       provider: provider.trim(),
       isaType: selectedType,
       amount: contributionAmount,
-      date: contributionDate.toISOString().split('T')[0],
+      date: formatDateKey(contributionDate),
       notes: notes.trim() || undefined,
     };
 

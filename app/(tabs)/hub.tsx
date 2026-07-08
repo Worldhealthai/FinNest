@@ -11,7 +11,9 @@ import ConfettiCelebration from '@/components/ConfettiCelebration';
 import GlassCard from '@/components/GlassCard';
 import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
 import { ISA_INFO, ISA_ANNUAL_ALLOWANCE, LIFETIME_ISA_MAX, EDUCATIONAL_CONTENT, formatCurrency } from '@/constants/isaData';
-import { getCurrentTaxYear, isDateInTaxYear } from '@/utils/taxYear';
+import { getCurrentTaxYear, isDateInTaxYear, parseDateKey } from '@/utils/taxYear';
+import { useOnboarding } from '@/contexts/OnboardingContext';
+import { loadContributions as loadContributionsDB } from '@/lib/contributions';
 
 const CONTRIBUTIONS_STORAGE_KEY = '@finnest_contributions';
 const LEVEL_STORAGE_KEY = '@finnest_user_level';
@@ -41,7 +43,7 @@ const LEVELS = [
 const getMonthlyHeatmap = (contributions: ISAContribution[]) => {
   const currentTaxYear = getCurrentTaxYear();
   const yearContributions = contributions.filter(c =>
-    !c.withdrawn && isDateInTaxYear(new Date(c.date), currentTaxYear)
+    !c.withdrawn && isDateInTaxYear(parseDateKey(c.date), currentTaxYear)
   );
 
   if (yearContributions.length === 0) {
@@ -49,7 +51,7 @@ const getMonthlyHeatmap = (contributions: ISAContribution[]) => {
   }
 
   const monthsWithContributions = new Set(
-    yearContributions.map(c => new Date(c.date).getMonth())
+    yearContributions.map(c => parseDateKey(c.date).getMonth())
   );
 
   const taxYearStart = currentTaxYear.startDate.getMonth();
@@ -72,7 +74,7 @@ const calculateConsistencyScore = (contributions: ISAContribution[]) => {
 
   // Get contributions for current tax year only (exclude withdrawn)
   const yearContributions = contributions.filter(c =>
-    !c.withdrawn && isDateInTaxYear(new Date(c.date), currentTaxYear)
+    !c.withdrawn && isDateInTaxYear(parseDateKey(c.date), currentTaxYear)
   );
 
   if (yearContributions.length === 0) {
@@ -82,7 +84,7 @@ const calculateConsistencyScore = (contributions: ISAContribution[]) => {
   // BASE SCORE: Simple monthly coverage (0-100%)
   const monthsWithContributions = new Set(
     yearContributions.map(c => {
-      const date = new Date(c.date);
+      const date = parseDateKey(c.date);
       return date.getMonth(); // 0-11 for Jan-Dec
     })
   );
@@ -102,7 +104,7 @@ const calculateConsistencyScore = (contributions: ISAContribution[]) => {
   const bonuses: Array<{ name: string; value: number; earned: boolean }> = [];
 
   // 1. EARLY BIRD BONUS (+10%)
-  const firstContribution = new Date(Math.min(...yearContributions.map(c => new Date(c.date).getTime())));
+  const firstContribution = new Date(Math.min(...yearContributions.map(c => parseDateKey(c.date).getTime())));
   const monthsSinceStart = Math.max(0,
     (firstContribution.getFullYear() - currentTaxYear.startDate.getFullYear()) * 12 +
     (firstContribution.getMonth() - currentTaxYear.startDate.getMonth())
@@ -159,6 +161,7 @@ const getNextLevel = (currentLevelNumber: number) => {
 };
 
 export default function HubScreen() {
+  const { isGuest } = useOnboarding();
   const [expandedISA, setExpandedISA] = useState<string | null>(null);
   const [contributions, setContributions] = useState<ISAContribution[]>([]);
   const [previousLevel, setPreviousLevel] = useState<number | null>(null);
@@ -169,10 +172,15 @@ export default function HubScreen() {
   // Load saved ISA data and previous level
   const loadISAData = async () => {
     try {
-      const savedData = await AsyncStorage.getItem(CONTRIBUTIONS_STORAGE_KEY);
-      if (savedData) {
-        const parsed = JSON.parse(savedData);
-        setContributions(parsed);
+      // Authenticated users store contributions in Supabase; only guests use
+      // AsyncStorage. Loading only from AsyncStorage left signed-in users with
+      // an empty Hub (level stuck at Seedling, no streaks).
+      if (isGuest) {
+        const savedData = await AsyncStorage.getItem(CONTRIBUTIONS_STORAGE_KEY);
+        setContributions(savedData ? JSON.parse(savedData) : []);
+      } else {
+        const data = await loadContributionsDB();
+        setContributions(data);
       }
 
       const savedLevel = await AsyncStorage.getItem(LEVEL_STORAGE_KEY);
@@ -208,7 +216,7 @@ export default function HubScreen() {
   // Filter contributions by current tax year
   const currentTaxYear = getCurrentTaxYear();
   const currentYearContributions = contributions.filter(contribution =>
-    isDateInTaxYear(new Date(contribution.date), currentTaxYear)
+    isDateInTaxYear(parseDateKey(contribution.date), currentTaxYear)
   );
 
   // Calculate consistency score and level

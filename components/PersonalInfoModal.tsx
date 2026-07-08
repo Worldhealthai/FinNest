@@ -30,7 +30,6 @@ export default function PersonalInfoModal({ visible, onClose }: PersonalInfoModa
   const [city, setCity] = useState('');
   const [postcode, setPostcode] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
-  const [nationalInsurance, setNationalInsurance] = useState('');
 
   // Password change states
   const [currentPassword, setCurrentPassword] = useState('');
@@ -47,7 +46,6 @@ export default function PersonalInfoModal({ visible, onClose }: PersonalInfoModa
       setEmail(userProfile.email || '');
       setPhone(userProfile.phoneNumber || '');
       setDateOfBirth(userProfile.dateOfBirth || '');
-      setNationalInsurance(userProfile.nationalInsuranceNumber || '');
     }
   }, [visible, userProfile]);
 
@@ -63,7 +61,6 @@ export default function PersonalInfoModal({ visible, onClose }: PersonalInfoModa
       email,
       phoneNumber: phone,
       dateOfBirth,
-      nationalInsuranceNumber: nationalInsurance,
     });
 
     Alert.alert('Success', 'Personal information updated successfully!');
@@ -251,21 +248,6 @@ export default function PersonalInfoModal({ visible, onClose }: PersonalInfoModa
               placeholderTextColor={Colors.mediumGray}
               value={dateOfBirth}
               onChangeText={setDateOfBirth}
-            />
-          </GlassCard>
-        </View>
-
-        {/* National Insurance */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>National Insurance Number</Text>
-          <GlassCard style={styles.inputCard} intensity="medium">
-            <TextInput
-              style={styles.input}
-              placeholder="AB123456C"
-              placeholderTextColor={Colors.mediumGray}
-              value={nationalInsurance}
-              onChangeText={setNationalInsurance}
-              autoCapitalize="characters"
             />
           </GlassCard>
         </View>

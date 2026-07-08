@@ -22,7 +22,7 @@ import {
   LIFETIME_ISA_MAX,
   formatCurrency,
 } from '@/constants/isaData';
-import { getAvailableTaxYears, getTaxYearLabel, getTaxYearFromDate, type TaxYear } from '@/utils/taxYear';
+import { getAvailableTaxYears, getTaxYearLabel, getTaxYearFromDate, formatDateKey, parseDateKey, type TaxYear } from '@/utils/taxYear';
 import { ISAContribution } from './AddISAContributionModal';
 
 const { width } = Dimensions.get('window');
@@ -57,7 +57,7 @@ export default function EditISAContributionModal({
       setStep(1);
       setAmount(contribution.amount.toString());
       setNotes(contribution.notes || '');
-      const date = new Date(contribution.date);
+      const date = parseDateKey(contribution.date);
       setContributionDate(date);
       setSelectedTaxYear(getTaxYearFromDate(date));
       setUpdatedContribution(null);
@@ -110,7 +110,7 @@ export default function EditISAContributionModal({
     const updated: ISAContribution = {
       ...contribution,
       amount: contributionAmount,
-      date: contributionDate.toISOString().split('T')[0],
+      date: formatDateKey(contributionDate),
       notes: notes.trim() || undefined,
     };
 

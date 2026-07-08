@@ -10,9 +10,9 @@ import AddISAContributionModal, { ISAContribution } from '@/components/AddISACon
 import EditISAContributionModal from '@/components/EditISAContributionModal';
 import { Colors, Spacing, Typography } from '@/constants/theme';
 import { ISA_INFO, ISA_ANNUAL_ALLOWANCE, LIFETIME_ISA_MAX, getDaysUntilTaxYearEnd, formatCurrency, getTaxYearDates } from '@/constants/isaData';
-import { getCurrentTaxYear, isDateInTaxYear } from '@/utils/taxYear';
-import { isISAFlexible } from '@/utils/isaSettings';
-import { loadContributions, saveContribution, updateContribution as updateContributionDB, deleteContribution as deleteContributionDB } from '@/lib/contributions';
+import { getCurrentTaxYear, isDateInTaxYear, parseDateKey } from '@/utils/taxYear';
+import { loadISASettings, isFlexibleFromSettings, ISAAccountSettings } from '@/utils/isaSettings';
+import { loadContributions, saveContribution, updateContribution as updateContributionDB, deleteContribution as deleteContributionDB, SaveContributionResult } from '@/lib/contributions';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import { sendISALimitNotification } from '@/utils/notificationService';
 
@@ -50,13 +50,18 @@ const groupContributions = (contributions: ISAContribution[]) => {
 // For flexible ISAs: withdrawn contributions free up allowance (don't count)
 // For non-flexible ISAs: withdrawn contributions still count toward allowance
 // Only truly deleted entries never count
-const calculateAllowanceUsed = (contributions: ISAContribution[]) => {
+const calculateAllowanceUsed = (
+  contributions: ISAContribution[],
+  settings: ISAAccountSettings
+) => {
   let totalUsed = 0;
 
   for (const contribution of contributions) {
     // For flexible ISAs, withdrawn contributions don't count toward allowance
-    // For non-flexible ISAs, withdrawn contributions still count
-    const isaFlexible = isISAFlexible(contribution.isaType, contribution.provider);
+    // For non-flexible ISAs, withdrawn contributions still count.
+    // Note: flexibility must be resolved synchronously here — pass in settings
+    // loaded once via loadISASettings() rather than the async isISAFlexible().
+    const isaFlexible = isFlexibleFromSettings(settings, contribution.provider, contribution.isaType);
 
     if (contribution.withdrawn && isaFlexible) {
       // Flexible ISA withdrawal - doesn't count toward allowance
@@ -75,11 +80,12 @@ export default function DashboardScreen() {
   const [contributions, setContributions] = useState<ISAContribution[]>([]);
   const [expandedISA, setExpandedISA] = useState<string | null>(null);
   const [allowanceUsed, setAllowanceUsed] = useState<number>(0);
+  const [isaSettings, setIsaSettings] = useState<ISAAccountSettings>({});
 
   // Filter contributions by current tax year only
   const currentTaxYear = getCurrentTaxYear();
   const filteredContributions = contributions.filter(contribution =>
-    isDateInTaxYear(new Date(contribution.date), currentTaxYear)
+    isDateInTaxYear(parseDateKey(contribution.date), currentTaxYear)
   );
 
   const groupedISAs = groupContributions(filteredContributions);
@@ -106,12 +112,15 @@ export default function DashboardScreen() {
 
   // Calculate allowance used (withdrawn contributions count, deleted don't)
   useEffect(() => {
-    const used = calculateAllowanceUsed(filteredContributions);
+    const used = calculateAllowanceUsed(filteredContributions, isaSettings);
     setAllowanceUsed(used);
-  }, [filteredContributions]);
+  }, [filteredContributions, isaSettings]);
 
   const loadISAData = async () => {
     try {
+      // Load flexibility settings first so allowance math is correct
+      setIsaSettings(await loadISASettings());
+
       // Guest users: load from AsyncStorage
       if (isGuest) {
         console.log('=== Loading contributions from AsyncStorage (Guest Mode) ===');
@@ -160,20 +169,22 @@ export default function DashboardScreen() {
       setContributions(updatedContributions);
       await saveContributions(updatedContributions);
     } else {
-      // Authenticated: save to Supabase
-      const saved = await saveContribution(contribution);
-      if (saved) {
-        // Reload all contributions from Supabase to ensure sync
-        await loadISAData();
+      // Authenticated: save via Edge Function (validates allowance limits)
+      const result: SaveContributionResult = await saveContribution(contribution);
+      if (result.error) {
+        Alert.alert('Cannot Add Contribution', result.error);
+        return;
       }
+      // Reload all contributions from Supabase to ensure sync
+      await loadISAData();
     }
 
     // Calculate new total and send notification if milestone reached
     const allContributions = isGuest ? [...contributions, contribution] : contributions;
     const currentYearContributions = allContributions.filter(c =>
-      isDateInTaxYear(new Date(c.date), currentTaxYear)
+      isDateInTaxYear(parseDateKey(c.date), currentTaxYear)
     );
-    const newTotal = calculateAllowanceUsed(currentYearContributions);
+    const newTotal = calculateAllowanceUsed(currentYearContributions, isaSettings);
     await sendISALimitNotification(newTotal, ISA_ANNUAL_ALLOWANCE);
 
     console.log('Contribution added and saved successfully');
@@ -210,7 +221,7 @@ export default function DashboardScreen() {
     const contribution = contributions.find(c => c.id === contributionId);
     if (!contribution) return;
 
-    const isaFlexible = isISAFlexible(contribution.isaType, contribution.provider);
+    const isaFlexible = isFlexibleFromSettings(isaSettings, contribution.provider, contribution.isaType);
     const message = isaFlexible
       ? `Withdraw this ${formatCurrency(contribution.amount)} contribution from ${contribution.provider}?\n\nThis is a flexible ISA - withdrawing will free up ${formatCurrency(contribution.amount)} of your allowance for re-contribution this tax year.`
       : `Withdraw this ${formatCurrency(contribution.amount)} contribution from ${contribution.provider}?\n\nThe contribution will be marked as withdrawn, but the allowance remains used for this tax year (non-flexible ISA rules).`;
@@ -445,7 +456,7 @@ export default function DashboardScreen() {
                           )}
                         </View>
                         <Text style={[styles.sub, { fontSize: 12, opacity: 0.7, marginTop: 2 }]}>
-                          {new Date(contribution.date).toLocaleDateString()}
+                          {parseDateKey(contribution.date).toLocaleDateString()}
                         </Text>
                       </View>
                       <Text style={[styles.val, { marginRight: 8, textDecorationLine: contribution.withdrawn ? 'line-through' : 'none', opacity: contribution.withdrawn ? 0.6 : 1 }]}>{formatCurrency(contribution.amount)}</Text>
@@ -529,7 +540,7 @@ export default function DashboardScreen() {
                           )}
                         </View>
                         <Text style={[styles.sub, { fontSize: 12, opacity: 0.7, marginTop: 2 }]}>
-                          {new Date(contribution.date).toLocaleDateString()}
+                          {parseDateKey(contribution.date).toLocaleDateString()}
                         </Text>
                       </View>
                       <Text style={[styles.val, { marginRight: 8, textDecorationLine: contribution.withdrawn ? 'line-through' : 'none', opacity: contribution.withdrawn ? 0.6 : 1 }]}>{formatCurrency(contribution.amount)}</Text>
@@ -617,7 +628,7 @@ export default function DashboardScreen() {
                           )}
                         </View>
                         <Text style={[styles.sub, { fontSize: 12, opacity: 0.7, marginTop: 2 }]}>
-                          {new Date(contribution.date).toLocaleDateString()}
+                          {parseDateKey(contribution.date).toLocaleDateString()}
                         </Text>
                       </View>
                       <Text style={[styles.val, { marginRight: 8, textDecorationLine: contribution.withdrawn ? 'line-through' : 'none', opacity: contribution.withdrawn ? 0.6 : 1 }]}>{formatCurrency(contribution.amount)}</Text>
@@ -701,7 +712,7 @@ export default function DashboardScreen() {
                           )}
                         </View>
                         <Text style={[styles.sub, { fontSize: 12, opacity: 0.7, marginTop: 2 }]}>
-                          {new Date(contribution.date).toLocaleDateString()}
+                          {parseDateKey(contribution.date).toLocaleDateString()}
                         </Text>
                       </View>
                       <Text style={[styles.val, { marginRight: 8, textDecorationLine: contribution.withdrawn ? 'line-through' : 'none', opacity: contribution.withdrawn ? 0.6 : 1 }]}>{formatCurrency(contribution.amount)}</Text>

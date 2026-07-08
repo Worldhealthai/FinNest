@@ -14,7 +14,6 @@ export interface UserProfile {
 
   // Personal Information
   dateOfBirth: string;
-  nationalInsuranceNumber: string;
   phoneNumber: string;
 
   // Goals
@@ -42,6 +41,7 @@ interface OnboardingContextType {
   signup: (email: string, password: string, fullName: string) => Promise<boolean>;
   logout: () => Promise<void>;
   continueAsGuest: () => Promise<void>;
+  deleteAccount: () => Promise<boolean>;
 }
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
@@ -150,7 +150,6 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           email: data.email,
           profilePhoto: data.profile_photo || '',
           dateOfBirth: data.date_of_birth || '',
-          nationalInsuranceNumber: data.national_insurance_number || '',
           phoneNumber: data.phone_number || '',
           savingsGoals: data.savings_goals as any || [],
           targetAmount: data.target_amount,
@@ -182,7 +181,6 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         .update({
           full_name: updatedProfile.fullName || '',
           date_of_birth: updatedProfile.dateOfBirth || null,
-          national_insurance_number: updatedProfile.nationalInsuranceNumber || null,
           phone_number: updatedProfile.phoneNumber || null,
           profile_photo: updatedProfile.profilePhoto || null,
           savings_goals: updatedProfile.savingsGoals || [],
@@ -357,6 +355,46 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   };
 
+  // Permanently delete the account: removes the Supabase auth user and all of
+  // their data server-side (via the delete-account Edge Function), signs out,
+  // and clears every local cache. Returns false if the server deletion fails so
+  // the UI can surface an error instead of falsely claiming success.
+  const deleteAccount = async (): Promise<boolean> => {
+    try {
+      if (!isGuest && user && hasSupabaseCredentials) {
+        const { error } = await supabase.functions.invoke('delete-account', {
+          body: {},
+        });
+        if (error) {
+          console.error('Error deleting account:', error);
+          return false;
+        }
+        await supabase.auth.signOut();
+      }
+
+      // Clear all locally cached data (guest financial data + settings/level)
+      await AsyncStorage.multiRemove([
+        GUEST_MODE_KEY,
+        '@finnest_contributions',
+        '@finnest_isa_accounts',
+        '@finnest_isa_account_settings',
+        '@finnest_user_level',
+      ]);
+
+      // Reset in-memory auth state
+      setSession(null);
+      setUser(null);
+      setIsAuthenticated(false);
+      setIsOnboardingCompleted(false);
+      setIsGuest(false);
+      setUserProfile({});
+      return true;
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      return false;
+    }
+  };
+
   if (loading) {
     return null; // Or a loading screen
   }
@@ -375,6 +413,7 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         signup,
         logout,
         continueAsGuest,
+        deleteAccount,
       }}
     >
       {children}

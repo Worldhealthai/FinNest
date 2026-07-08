@@ -30,7 +30,7 @@ import FlexibleCalculatorModal from '@/components/FlexibleCalculatorModal';
 import { ISAContribution } from '@/components/AddISAContributionModal';
 import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
 import { ISA_ANNUAL_ALLOWANCE, formatCurrency } from '@/constants/isaData';
-import { getCurrentTaxYear, isDateInTaxYear } from '@/utils/taxYear';
+import { getCurrentTaxYear, isDateInTaxYear, parseDateKey } from '@/utils/taxYear';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import { loadContributions as loadContributionsDB } from '@/lib/contributions';
 
@@ -62,7 +62,7 @@ const getProgressMessage = (percentage: number) => {
 };
 
 export default function ProfileScreen() {
-  const { userProfile, updateProfile, logout, resetOnboarding, isGuest } = useOnboarding();
+  const { userProfile, updateProfile, logout, isGuest, deleteAccount } = useOnboarding();
   const [hasError, setHasError] = React.useState(false);
 
   // Pulsing animation for avatar
@@ -202,35 +202,31 @@ export default function ProfileScreen() {
 
   // Handle delete account - final confirmation with text input
   const handleDeleteAccountConfirm = async () => {
-    console.log('Delete confirm clicked, deleteText:', deleteText);
-    if (deleteText.toUpperCase() === 'DELETE') {
-      try {
-        console.log('Deleting account...');
-        // Clear all user data including contributions
-        await AsyncStorage.removeItem(CONTRIBUTIONS_STORAGE_KEY);
-        await AsyncStorage.removeItem('@finnest_isa_accounts');
-
-        // Reset onboarding (clears profile and onboarding status)
-        await resetOnboarding();
-
-        setDeleteModalVisible(false);
-        setDeleteText('');
-
-        console.log('Account deleted, navigating to login');
-        router.replace('/(onboarding)/login');
-      } catch (error) {
-        console.error('Error deleting account:', error);
-        Alert.alert('Error', 'Failed to delete account. Please try again.');
-      }
-    } else {
+    if (deleteText.toUpperCase() !== 'DELETE') {
       Alert.alert('Invalid Input', 'Please type DELETE to confirm account deletion.');
+      return;
+    }
+
+    // deleteAccount removes the auth user and all data server-side (via the
+    // delete-account Edge Function), signs out, and clears local caches.
+    const success = await deleteAccount();
+
+    if (success) {
+      setDeleteModalVisible(false);
+      setDeleteText('');
+      router.replace('/(onboarding)/login');
+    } else {
+      Alert.alert(
+        'Error',
+        'We could not delete your account. Please check your connection and try again, or contact support.'
+      );
     }
   };
 
   // Calculate real progress based on current tax year contributions
   const currentTaxYear = getCurrentTaxYear();
   const currentYearContributions = contributions.filter(
-    c => !c.withdrawn && isDateInTaxYear(new Date(c.date), currentTaxYear)
+    c => !c.withdrawn && isDateInTaxYear(parseDateKey(c.date), currentTaxYear)
   );
   const totalContributed = currentYearContributions.reduce((sum, c) => sum + c.amount, 0);
   const progressPercentage = Math.min((totalContributed / ISA_ANNUAL_ALLOWANCE) * 100, 100);
