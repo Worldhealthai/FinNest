@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import GlassCard from '@/components/GlassCard';
+import { withErrorBoundary } from '@/components/ErrorBoundary';
 import AddISAContributionModal, { ISAContribution } from '@/components/AddISAContributionModal';
 import EditISAContributionModal from '@/components/EditISAContributionModal';
 import { Colors, Spacing, Typography } from '@/constants/theme';
@@ -75,7 +76,7 @@ const calculateAllowanceUsed = (
   return totalUsed;
 };
 
-export default function DashboardScreen() {
+function DashboardScreen() {
   const { isGuest } = useOnboarding();
   const [contributions, setContributions] = useState<ISAContribution[]>([]);
   const [expandedISA, setExpandedISA] = useState<string | null>(null);
@@ -814,6 +815,8 @@ export default function DashboardScreen() {
     </View>
   );
 }
+
+export default withErrorBoundary(DashboardScreen);
 
 const styles = StyleSheet.create({
   container: { flex: 1 },

@@ -9,6 +9,7 @@ import * as Haptics from 'expo-haptics';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import ConfettiCelebration from '@/components/ConfettiCelebration';
 import GlassCard from '@/components/GlassCard';
+import { withErrorBoundary } from '@/components/ErrorBoundary';
 import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
 import { ISA_INFO, ISA_ANNUAL_ALLOWANCE, LIFETIME_ISA_MAX, EDUCATIONAL_CONTENT, formatCurrency } from '@/constants/isaData';
 import { getCurrentTaxYear, isDateInTaxYear, parseDateKey } from '@/utils/taxYear';
@@ -160,7 +161,7 @@ const getNextLevel = (currentLevelNumber: number) => {
   return LEVELS.find(level => level.number === currentLevelNumber + 1) || null;
 };
 
-export default function HubScreen() {
+function HubScreen() {
   const { isGuest } = useOnboarding();
   const [expandedISA, setExpandedISA] = useState<string | null>(null);
   const [contributions, setContributions] = useState<ISAContribution[]>([]);
@@ -591,6 +592,8 @@ export default function HubScreen() {
     </View>
   );
 }
+
+export default withErrorBoundary(HubScreen);
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
