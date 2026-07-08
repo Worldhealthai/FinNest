@@ -100,6 +100,20 @@ export async function isISAFlexible(
 }
 
 /**
+ * Synchronous flexibility lookup against an already-loaded settings object.
+ * Use this in render/calculation code where awaiting isn't possible — pass in
+ * settings loaded once via loadISASettings(). Defaults to non-flexible.
+ */
+export function isFlexibleFromSettings(
+  settings: ISAAccountSettings,
+  provider: string,
+  isaType: string
+): boolean {
+  const key = getSettingsKey(provider, isaType);
+  return settings[key]?.isFlexible || false;
+}
+
+/**
  * Delete settings for a specific provider + ISA type combination
  * Useful when user deletes all contributions from a provider+type
  */

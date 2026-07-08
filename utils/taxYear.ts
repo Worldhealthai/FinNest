@@ -94,6 +94,34 @@ export const getAvailableTaxYears = (yearsBack: number = 5, yearsForward: number
 };
 
 /**
+ * Formats a Date into a YYYY-MM-DD key using LOCAL calendar components.
+ * Use this instead of date.toISOString().split('T')[0], which converts to UTC
+ * first and shifts the day for users in non-UTC timezones (e.g. a UK user
+ * saving April 6 00:00 BST would otherwise store April 5).
+ */
+export const formatDateKey = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+/**
+ * Parses a stored contribution date string into a LOCAL Date.
+ * Handles both the current YYYY-MM-DD format and legacy full-ISO strings.
+ * new Date('YYYY-MM-DD') parses as UTC midnight, which — when compared against
+ * the local-time tax-year boundaries — shifts the day for non-UTC users. This
+ * parser stays in local time so membership checks are consistent everywhere.
+ */
+export const parseDateKey = (value: string): Date => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+  if (match) {
+    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  }
+  return new Date(value);
+};
+
+/**
  * Checks if a date falls within a specific tax year
  */
 export const isDateInTaxYear = (date: Date, taxYear: TaxYear): boolean => {
