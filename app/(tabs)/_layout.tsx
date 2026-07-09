@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { StyleSheet, Platform, Pressable, Animated } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Colors, Typography } from '@/constants/theme';
 import { useRef } from 'react';
 
@@ -17,6 +18,9 @@ function TabBarButton({ href, onPress, ...props }: any) {
   const handlePress = (e: any) => {
     // Belt-and-braces: block any default browser behavior before navigating
     e?.preventDefault?.();
+    if (Platform.OS !== 'web') {
+      Haptics.selectionAsync().catch(() => {});
+    }
     onPress?.(e);
   };
 
@@ -47,6 +51,7 @@ function TabBarButton({ href, onPress, ...props }: any) {
     >
       <Animated.View style={[{
         transform: [{ scale: scaleValue }],
+        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
       }]}>
@@ -67,12 +72,26 @@ export default function TabLayout() {
         tabBarStyle: {
           position: 'absolute',
           bottom: 20,
-          left: 20,
-          right: 20,
           elevation: 0,
           backgroundColor: 'transparent',
           borderTopWidth: 0,
           height: 70,
+          // On web, cap the floating pill's width and center it — stretching
+          // edge-to-edge on desktop spreads the four tabs too far apart.
+          ...Platform.select({
+            web: {
+              left: 0,
+              right: 0,
+              width: '100%',
+              maxWidth: 560,
+              marginHorizontal: 'auto',
+              paddingHorizontal: 8,
+            },
+            default: {
+              left: 20,
+              right: 20,
+            },
+          }),
         },
         tabBarBackground: () => (
           <BlurView
@@ -87,18 +106,19 @@ export default function TabLayout() {
             }}
           />
         ),
+        // Keep icon + label vertically centered as a tight column inside the
+        // 70px pill — the previous stacked margins pushed labels to the edge.
         tabBarLabelStyle: {
           fontSize: Typography.sizes.xs,
           fontWeight: Typography.weights.semibold,
-          marginTop: 8,
-          marginBottom: 8,
+          marginTop: 4,
         },
         tabBarIconStyle: {
-          marginTop: 4,
-          marginBottom: 4,
+          marginTop: 0,
+          marginBottom: 0,
         },
         tabBarItemStyle: {
-          paddingVertical: 8,
+          paddingVertical: 10,
         },
       }}
     >

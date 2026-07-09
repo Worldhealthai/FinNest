@@ -8,6 +8,7 @@ import {
   ScrollView,
   Dimensions,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -44,7 +45,12 @@ export default function Modal({
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <View style={styles.overlay}>
+      {/* KeyboardAvoidingView lifts the sheet above the iOS keyboard so
+          inputs near the bottom stay visible while typing */}
+      <KeyboardAvoidingView
+        style={styles.overlay}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         {useBlur ? (
           <BlurView intensity={50} style={StyleSheet.absoluteFill} tint="dark" />
         ) : (
@@ -89,7 +95,7 @@ export default function Modal({
             </ScrollView>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </RNModal>
   );
 }

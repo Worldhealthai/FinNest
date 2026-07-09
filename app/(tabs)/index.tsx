@@ -408,19 +408,21 @@ function DashboardScreen() {
             <Text style={styles.label}>Annual ISA Allowance</Text>
             <Text style={styles.big}>{formatCurrency(ISA_ANNUAL_ALLOWANCE)}</Text>
             <View style={styles.bar}>
-              <LinearGradient colors={Colors.goldGradient} style={{ width: `${percent}%`, height: '100%', borderRadius: 6 }} />
+              {/* Clamp: an exceeded allowance must not overflow the track */}
+              <LinearGradient colors={Colors.goldGradient} style={{ width: `${Math.min(100, Math.max(0, percent))}%`, height: '100%', borderRadius: 6 }} />
             </View>
             <View style={styles.stats}>
               <View style={styles.stat}>
                 <Text style={styles.statLabel}>Used</Text>
-                <Text style={styles.statVal}>{formatCurrency(total)}</Text>
+                {/* allowanceUsed (not raw total) so the £ figure matches the % */}
+                <Text style={styles.statVal}>{formatCurrency(allowanceUsed)}</Text>
                 <Text style={styles.statPer}>{percent.toFixed(0)}%</Text>
               </View>
               <View style={styles.div} />
               <View style={styles.stat}>
                 <Text style={styles.statLabel}>Left</Text>
-                <Text style={styles.statVal}>{formatCurrency(remaining)}</Text>
-                <Text style={styles.statPer}>{(100 - percent).toFixed(0)}%</Text>
+                <Text style={styles.statVal}>{formatCurrency(Math.max(0, remaining))}</Text>
+                <Text style={styles.statPer}>{Math.max(0, 100 - percent).toFixed(0)}%</Text>
               </View>
               <View style={styles.div} />
               <View style={styles.stat}>
@@ -793,6 +795,25 @@ function DashboardScreen() {
         </ScrollView>
       </SafeAreaView>
 
+      {/* Floating add button — the primary action shouldn't require scrolling
+          to the bottom of the dashboard on a phone */}
+      <Pressable
+        onPress={() => {
+          setPreSelectedISAType(undefined);
+          setAddContributionVisible(true);
+        }}
+        style={({ pressed }) => [styles.fab, pressed && { transform: [{ scale: 0.92 }] }]}
+      >
+        <LinearGradient
+          colors={Colors.goldGradient}
+          style={styles.fabGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <Ionicons name="add" size={30} color={Colors.deepNavy} />
+        </LinearGradient>
+      </Pressable>
+
       {/* Add ISA Contribution Modal */}
       <AddISAContributionModal
         visible={addContributionVisible}
@@ -846,6 +867,24 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safe: { flex: 1 },
   scroll: { padding: Spacing.md },
+  fab: {
+    position: 'absolute',
+    right: 20,
+    bottom: 110,
+    borderRadius: 30,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.45,
+    shadowRadius: 14,
+    elevation: 10,
+  },
+  fabGradient: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.lg },
   title: { fontSize: Typography.sizes.xxl, color: Colors.white, fontWeight: Typography.weights.bold },
   year: { fontSize: Typography.sizes.sm, color: Colors.gold, marginTop: 4, fontWeight: Typography.weights.semibold },
