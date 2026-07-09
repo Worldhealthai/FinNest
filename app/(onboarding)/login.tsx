@@ -58,7 +58,7 @@ const HERO_FEATURES = [
 
 const HOW_IT_WORKS = [
   { step: '1', title: 'Create your free account', text: 'Sign up in under a minute — or explore first as a guest.' },
-  { step: '2', title: 'Log your ISA contributions', text: 'Pick from 444 UK providers and record contributions as you make them.' },
+  { step: '2', title: 'Log your ISA contributions', text: 'Pick from 440+ UK providers and record contributions as you make them.' },
   { step: '3', title: 'Stay inside your allowance', text: 'Watch your remaining allowance update live and get reminded before deadlines.' },
 ];
 
@@ -85,12 +85,33 @@ export default function LoginScreen() {
   const { width: winWidth } = useWindowDimensions();
   const isWide = isWeb && winWidth >= 900;
   const scrollRef = useRef<ScrollView>(null);
+  const formRef = useRef<any>(null);
   const formY = useRef(0);
 
-  const scrollToForm = (mode: 'login' | 'signup') => {
-    setIsLogin(mode === 'login');
+  // Switch login/signup mode and clear any error from the previous mode
+  const selectMode = (login: boolean) => {
+    setIsLogin(login);
     setFormError(null);
-    scrollRef.current?.scrollTo({ y: Math.max(0, formY.current - 24), animated: true });
+    setLoginError(false);
+  };
+
+  const scrollToForm = (mode: 'login' | 'signup') => {
+    selectMode(mode === 'login');
+    // Measure at click time: the cached onLayout y goes stale on web because
+    // onLayout (ResizeObserver-driven) re-fires only when the form's own box
+    // resizes, not when content above it reflows on a window resize.
+    const scrollNode: any = scrollRef.current;
+    const scrollEl = scrollNode?.getScrollableNode?.();
+    const formNode: any = formRef.current;
+    if (isWeb && formNode?.getBoundingClientRect && scrollEl?.getBoundingClientRect) {
+      const y =
+        scrollEl.scrollTop +
+        formNode.getBoundingClientRect().top -
+        scrollEl.getBoundingClientRect().top;
+      scrollNode.scrollTo({ y: Math.max(0, y - 24), animated: true });
+    } else {
+      scrollNode?.scrollTo({ y: Math.max(0, formY.current - 24), animated: true });
+    }
   };
 
   const startAsGuest = async () => {
@@ -315,7 +336,7 @@ export default function LoginScreen() {
                     <Ionicons name="arrow-forward" size={20} color={Colors.deepNavy} />
                   </LinearGradient>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={startAsGuest} style={styles.webSecondaryCta} activeOpacity={0.7}>
+                <TouchableOpacity onPress={startAsGuest} style={styles.webSecondaryCta} activeOpacity={0.7} disabled={isLoading}>
                   <Ionicons name="eye-outline" size={18} color={Colors.white} />
                   <Text style={styles.webSecondaryCtaText}>Try the demo</Text>
                 </TouchableOpacity>
@@ -327,7 +348,7 @@ export default function LoginScreen() {
                 </View>
                 <View style={styles.webTrustItem}>
                   <Ionicons name="business" size={14} color={Colors.lightGray} />
-                  <Text style={styles.webTrustText}>444 UK providers</Text>
+                  <Text style={styles.webTrustText}>440+ UK providers</Text>
                 </View>
                 <View style={styles.webTrustItem}>
                   <Ionicons name="heart" size={14} color={Colors.lightGray} />
@@ -386,7 +407,7 @@ export default function LoginScreen() {
           <View style={[styles.webStats, isWide && styles.webStatsWide]}>
             {[
               { value: '£20,000', label: 'allowance tracked' },
-              { value: '444', label: 'UK ISA providers' },
+              { value: '440+', label: 'UK ISA providers' },
               { value: '4', label: 'ISA types supported' },
               { value: '25%', label: 'LISA bonus monitored' },
             ].map((stat) => (
@@ -464,6 +485,7 @@ export default function LoginScreen() {
 
         {/* Form Section */}
         <Animated.View
+          ref={formRef}
           onLayout={(e) => {
             formY.current = e.nativeEvent.layout.y;
           }}
@@ -478,7 +500,7 @@ export default function LoginScreen() {
           <View style={styles.toggleContainer}>
             <TouchableOpacity
               style={[styles.toggleButton, isLogin && styles.toggleButtonActive]}
-              onPress={() => setIsLogin(true)}
+              onPress={() => selectMode(true)}
               activeOpacity={0.7}
             >
               <Text style={[styles.toggleText, isLogin && styles.toggleTextActive]}>
@@ -487,7 +509,7 @@ export default function LoginScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.toggleButton, !isLogin && styles.toggleButtonActive]}
-              onPress={() => setIsLogin(false)}
+              onPress={() => selectMode(false)}
               activeOpacity={0.7}
             >
               <Text style={[styles.toggleText, !isLogin && styles.toggleTextActive]}>
