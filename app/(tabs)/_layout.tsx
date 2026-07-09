@@ -5,8 +5,20 @@ import { StyleSheet, Platform, Pressable, Animated } from 'react-native';
 import { Colors, Typography } from '@/constants/theme';
 import { useRef } from 'react';
 
-function TabBarButton(props: any) {
+// NOTE: `href` must NOT be spread onto the Pressable. On web, React Navigation
+// passes href so tabs are links, and react-native-web renders any element with
+// an href as a real <a> anchor. The default tab button calls preventDefault()
+// to stop the browser's own link navigation; a raw Pressable doesn't — so every
+// tab press triggered a full document load, rebooting the whole app (splash
+// screen, lost state). Stripping href keeps navigation client-side only.
+function TabBarButton({ href, onPress, ...props }: any) {
   const scaleValue = useRef(new Animated.Value(1)).current;
+
+  const handlePress = (e: any) => {
+    // Belt-and-braces: block any default browser behavior before navigating
+    e?.preventDefault?.();
+    onPress?.(e);
+  };
 
   const handlePressIn = () => {
     Animated.spring(scaleValue, {
@@ -29,6 +41,7 @@ function TabBarButton(props: any) {
   return (
     <Pressable
       {...props}
+      onPress={handlePress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
     >
