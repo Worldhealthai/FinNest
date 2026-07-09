@@ -8,6 +8,7 @@ import { useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import GlassCard from '@/components/GlassCard';
+import { withErrorBoundary } from '@/components/ErrorBoundary';
 import { Colors, Spacing, Typography } from '@/constants/theme';
 import { formatCurrency, ISA_INFO, ISA_ANNUAL_ALLOWANCE } from '@/constants/isaData';
 import { Dimensions } from 'react-native';
@@ -157,7 +158,7 @@ const calculateContributionTrend = (contributions: ISAContribution[]) => {
   return { labels, data: dataPoints };
 };
 
-export default function AnalyticsScreen() {
+function AnalyticsScreen() {
   const { isGuest } = useOnboarding();
   const [contributions, setContributions] = useState<ISAContribution[]>([]);
   const [showInfoModal, setShowInfoModal] = useState(false);
@@ -333,7 +334,10 @@ export default function AnalyticsScreen() {
   const chartData = {
     labels: contributionTrend.labels.length > 0 ? contributionTrend.labels : ['21/22', '22/23', '23/24', '24/25'],
     datasets: [{
-      data: contributionTrend.data.length > 0 ? contributionTrend.data : [0, 0, 0, 0],
+      // react-native-chart-kit crashes natively on NaN/Infinity/undefined, so
+      // coerce every point to a finite number (bad amounts can slip into data).
+      data: (contributionTrend.data.length > 0 ? contributionTrend.data : [0, 0, 0, 0])
+        .map(value => (Number.isFinite(value) ? value : 0)),
       color: () => Colors.gold
     }],
   };
@@ -599,6 +603,8 @@ export default function AnalyticsScreen() {
     </View>
   );
 }
+
+export default withErrorBoundary(AnalyticsScreen);
 
 const styles = StyleSheet.create({
   container: { flex: 1 },

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Image, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Image, Modal, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,6 +9,7 @@ import * as Haptics from 'expo-haptics';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import ConfettiCelebration from '@/components/ConfettiCelebration';
 import GlassCard from '@/components/GlassCard';
+import { withErrorBoundary } from '@/components/ErrorBoundary';
 import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
 import { ISA_INFO, ISA_ANNUAL_ALLOWANCE, LIFETIME_ISA_MAX, EDUCATIONAL_CONTENT, formatCurrency } from '@/constants/isaData';
 import { getCurrentTaxYear, isDateInTaxYear, parseDateKey } from '@/utils/taxYear';
@@ -17,6 +18,15 @@ import { loadContributions as loadContributionsDB } from '@/lib/contributions';
 
 const CONTRIBUTIONS_STORAGE_KEY = '@finnest_contributions';
 const LEVEL_STORAGE_KEY = '@finnest_user_level';
+const READ_ARTICLES_KEY = '@finnest_read_articles';
+
+// All learning content, grouped for display
+const LEARNING_SECTIONS = [
+  { key: 'essentials', title: 'ISA Essentials', items: [...EDUCATIONAL_CONTENT.BEGINNER, ...EDUCATIONAL_CONTENT.INTERMEDIATE] },
+  { key: 'advanced', title: 'Advanced Strategies', items: EDUCATIONAL_CONTENT.ADVANCED },
+];
+
+const TOTAL_ARTICLES = LEARNING_SECTIONS.reduce((sum, s) => sum + s.items.length, 0);
 
 interface ISAContribution {
   id: string;
@@ -160,9 +170,11 @@ const getNextLevel = (currentLevelNumber: number) => {
   return LEVELS.find(level => level.number === currentLevelNumber + 1) || null;
 };
 
-export default function HubScreen() {
+function HubScreen() {
   const { isGuest } = useOnboarding();
   const [expandedISA, setExpandedISA] = useState<string | null>(null);
+  const [expandedArticle, setExpandedArticle] = useState<string | null>(null);
+  const [readArticles, setReadArticles] = useState<string[]>([]);
   const [contributions, setContributions] = useState<ISAContribution[]>([]);
   const [previousLevel, setPreviousLevel] = useState<number | null>(null);
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
@@ -187,8 +199,33 @@ export default function HubScreen() {
       if (savedLevel) {
         setPreviousLevel(parseInt(savedLevel, 10));
       }
+
+      const savedRead = await AsyncStorage.getItem(READ_ARTICLES_KEY);
+      if (savedRead) {
+        const parsed = JSON.parse(savedRead);
+        if (Array.isArray(parsed)) {
+          setReadArticles(parsed);
+        }
+      }
     } catch (error) {
       console.error('Error loading contributions:', error);
+    }
+  };
+
+  // Toggle a learning card open/closed; first open marks it as read
+  const toggleArticle = (title: string) => {
+    if (Platform.OS !== 'web') {
+      Haptics.selectionAsync().catch(() => {});
+    }
+    const opening = expandedArticle !== title;
+    setExpandedArticle(opening ? title : null);
+
+    if (opening && !readArticles.includes(title)) {
+      const updated = [...readArticles, title];
+      setReadArticles(updated);
+      AsyncStorage.setItem(READ_ARTICLES_KEY, JSON.stringify(updated)).catch((error) =>
+        console.error('Error saving read articles:', error)
+      );
     }
   };
 
@@ -267,26 +304,71 @@ export default function HubScreen() {
             <Image source={require('@/assets/logo.png')} style={styles.logo} resizeMode="contain" />
           </View>
 
-          {/* ISA Essentials - Educational Content */}
-          <Text style={styles.section}>ISA Essentials</Text>
-
-          {EDUCATIONAL_CONTENT.BEGINNER.map((item, i) => (
-            <View key={i} style={styles.card}>
-              <Text style={styles.eduTitle}>{item.title}</Text>
-              <Text style={[styles.sub, { marginTop: 8, lineHeight: 20 }]}>{item.content}</Text>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{item.category}</Text>
-              </View>
+          {/* Learning progress */}
+          <View style={styles.learnProgressCard}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.learnProgressTitle}>Your Learning Journey</Text>
+              <Text style={styles.sub}>
+                {readArticles.length === TOTAL_ARTICLES
+                  ? '🎓 All lessons complete — ISA expert!'
+                  : `${readArticles.length} of ${TOTAL_ARTICLES} lessons read — tap a card to learn`}
+              </Text>
             </View>
-          ))}
+            <View style={styles.learnProgressRing}>
+              <Text style={styles.learnProgressCount}>
+                {readArticles.length}/{TOTAL_ARTICLES}
+              </Text>
+            </View>
+          </View>
 
-          {EDUCATIONAL_CONTENT.INTERMEDIATE.slice(0, 2).map((item, i) => (
-            <View key={i} style={styles.card}>
-              <Text style={styles.eduTitle}>{item.title}</Text>
-              <Text style={[styles.sub, { marginTop: 8, lineHeight: 20 }]}>{item.content}</Text>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{item.category}</Text>
-              </View>
+          {/* Learning content — tappable, expandable cards */}
+          {LEARNING_SECTIONS.map((section) => (
+            <View key={section.key}>
+              <Text style={styles.section}>{section.title}</Text>
+              {section.items.map((item) => {
+                const isOpen = expandedArticle === item.title;
+                const isRead = readArticles.includes(item.title);
+                return (
+                  <Pressable
+                    key={item.title}
+                    onPress={() => toggleArticle(item.title)}
+                    style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
+                  >
+                    <View style={[styles.card, isOpen && styles.cardActive]}>
+                      <View style={styles.row}>
+                        <View style={[styles.readDot, isRead && styles.readDotDone]}>
+                          <Ionicons
+                            name={isRead ? 'checkmark' : 'book-outline'}
+                            size={14}
+                            color={isRead ? Colors.deepNavy : Colors.gold}
+                          />
+                        </View>
+                        <View style={{ flex: 1, marginLeft: 12 }}>
+                          <Text style={styles.eduTitle}>{item.title}</Text>
+                          {!isOpen && (
+                            <Text style={[styles.sub, { marginTop: 4 }]} numberOfLines={2}>
+                              {item.content}
+                            </Text>
+                          )}
+                        </View>
+                        <Ionicons
+                          name={isOpen ? 'chevron-up' : 'chevron-down'}
+                          size={20}
+                          color={Colors.lightGray}
+                        />
+                      </View>
+                      {isOpen && (
+                        <View style={{ marginTop: 12 }}>
+                          <Text style={[styles.sub, { lineHeight: 22 }]}>{item.content}</Text>
+                          <View style={styles.badge}>
+                            <Text style={styles.badgeText}>{item.category}</Text>
+                          </View>
+                        </View>
+                      )}
+                    </View>
+                  </Pressable>
+                );
+              })}
             </View>
           ))}
 
@@ -592,6 +674,8 @@ export default function HubScreen() {
   );
 }
 
+export default withErrorBoundary(HubScreen);
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
   safe: { flex: 1 },
@@ -622,6 +706,55 @@ const styles = StyleSheet.create({
   eduTitle: { fontSize: Typography.sizes.md, color: Colors.gold, fontWeight: Typography.weights.bold },
   badge: { alignSelf: 'flex-start', backgroundColor: Colors.gold + '30', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, marginTop: 8 },
   badgeText: { fontSize: Typography.sizes.xs, color: Colors.gold, fontWeight: Typography.weights.bold },
+  cardActive: {
+    borderColor: 'rgba(255, 215, 0, 0.4)',
+    backgroundColor: 'rgba(255, 215, 0, 0.06)',
+  },
+  readDot: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: Colors.gold + '60',
+    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  readDotDone: {
+    backgroundColor: Colors.gold,
+    borderColor: Colors.gold,
+  },
+  learnProgressCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+    backgroundColor: 'rgba(255, 215, 0, 0.08)',
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 215, 0, 0.3)',
+    marginBottom: Spacing.sm,
+  },
+  learnProgressTitle: {
+    fontSize: Typography.sizes.md,
+    color: Colors.white,
+    fontWeight: Typography.weights.bold,
+    marginBottom: 2,
+  },
+  learnProgressRing: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 2,
+    borderColor: Colors.gold,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: Spacing.md,
+  },
+  learnProgressCount: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.gold,
+    fontWeight: Typography.weights.extrabold,
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.85)',

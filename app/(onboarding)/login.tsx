@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
   Image,
+  useWindowDimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,6 +30,37 @@ import TermsModal from '@/components/TermsModal';
 import PrivacyPolicyModal from '@/components/PrivacyPolicyModal';
 
 const { width, height } = Dimensions.get('window');
+const isWeb = Platform.OS === 'web';
+
+// Marketing copy for the web landing page
+const HERO_FEATURES = [
+  {
+    icon: 'pie-chart' as const,
+    title: 'Allowance Tracking',
+    text: 'See exactly how much of your £20,000 annual allowance you\'ve used — across every ISA you hold.',
+  },
+  {
+    icon: 'layers' as const,
+    title: 'All 4 ISA Types',
+    text: 'Cash, Stocks & Shares, Lifetime and Innovative Finance ISAs — tracked together in one place.',
+  },
+  {
+    icon: 'notifications' as const,
+    title: 'Tax Year Reminders',
+    text: 'Never lose unused allowance again. Smart reminders before the 5 April deadline.',
+  },
+  {
+    icon: 'school' as const,
+    title: 'Learn & Level Up',
+    text: 'Bite-size ISA guides plus a savings streak system that rewards consistent contributions.',
+  },
+];
+
+const HOW_IT_WORKS = [
+  { step: '1', title: 'Create your free account', text: 'Sign up in under a minute — or explore first as a guest.' },
+  { step: '2', title: 'Log your ISA contributions', text: 'Pick from 440+ UK providers and record contributions as you make them.' },
+  { step: '3', title: 'Stay inside your allowance', text: 'Watch your remaining allowance update live and get reminded before deadlines.' },
+];
 
 export default function LoginScreen() {
   const [isLogin, setIsLogin] = useState(true);
@@ -45,8 +76,54 @@ export default function LoginScreen() {
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [termsError, setTermsError] = useState(false);
   const [loginError, setLoginError] = useState(false);
+  // Inline form error — Alert.alert is a silent no-op on web, so validation
+  // messages must render in the page to be seen at all.
+  const [formError, setFormError] = useState<string | null>(null);
 
   const { login, signup, continueAsGuest } = useOnboarding();
+
+  const { width: winWidth } = useWindowDimensions();
+  const isWide = isWeb && winWidth >= 900;
+  const scrollRef = useRef<ScrollView>(null);
+  const formRef = useRef<any>(null);
+  const formY = useRef(0);
+
+  // Switch login/signup mode and clear any error from the previous mode
+  const selectMode = (login: boolean) => {
+    setIsLogin(login);
+    setFormError(null);
+    setLoginError(false);
+  };
+
+  const scrollToForm = (mode: 'login' | 'signup') => {
+    selectMode(mode === 'login');
+    // Measure at click time: the cached onLayout y goes stale on web because
+    // onLayout (ResizeObserver-driven) re-fires only when the form's own box
+    // resizes, not when content above it reflows on a window resize.
+    const scrollNode: any = scrollRef.current;
+    const scrollEl = scrollNode?.getScrollableNode?.();
+    const formNode: any = formRef.current;
+    if (isWeb && formNode?.getBoundingClientRect && scrollEl?.getBoundingClientRect) {
+      const y =
+        scrollEl.scrollTop +
+        formNode.getBoundingClientRect().top -
+        scrollEl.getBoundingClientRect().top;
+      scrollNode.scrollTo({ y: Math.max(0, y - 24), animated: true });
+    } else {
+      scrollNode?.scrollTo({ y: Math.max(0, formY.current - 24), animated: true });
+    }
+  };
+
+  const startAsGuest = async () => {
+    try {
+      await continueAsGuest();
+      setTimeout(() => {
+        router.replace('/(tabs)');
+      }, 150);
+    } catch (error) {
+      console.error('Guest mode error:', error);
+    }
+  };
 
   // Animations
   const logoScale = useSharedValue(0);
@@ -101,15 +178,17 @@ export default function LoginScreen() {
   }));
 
   const handleSubmit = async () => {
+    setFormError(null);
+
     if (!email || !password) {
-      Alert.alert('Required Fields', 'Please enter your email and password.');
+      setFormError('Please enter your email and password.');
       return;
     }
 
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      setFormError('Please enter a valid email address.');
       return;
     }
 
@@ -126,7 +205,7 @@ export default function LoginScreen() {
     } else {
       // Signup
       if (!fullName) {
-        Alert.alert('Required Fields', 'Please enter your full name.');
+        setFormError('Please enter your full name.');
         return;
       }
 
@@ -136,12 +215,12 @@ export default function LoginScreen() {
       }
 
       if (password.length < 6) {
-        Alert.alert('Weak Password', 'Password must be at least 6 characters long.');
+        setFormError('Password must be at least 6 characters long.');
         return;
       }
 
       if (password !== confirmPassword) {
-        Alert.alert('Password Mismatch', 'Passwords do not match.');
+        setFormError('Passwords do not match.');
         return;
       }
 
@@ -154,7 +233,7 @@ export default function LoginScreen() {
         // Navigate directly to personal information screen
         router.replace('/(onboarding)/personal');
       } else {
-        Alert.alert('Signup Failed', 'An account with this email already exists.');
+        setFormError('We couldn\'t create your account. An account with this email may already exist.');
       }
     }
   };
@@ -168,6 +247,8 @@ export default function LoginScreen() {
     setShowPassword(false);
     setShowConfirmPassword(false);
     setAgreedToTerms(false);
+    setFormError(null);
+    setLoginError(false);
   };
 
   return (
@@ -183,14 +264,17 @@ export default function LoginScreen() {
         end={{ x: 1, y: 1 }}
       />
 
-      {/* Animated rings */}
-      <Animated.View style={[styles.ring, styles.ring1, ringAnimatedStyle]} />
-      <Animated.View style={[styles.ring, styles.ring2, ringAnimatedStyle]} />
-
-      {/* Glow effect */}
-      <Animated.View style={[styles.glow, glowAnimatedStyle]} />
+      {/* Animated rings (native only — web uses the hero layout) */}
+      {!isWeb && (
+        <>
+          <Animated.View style={[styles.ring, styles.ring1, ringAnimatedStyle]} />
+          <Animated.View style={[styles.ring, styles.ring2, ringAnimatedStyle]} />
+          <Animated.View style={[styles.glow, glowAnimatedStyle]} />
+        </>
+      )}
 
       <ScrollView
+        ref={scrollRef}
         style={styles.scrollView}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -199,36 +283,224 @@ export default function LoginScreen() {
         overScrollMode="never"
         alwaysBounceVertical={false}
       >
-        {/* Logo Section */}
-        <Animated.View style={[styles.logoSection, logoAnimatedStyle]}>
-          <View style={styles.logoContainer}>
-            <View style={styles.hexagon1} />
-            <View style={styles.hexagon2} />
-            <Image
-              source={require('@/assets/logo.png')}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
+        {/* ─── Web landing: nav bar ─── */}
+        {isWeb && (
+          <View style={styles.webNav}>
+            <View style={styles.webNavBrand}>
+              <Image source={require('@/assets/logo.png')} style={styles.webNavLogo} resizeMode="contain" />
+              <Text style={styles.webNavTitle}>FinNest</Text>
+            </View>
+            <View style={styles.webNavActions}>
+              <TouchableOpacity onPress={() => scrollToForm('login')} style={styles.webNavLink}>
+                <Text style={styles.webNavLinkText}>Log In</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => scrollToForm('signup')} activeOpacity={0.85}>
+                <LinearGradient
+                  colors={Colors.goldGradient}
+                  style={styles.webNavCta}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                >
+                  <Text style={styles.webNavCtaText}>Get Started</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
           </View>
-          <Text style={styles.title}>FinNest</Text>
-          <LinearGradient
-            colors={Colors.goldGradient}
-            style={styles.underline}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-          />
-          <Text style={styles.subtitle}>
-            {isLogin ? 'Welcome Back' : 'Create Your Account'}
-          </Text>
-        </Animated.View>
+        )}
+
+        {/* ─── Web landing: hero ─── */}
+        {isWeb && (
+          <View style={[styles.webHero, isWide && styles.webHeroWide]}>
+            <View style={[styles.webHeroCopy, isWide && styles.webHeroCopyWide]}>
+              <View style={styles.webEyebrow}>
+                <Ionicons name="shield-checkmark" size={14} color={Colors.gold} />
+                <Text style={styles.webEyebrowText}>THE UK ISA TRACKER</Text>
+              </View>
+              <Text style={[styles.webHeadline, isWide && styles.webHeadlineWide]}>
+                Every ISA.{'\n'}
+                <Text style={styles.webHeadlineAccent}>One nest.</Text>
+              </Text>
+              <Text style={styles.webSubhead}>
+                Track your £20,000 allowance across Cash, Stocks & Shares, Lifetime and
+                Innovative Finance ISAs — with smart reminders before the tax year ends.
+              </Text>
+              <View style={styles.webHeroCtas}>
+                <TouchableOpacity onPress={() => scrollToForm('signup')} activeOpacity={0.85}>
+                  <LinearGradient
+                    colors={Colors.goldGradient}
+                    style={styles.webPrimaryCta}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                  >
+                    <Text style={styles.webPrimaryCtaText}>Start Free</Text>
+                    <Ionicons name="arrow-forward" size={20} color={Colors.deepNavy} />
+                  </LinearGradient>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={startAsGuest} style={styles.webSecondaryCta} activeOpacity={0.7} disabled={isLoading}>
+                  <Ionicons name="eye-outline" size={18} color={Colors.white} />
+                  <Text style={styles.webSecondaryCtaText}>Try the demo</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.webTrustRow}>
+                <View style={styles.webTrustItem}>
+                  <Ionicons name="lock-closed" size={14} color={Colors.lightGray} />
+                  <Text style={styles.webTrustText}>Secure by design</Text>
+                </View>
+                <View style={styles.webTrustItem}>
+                  <Ionicons name="business" size={14} color={Colors.lightGray} />
+                  <Text style={styles.webTrustText}>440+ UK providers</Text>
+                </View>
+                <View style={styles.webTrustItem}>
+                  <Ionicons name="heart" size={14} color={Colors.lightGray} />
+                  <Text style={styles.webTrustText}>Free forever</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Product mock-up card */}
+            <View style={[styles.webMockWrap, isWide && styles.webMockWrapWide]}>
+              <View style={styles.webMockCard}>
+                <View style={styles.webMockHeader}>
+                  <Text style={styles.webMockTitle}>2025/26 Tax Year</Text>
+                  <View style={styles.webMockBadge}>
+                    <Text style={styles.webMockBadgeText}>ON TRACK</Text>
+                  </View>
+                </View>
+                <Text style={styles.webMockAmount}>£13,450</Text>
+                <Text style={styles.webMockAmountSub}>of £20,000 allowance used</Text>
+                <View style={styles.webMockBarTrack}>
+                  <LinearGradient
+                    colors={Colors.goldGradient}
+                    style={[styles.webMockBarFill, { width: '67%' }]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                  />
+                </View>
+                <View style={styles.webMockRows}>
+                  <View style={styles.webMockRow}>
+                    <View style={[styles.webMockDot, { backgroundColor: '#4A90E2' }]} />
+                    <Text style={styles.webMockRowLabel}>Cash ISA</Text>
+                    <Text style={styles.webMockRowValue}>£6,200</Text>
+                  </View>
+                  <View style={styles.webMockRow}>
+                    <View style={[styles.webMockDot, { backgroundColor: '#5B9BD5' }]} />
+                    <Text style={styles.webMockRowLabel}>Stocks & Shares</Text>
+                    <Text style={styles.webMockRowValue}>£4,250</Text>
+                  </View>
+                  <View style={styles.webMockRow}>
+                    <View style={[styles.webMockDot, { backgroundColor: Colors.gold }]} />
+                    <Text style={styles.webMockRowLabel}>Lifetime ISA</Text>
+                    <Text style={styles.webMockRowValue}>£3,000</Text>
+                  </View>
+                </View>
+                <View style={styles.webMockBonus}>
+                  <Ionicons name="gift" size={16} color={Colors.gold} />
+                  <Text style={styles.webMockBonusText}>+£750 government LISA bonus earned</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* ─── Web landing: stats strip ─── */}
+        {isWeb && (
+          <View style={[styles.webStats, isWide && styles.webStatsWide]}>
+            {[
+              { value: '£20,000', label: 'allowance tracked' },
+              { value: '440+', label: 'UK ISA providers' },
+              { value: '4', label: 'ISA types supported' },
+              { value: '25%', label: 'LISA bonus monitored' },
+            ].map((stat) => (
+              <View key={stat.label} style={styles.webStatItem}>
+                <Text style={styles.webStatValue}>{stat.value}</Text>
+                <Text style={styles.webStatLabel}>{stat.label}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* ─── Web landing: features ─── */}
+        {isWeb && (
+          <View style={styles.webSection}>
+            <Text style={styles.webSectionTitle}>Built for UK savers</Text>
+            <Text style={styles.webSectionSub}>
+              Everything you need to make the most of your tax-free allowance.
+            </Text>
+            <View style={[styles.webFeatureGrid, isWide && styles.webFeatureGridWide]}>
+              {HERO_FEATURES.map((feature) => (
+                <View key={feature.title} style={[styles.webFeatureCard, isWide && styles.webFeatureCardWide]}>
+                  <View style={styles.webFeatureIcon}>
+                    <Ionicons name={feature.icon} size={24} color={Colors.gold} />
+                  </View>
+                  <Text style={styles.webFeatureTitle}>{feature.title}</Text>
+                  <Text style={styles.webFeatureText}>{feature.text}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* ─── Web landing: how it works ─── */}
+        {isWeb && (
+          <View style={styles.webSection}>
+            <Text style={styles.webSectionTitle}>Up and running in minutes</Text>
+            <View style={[styles.webStepsRow, isWide && styles.webStepsRowWide]}>
+              {HOW_IT_WORKS.map((item) => (
+                <View key={item.step} style={[styles.webStepCard, isWide && styles.webStepCardWide]}>
+                  <View style={styles.webStepNumber}>
+                    <Text style={styles.webStepNumberText}>{item.step}</Text>
+                  </View>
+                  <Text style={styles.webStepTitle}>{item.title}</Text>
+                  <Text style={styles.webStepText}>{item.text}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Logo Section (native only — web has the hero above) */}
+        {!isWeb && (
+          <Animated.View style={[styles.logoSection, logoAnimatedStyle]}>
+            <View style={styles.logoContainer}>
+              <View style={styles.hexagon1} />
+              <View style={styles.hexagon2} />
+              <Image
+                source={require('@/assets/logo.png')}
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
+            </View>
+            <Text style={styles.title}>FinNest</Text>
+            <LinearGradient
+              colors={Colors.goldGradient}
+              style={styles.underline}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            />
+            <Text style={styles.subtitle}>
+              {isLogin ? 'Welcome Back' : 'Create Your Account'}
+            </Text>
+          </Animated.View>
+        )}
 
         {/* Form Section */}
-        <Animated.View style={[styles.formSection, formAnimatedStyle]}>
+        <Animated.View
+          ref={formRef}
+          onLayout={(e) => {
+            formY.current = e.nativeEvent.layout.y;
+          }}
+          style={[styles.formSection, formAnimatedStyle, isWeb && styles.formSectionWeb]}
+        >
+          {isWeb && (
+            <Text style={styles.webFormTitle}>
+              {isLogin ? 'Welcome back' : 'Create your free account'}
+            </Text>
+          )}
           {/* Toggle Login/Signup */}
           <View style={styles.toggleContainer}>
             <TouchableOpacity
               style={[styles.toggleButton, isLogin && styles.toggleButtonActive]}
-              onPress={() => setIsLogin(true)}
+              onPress={() => selectMode(true)}
               activeOpacity={0.7}
             >
               <Text style={[styles.toggleText, isLogin && styles.toggleTextActive]}>
@@ -237,7 +509,7 @@ export default function LoginScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.toggleButton, !isLogin && styles.toggleButtonActive]}
-              onPress={() => setIsLogin(false)}
+              onPress={() => selectMode(false)}
               activeOpacity={0.7}
             >
               <Text style={[styles.toggleText, !isLogin && styles.toggleTextActive]}>
@@ -412,6 +684,14 @@ export default function LoginScreen() {
             </View>
           )}
 
+          {/* Inline form error (Alert.alert doesn't render on web) */}
+          {formError && (
+            <View style={styles.errorContainer}>
+              <Ionicons name="alert-circle" size={16} color={Colors.error} />
+              <Text style={styles.errorText}>{formError}</Text>
+            </View>
+          )}
+
           {/* Submit Button */}
           <TouchableOpacity
             style={[styles.button, isLoading && styles.buttonDisabled]}
@@ -462,16 +742,7 @@ export default function LoginScreen() {
           {/* Guest Mode Button */}
           <TouchableOpacity
             style={styles.guestButton}
-            onPress={async () => {
-              try {
-                await continueAsGuest();
-                setTimeout(() => {
-                  router.replace('/(tabs)');
-                }, 150);
-              } catch (error) {
-                console.error('Guest mode error:', error);
-              }
-            }}
+            onPress={startAsGuest}
             activeOpacity={0.7}
             disabled={isLoading}
           >
@@ -482,6 +753,30 @@ export default function LoginScreen() {
             <Text style={styles.guestButtonSubtext}>Try the app without signing up</Text>
           </TouchableOpacity>
         </Animated.View>
+
+        {/* ─── Web landing: footer ─── */}
+        {isWeb && (
+          <View style={styles.webFooter}>
+            <View style={styles.webFooterBrand}>
+              <Image source={require('@/assets/logo.png')} style={styles.webFooterLogo} resizeMode="contain" />
+              <Text style={styles.webFooterName}>FinNest</Text>
+            </View>
+            <Text style={styles.webFooterTagline}>Track every ISA. Keep every pound tax-free.</Text>
+            <View style={styles.webFooterLinks}>
+              <TouchableOpacity onPress={() => setShowTermsModal(true)}>
+                <Text style={styles.webFooterLink}>Terms & Conditions</Text>
+              </TouchableOpacity>
+              <Text style={styles.webFooterDivider}>•</Text>
+              <TouchableOpacity onPress={() => setShowPrivacyModal(true)}>
+                <Text style={styles.webFooterLink}>Privacy Policy</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.webFooterNote}>
+              FinNest is a tracking tool, not a financial adviser. Capital at risk with investment ISAs.
+            </Text>
+            <Text style={styles.webFooterCopyright}>© {new Date().getFullYear()} FinNest. All rights reserved.</Text>
+          </View>
+        )}
       </ScrollView>
 
       {/* Terms & Conditions Modal */}
@@ -790,5 +1085,489 @@ const styles = StyleSheet.create({
     fontSize: Typography.sizes.xs,
     color: Colors.error,
     lineHeight: 16,
+  },
+
+  // ─── Web landing styles ───
+  webNav: {
+    width: '100%',
+    maxWidth: 1200,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  webNavBrand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  webNavLogo: {
+    width: 36,
+    height: 36,
+    tintColor: Colors.gold,
+  },
+  webNavTitle: {
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.extrabold,
+    color: Colors.white,
+    letterSpacing: 0.5,
+  },
+  webNavActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  webNavLink: {
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+  },
+  webNavLinkText: {
+    fontSize: Typography.sizes.md,
+    fontWeight: Typography.weights.semibold,
+    color: Colors.white,
+  },
+  webNavCta: {
+    paddingVertical: Spacing.sm + 2,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.full,
+  },
+  webNavCtaText: {
+    fontSize: Typography.sizes.md,
+    fontWeight: Typography.weights.bold,
+    color: Colors.deepNavy,
+  },
+  webHero: {
+    width: '100%',
+    maxWidth: 1200,
+    alignSelf: 'center',
+    marginBottom: Spacing.xxl,
+    gap: Spacing.xl,
+  },
+  webHeroWide: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: 480,
+  },
+  webHeroCopy: {
+    alignItems: 'flex-start',
+  },
+  webHeroCopyWide: {
+    flex: 1.1,
+    paddingRight: Spacing.xl,
+  },
+  webEyebrow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255, 215, 0, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 215, 0, 0.35)',
+    paddingVertical: 6,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.full,
+    marginBottom: Spacing.lg,
+  },
+  webEyebrowText: {
+    fontSize: Typography.sizes.xs,
+    fontWeight: Typography.weights.bold,
+    color: Colors.gold,
+    letterSpacing: 1.5,
+  },
+  webHeadline: {
+    fontSize: 44,
+    lineHeight: 52,
+    fontWeight: Typography.weights.extrabold,
+    color: Colors.white,
+    marginBottom: Spacing.lg,
+  },
+  webHeadlineWide: {
+    fontSize: 64,
+    lineHeight: 72,
+  },
+  webHeadlineAccent: {
+    color: Colors.gold,
+  },
+  webSubhead: {
+    fontSize: Typography.sizes.lg,
+    lineHeight: 30,
+    color: Colors.lightGray,
+    marginBottom: Spacing.xl,
+    maxWidth: 560,
+  },
+  webHeroCtas: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  webPrimaryCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md + 2,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: BorderRadius.full,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
+  },
+  webPrimaryCtaText: {
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.extrabold,
+    color: Colors.deepNavy,
+  },
+  webSecondaryCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md + 2,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  webSecondaryCtaText: {
+    fontSize: Typography.sizes.md,
+    fontWeight: Typography.weights.bold,
+    color: Colors.white,
+  },
+  webTrustRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.lg,
+  },
+  webTrustItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  webTrustText: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.lightGray,
+  },
+  webMockWrap: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  webMockWrapWide: {
+    flex: 0.9,
+  },
+  webMockCard: {
+    width: '100%',
+    maxWidth: 420,
+    backgroundColor: 'rgba(255, 255, 255, 0.07)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 215, 0, 0.3)',
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.xl,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 24 },
+    shadowOpacity: 0.45,
+    shadowRadius: 48,
+  },
+  webMockHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.lg,
+  },
+  webMockTitle: {
+    fontSize: Typography.sizes.sm,
+    fontWeight: Typography.weights.semibold,
+    color: Colors.lightGray,
+    letterSpacing: 0.5,
+  },
+  webMockBadge: {
+    backgroundColor: 'rgba(91, 155, 213, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(91, 155, 213, 0.5)',
+    paddingVertical: 4,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: BorderRadius.full,
+  },
+  webMockBadgeText: {
+    fontSize: 10,
+    fontWeight: Typography.weights.bold,
+    color: '#5B9BD5',
+    letterSpacing: 1,
+  },
+  webMockAmount: {
+    fontSize: 40,
+    fontWeight: Typography.weights.extrabold,
+    color: Colors.white,
+  },
+  webMockAmountSub: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.lightGray,
+    marginBottom: Spacing.md,
+  },
+  webMockBarTrack: {
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    overflow: 'hidden',
+    marginBottom: Spacing.lg,
+  },
+  webMockBarFill: {
+    height: '100%',
+    borderRadius: 5,
+  },
+  webMockRows: {
+    gap: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  webMockRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  webMockDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  webMockRowLabel: {
+    flex: 1,
+    fontSize: Typography.sizes.md,
+    color: Colors.lightGray,
+  },
+  webMockRowValue: {
+    fontSize: Typography.sizes.md,
+    fontWeight: Typography.weights.bold,
+    color: Colors.white,
+  },
+  webMockBonus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 215, 0, 0.3)',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+  },
+  webMockBonusText: {
+    fontSize: Typography.sizes.sm,
+    fontWeight: Typography.weights.semibold,
+    color: Colors.gold,
+  },
+  webStats: {
+    width: '100%',
+    maxWidth: 1200,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: Spacing.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.xl,
+    marginBottom: Spacing.xxl,
+  },
+  webStatsWide: {
+    paddingHorizontal: Spacing.xxl,
+  },
+  webStatItem: {
+    alignItems: 'center',
+    minWidth: 130,
+    flexGrow: 1,
+  },
+  webStatValue: {
+    fontSize: Typography.sizes.xxl,
+    fontWeight: Typography.weights.extrabold,
+    color: Colors.gold,
+  },
+  webStatLabel: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.lightGray,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  webSection: {
+    width: '100%',
+    maxWidth: 1200,
+    alignSelf: 'center',
+    marginBottom: Spacing.xxl,
+    alignItems: 'center',
+  },
+  webSectionTitle: {
+    fontSize: Typography.sizes.xxl,
+    fontWeight: Typography.weights.extrabold,
+    color: Colors.white,
+    textAlign: 'center',
+    marginBottom: Spacing.sm,
+  },
+  webSectionSub: {
+    fontSize: Typography.sizes.md,
+    color: Colors.lightGray,
+    textAlign: 'center',
+    marginBottom: Spacing.xl,
+  },
+  webFeatureGrid: {
+    width: '100%',
+    gap: Spacing.md,
+    marginTop: Spacing.lg,
+  },
+  webFeatureGridWide: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  webFeatureCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.xl,
+  },
+  webFeatureCardWide: {
+    flexBasis: '23%',
+    flexGrow: 1,
+    minWidth: 240,
+  },
+  webFeatureIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: BorderRadius.md,
+    backgroundColor: 'rgba(255, 215, 0, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.md,
+  },
+  webFeatureTitle: {
+    fontSize: Typography.sizes.lg,
+    fontWeight: Typography.weights.bold,
+    color: Colors.white,
+    marginBottom: Spacing.sm,
+  },
+  webFeatureText: {
+    fontSize: Typography.sizes.sm,
+    lineHeight: 22,
+    color: Colors.lightGray,
+  },
+  webStepsRow: {
+    width: '100%',
+    gap: Spacing.md,
+    marginTop: Spacing.lg,
+  },
+  webStepsRowWide: {
+    flexDirection: 'row',
+  },
+  webStepCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.xl,
+    alignItems: 'flex-start',
+  },
+  webStepCardWide: {
+    flex: 1,
+  },
+  webStepNumber: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 215, 0, 0.15)',
+    borderWidth: 1,
+    borderColor: Colors.gold,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.md,
+  },
+  webStepNumberText: {
+    fontSize: Typography.sizes.md,
+    fontWeight: Typography.weights.extrabold,
+    color: Colors.gold,
+  },
+  webStepTitle: {
+    fontSize: Typography.sizes.md,
+    fontWeight: Typography.weights.bold,
+    color: Colors.white,
+    marginBottom: Spacing.xs,
+  },
+  webStepText: {
+    fontSize: Typography.sizes.sm,
+    lineHeight: 22,
+    color: Colors.lightGray,
+  },
+  formSectionWeb: {
+    width: '100%',
+    maxWidth: 520,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.xl,
+    marginBottom: Spacing.xxl,
+  },
+  webFormTitle: {
+    fontSize: Typography.sizes.xl,
+    fontWeight: Typography.weights.extrabold,
+    color: Colors.white,
+    textAlign: 'center',
+    marginBottom: Spacing.sm,
+  },
+  webFooter: {
+    width: '100%',
+    maxWidth: 1200,
+    alignSelf: 'center',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    paddingTop: Spacing.xl,
+    paddingBottom: Spacing.lg,
+    gap: Spacing.sm,
+  },
+  webFooterBrand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  webFooterLogo: {
+    width: 28,
+    height: 28,
+    tintColor: Colors.gold,
+  },
+  webFooterName: {
+    fontSize: Typography.sizes.md,
+    fontWeight: Typography.weights.extrabold,
+    color: Colors.white,
+  },
+  webFooterTagline: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.lightGray,
+  },
+  webFooterLinks: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    marginTop: Spacing.sm,
+  },
+  webFooterLink: {
+    fontSize: Typography.sizes.sm,
+    color: Colors.gold,
+    fontWeight: Typography.weights.semibold,
+  },
+  webFooterDivider: {
+    color: Colors.mediumGray,
+  },
+  webFooterNote: {
+    fontSize: Typography.sizes.xs,
+    color: Colors.mediumGray,
+    textAlign: 'center',
+    marginTop: Spacing.sm,
+  },
+  webFooterCopyright: {
+    fontSize: Typography.sizes.xs,
+    color: Colors.mediumGray,
   },
 });

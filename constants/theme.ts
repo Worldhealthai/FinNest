@@ -31,10 +31,11 @@ export const Colors = {
   darkGray: '#48484A',
   black: '#000000',
 
-  // Gradients
-  goldGradient: ['#FFD700', '#FFA500'],
-  navyGradient: ['#0A2540', '#051729'],
-  glassGradient: ['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.05)'],
+  // Gradients — const tuples so they satisfy LinearGradient's readonly
+  // [ColorValue, ColorValue, ...] colors prop without a cast at every use
+  goldGradient: ['#FFD700', '#FFA500'] as const,
+  navyGradient: ['#0A2540', '#051729'] as const,
+  glassGradient: ['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.05)'] as const,
 };
 
 export const Spacing = {

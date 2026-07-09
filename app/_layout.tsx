@@ -4,6 +4,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import SplashScreenComponent from '@/components/SplashScreen';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { OnboardingProvider, useOnboarding } from '@/contexts/OnboardingContext';
 import { Colors } from '@/constants/theme';
 
@@ -81,7 +82,9 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <OnboardingProvider>
         <StatusBar style="light" backgroundColor={Colors.deepNavy} />
-        <RootLayoutNav />
+        <ErrorBoundary>
+          <RootLayoutNav />
+        </ErrorBoundary>
       </OnboardingProvider>
     </GestureHandlerRootView>
   );

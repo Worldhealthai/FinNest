@@ -19,6 +19,7 @@ import { useFocusEffect, router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import GlassCard from '@/components/GlassCard';
+import { withErrorBoundary } from '@/components/ErrorBoundary';
 import PersonalInfoModal from '@/components/PersonalInfoModal';
 import ISAAccountsModal from '@/components/ISAAccountsModal';
 import TermsModal from '@/components/TermsModal';
@@ -61,7 +62,7 @@ const getProgressMessage = (percentage: number) => {
   }
 };
 
-export default function ProfileScreen() {
+function ProfileScreen() {
   const { userProfile, updateProfile, logout, isGuest, deleteAccount } = useOnboarding();
   const [hasError, setHasError] = React.useState(false);
 
@@ -571,6 +572,8 @@ export default function ProfileScreen() {
     </View>
   );
 }
+
+export default withErrorBoundary(ProfileScreen);
 
 const styles = StyleSheet.create({
   container: {

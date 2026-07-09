@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert, Pressable, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert, Pressable, Platform, RefreshControl } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import GlassCard from '@/components/GlassCard';
+import { withErrorBoundary } from '@/components/ErrorBoundary';
 import AddISAContributionModal, { ISAContribution } from '@/components/AddISAContributionModal';
 import EditISAContributionModal from '@/components/EditISAContributionModal';
 import { Colors, Spacing, Typography } from '@/constants/theme';
@@ -75,12 +76,19 @@ const calculateAllowanceUsed = (
   return totalUsed;
 };
 
-export default function DashboardScreen() {
+function DashboardScreen() {
   const { isGuest } = useOnboarding();
   const [contributions, setContributions] = useState<ISAContribution[]>([]);
   const [expandedISA, setExpandedISA] = useState<string | null>(null);
   const [allowanceUsed, setAllowanceUsed] = useState<number>(0);
   const [isaSettings, setIsaSettings] = useState<ISAAccountSettings>({});
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadISAData();
+    setRefreshing(false);
+  };
 
   // Filter contributions by current tax year only
   const currentTaxYear = getCurrentTaxYear();
@@ -172,7 +180,12 @@ export default function DashboardScreen() {
       // Authenticated: save via Edge Function (validates allowance limits)
       const result: SaveContributionResult = await saveContribution(contribution);
       if (result.error) {
-        Alert.alert('Cannot Add Contribution', result.error);
+        // Alert.alert is a no-op on web — use window.alert there
+        if (Platform.OS === 'web') {
+          if (typeof window !== 'undefined') window.alert(`Cannot Add Contribution\n\n${result.error}`);
+        } else {
+          Alert.alert('Cannot Add Contribution', result.error);
+        }
         return;
       }
       // Reload all contributions from Supabase to ensure sync
@@ -327,7 +340,19 @@ export default function DashboardScreen() {
     <View style={styles.container}>
       <AnimatedBackground />
       <SafeAreaView style={styles.safe} edges={['top']}>
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor={Colors.gold}
+              colors={[Colors.gold]}
+              progressBackgroundColor={Colors.deepNavy}
+            />
+          }
+        >
           <View style={styles.header}>
             <View>
               <Text style={styles.title}>ISA Dashboard</Text>
@@ -814,6 +839,8 @@ export default function DashboardScreen() {
     </View>
   );
 }
+
+export default withErrorBoundary(DashboardScreen);
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
