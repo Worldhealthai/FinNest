@@ -1,13 +1,17 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
-import GlassCard from './GlassCard';
+import Modal from './Modal';
+import { Input, Button } from '@/components/ui';
+import { Colors, Spacing, Type, BorderRadius } from '@/constants/theme';
+import { haptics } from '@/utils/haptics';
 
 interface ContactSupportModalProps {
   visible: boolean;
   onClose: () => void;
 }
+
+type FieldErrors = Partial<Record<'name' | 'email' | 'message', string>>;
 
 export default function ContactSupportModal({ visible, onClose }: ContactSupportModalProps) {
   const [name, setName] = useState('');
@@ -15,18 +19,47 @@ export default function ContactSupportModal({ visible, onClose }: ContactSupport
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [messageFocused, setMessageFocused] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearCloseTimer = () => {
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  };
+
+  // Each visit starts on the form; a pending auto-close never outlives the sheet
+  useEffect(() => {
+    if (!visible) {
+      clearCloseTimer();
+      setShowConfirmation(false);
+      setErrors({});
+      setSendError(null);
+    }
+  }, [visible]);
+  useEffect(() => clearCloseTimer, []);
 
   const handleSubmit = async () => {
-    // Validation
-    if (!name.trim() || !email.trim() || !message.trim()) {
-      Alert.alert('Required Fields', 'Please fill in all fields before submitting.');
-      return;
-    }
+    setSendError(null);
 
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+    // Validation
+    const newErrors: FieldErrors = {};
+    if (!name.trim()) newErrors.name = 'Please enter your name';
+    if (!email.trim()) {
+      newErrors.email = 'Please enter your email address';
+    } else {
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) newErrors.email = 'Please enter a valid email address';
+    }
+    if (!message.trim()) newErrors.message = 'Please enter a message';
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      haptics.warning();
       return;
     }
 
@@ -55,6 +88,7 @@ export default function ContactSupportModal({ visible, onClose }: ContactSupport
       if (response.ok) {
         // Show confirmation message
         setShowConfirmation(true);
+        haptics.success();
 
         // Reset form
         setName('');
@@ -62,7 +96,9 @@ export default function ContactSupportModal({ visible, onClose }: ContactSupport
         setMessage('');
 
         // Hide confirmation and close modal after 3 seconds
-        setTimeout(() => {
+        clearCloseTimer();
+        closeTimer.current = setTimeout(() => {
+          closeTimer.current = null;
           setShowConfirmation(false);
           onClose();
         }, 3000);
@@ -71,273 +107,219 @@ export default function ContactSupportModal({ visible, onClose }: ContactSupport
       }
     } catch (error) {
       console.error('Email error:', error);
-      Alert.alert('Error', 'Failed to send message. Please email us directly at kndevapp@gmail.com');
+      setSendError("We couldn't send your message. Please email us directly at kndevapp@gmail.com");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const clearError = (key: keyof FieldErrors) => {
+    if (errors[key]) setErrors((e) => ({ ...e, [key]: undefined }));
+    if (sendError) setSendError(null);
+  };
+
   return (
     <Modal
       visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
+      onClose={onClose}
+      title="Contact support"
+      subtitle={showConfirmation ? undefined : "Have a question or need help? We'll get back to you within 24 hours."}
+      size="auto"
+      footer={
+        showConfirmation ? (
+          <Button title="Done" variant="secondary" onPress={onClose} />
+        ) : (
+          <Button title="Send message" icon="send-outline" onPress={handleSubmit} loading={isSubmitting} />
+        )
+      }
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.overlay}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-      >
-        <View style={styles.container}>
-          <GlassCard style={styles.card} intensity="dark">
-            {/* Header */}
-            <View style={styles.header}>
-              <View style={styles.titleContainer}>
-                <Ionicons name="chatbubble-ellipses" size={28} color={Colors.success} />
-                <Text style={styles.title}>Contact Support</Text>
-              </View>
-              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <Ionicons name="close" size={28} color={Colors.white} />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-              contentContainerStyle={styles.scrollContent}
-            >
-              {showConfirmation ? (
-                /* Confirmation Message */
-                <View style={styles.confirmationContainer}>
-                  <View style={styles.confirmationIconContainer}>
-                    <Ionicons name="checkmark-circle" size={64} color={Colors.success} />
-                  </View>
-                  <Text style={styles.confirmationTitle}>Message Sent!</Text>
-                  <Text style={styles.confirmationText}>
-                    Thank you for contacting us. Our support team will get back to you within 24 hours.
-                  </Text>
-                </View>
-              ) : (
-                <>
-                  <Text style={styles.subtitle}>
-                    Have a question or need help? Send us a message and we'll get back to you within 24 hours.
-                  </Text>
-
-                  {/* Name Input */}
-                  <View style={styles.inputGroup}>
-                <Text style={styles.label}>Your Name</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your name"
-                  placeholderTextColor={Colors.mediumGray}
-                  value={name}
-                  onChangeText={setName}
-                  editable={!isSubmitting}
-                />
-              </View>
-
-              {/* Email Input */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Email Address</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="your.email@example.com"
-                  placeholderTextColor={Colors.mediumGray}
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  editable={!isSubmitting}
-                />
-              </View>
-
-              {/* Message Input */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Message</Text>
-                <TextInput
-                  style={[styles.input, styles.messageInput]}
-                  placeholder="Describe your issue or question..."
-                  placeholderTextColor={Colors.mediumGray}
-                  value={message}
-                  onChangeText={setMessage}
-                  multiline
-                  numberOfLines={6}
-                  textAlignVertical="top"
-                  editable={!isSubmitting}
-                />
-              </View>
-
-              {/* Submit Button */}
-              <TouchableOpacity
-                style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
-                onPress={handleSubmit}
-                disabled={isSubmitting}
-              >
-                <Ionicons
-                  name={isSubmitting ? "hourglass-outline" : "send"}
-                  size={20}
-                  color={Colors.deepNavy}
-                  style={{ marginRight: 8 }}
-                />
-                <Text style={styles.submitButtonText}>
-                  {isSubmitting ? 'Sending...' : 'Send Message'}
-                </Text>
-              </TouchableOpacity>
-
-              {/* Alternative Contact Info */}
-              <View style={styles.altContact}>
-                <Text style={styles.altContactTitle}>Other Ways to Reach Us:</Text>
-                <View style={styles.altContactItem}>
-                  <Ionicons name="mail" size={16} color={Colors.gold} />
-                  <Text style={styles.altContactText}>kndevapp@gmail.com</Text>
-                </View>
-                <View style={styles.altContactItem}>
-                  <Ionicons name="time" size={16} color={Colors.gold} />
-                  <Text style={styles.altContactText}>Response time: Within 24 hours</Text>
-                </View>
-              </View>
-                </>
-              )}
-            </ScrollView>
-          </GlassCard>
+      {showConfirmation ? (
+        /* Confirmation Message */
+        <View style={styles.confirmation} accessibilityLiveRegion="polite">
+          <View style={styles.confirmationIcon}>
+            <Ionicons name="checkmark" size={28} color={Colors.positive} />
+          </View>
+          <Text style={styles.confirmationTitle}>Message sent</Text>
+          <Text style={styles.confirmationText}>
+            Thank you for contacting us. Our support team will get back to you within 24 hours.
+          </Text>
         </View>
-      </KeyboardAvoidingView>
+      ) : (
+        <View style={styles.fields}>
+          <Input
+            label="Your name"
+            icon="person-outline"
+            placeholder="Enter your name"
+            value={name}
+            onChangeText={(t) => {
+              setName(t);
+              clearError('name');
+            }}
+            autoComplete="name"
+            editable={!isSubmitting}
+            error={errors.name}
+          />
+
+          <Input
+            label="Email address"
+            icon="mail-outline"
+            placeholder="you@example.com"
+            value={email}
+            onChangeText={(t) => {
+              setEmail(t);
+              clearError('email');
+            }}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="email"
+            editable={!isSubmitting}
+            error={errors.email}
+          />
+
+          {/* Multi-line field: Input is single-line (fixed 52px), so this
+              mirrors its label/field/error styling */}
+          <View>
+            <Text style={styles.label}>Message</Text>
+            <TextInput
+              style={[
+                styles.messageInput,
+                messageFocused && styles.messageFocused,
+                !!errors.message && styles.messageErrored,
+                isSubmitting && styles.messageDisabled,
+              ]}
+              placeholder="Describe your issue or question…"
+              placeholderTextColor={Colors.textTertiary}
+              selectionColor={Colors.accent}
+              value={message}
+              onChangeText={(t) => {
+                setMessage(t);
+                clearError('message');
+              }}
+              onFocus={() => setMessageFocused(true)}
+              onBlur={() => setMessageFocused(false)}
+              multiline
+              numberOfLines={6}
+              textAlignVertical="top"
+              editable={!isSubmitting}
+              accessibilityLabel="Message"
+            />
+            {errors.message ? (
+              <View style={styles.errorRow}>
+                <Ionicons name="alert-circle" size={14} color={Colors.negative} />
+                <Text style={styles.errorText}>{errors.message}</Text>
+              </View>
+            ) : null}
+          </View>
+
+          {sendError ? (
+            <View style={styles.banner} accessibilityLiveRegion="polite">
+              <Ionicons name="alert-circle" size={18} color={Colors.negative} />
+              <Text style={styles.bannerText}>{sendError}</Text>
+            </View>
+          ) : null}
+
+          <Text style={styles.altContact}>
+            You can also email us at <Text style={styles.altContactStrong}>kndevapp@gmail.com</Text>. Response time:
+            within 24 hours.
+          </Text>
+        </View>
+      )}
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
-    justifyContent: 'flex-end',
-  },
-  container: {
-    maxHeight: '90%',
-    paddingHorizontal: Spacing.xs,
-  },
-  card: {
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    padding: Spacing.xl,
-    overflow: 'visible',
-    marginHorizontal: 0,
-  },
-  scrollContent: {
-    paddingBottom: Spacing.xxl,
-    paddingHorizontal: 2,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.lg,
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  title: {
-    fontSize: Typography.sizes.xxl,
-    color: Colors.white,
-    fontWeight: Typography.weights.bold,
-  },
-  closeButton: {
-    padding: Spacing.xs,
-  },
-  subtitle: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    lineHeight: 20,
-    marginBottom: Spacing.lg,
-  },
-  inputGroup: {
-    marginBottom: Spacing.lg,
-    paddingHorizontal: 2,
+  fields: {
+    gap: Spacing.md,
+    paddingTop: Spacing.sm,
   },
   label: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.white,
-    fontWeight: Typography.weights.semibold,
-    marginBottom: Spacing.xs,
-  },
-  input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    fontSize: Typography.sizes.md,
-    color: Colors.white,
-    outlineStyle: 'none',
+    ...Type.caption,
+    color: Colors.textSecondary,
+    fontWeight: '600',
+    marginBottom: 8,
   },
   messageInput: {
-    minHeight: 120,
-    maxHeight: 180,
-    paddingTop: Spacing.md,
-    paddingBottom: Spacing.md,
-  },
-  submitButton: {
-    backgroundColor: Colors.success,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Spacing.md,
+    minHeight: 132,
+    maxHeight: 200,
+    paddingHorizontal: 14,
+    paddingTop: 14,
+    paddingBottom: 14,
+    backgroundColor: Colors.surfaceRaised,
     borderRadius: BorderRadius.md,
-    marginTop: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    fontSize: 16,
+    lineHeight: 22,
+    color: Colors.text,
+    // Remove the browser focus ring on web; the border shows focus instead
+    outlineStyle: 'none',
+  } as any,
+  messageFocused: {
+    borderColor: Colors.accentBorder,
   },
-  submitButtonDisabled: {
+  messageErrored: {
+    borderColor: Colors.negative,
+  },
+  messageDisabled: {
     opacity: 0.6,
   },
-  submitButtonText: {
-    fontSize: Typography.sizes.md,
-    color: Colors.deepNavy,
-    fontWeight: Typography.weights.bold,
-  },
-  altContact: {
-    marginTop: Spacing.xl,
-    paddingTop: Spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  altContactTitle: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.white,
-    fontWeight: Typography.weights.semibold,
-    marginBottom: Spacing.sm,
-  },
-  altContactItem: {
+  errorRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.sm,
+    marginTop: 6,
+    gap: 6,
+  },
+  errorText: {
+    ...Type.caption,
+    color: Colors.negative,
+    flex: 1,
+  },
+  banner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    padding: 14,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.negativeMuted,
+    borderWidth: 1,
+    borderColor: 'rgba(248, 113, 113, 0.3)',
+  },
+  bannerText: {
+    ...Type.callout,
+    color: Colors.text,
+    flex: 1,
+  },
+  altContact: {
+    ...Type.caption,
     marginTop: Spacing.xs,
   },
-  altContactText: {
-    fontSize: Typography.sizes.xs,
-    color: Colors.lightGray,
+  altContactStrong: {
+    color: Colors.text,
+    fontWeight: '600',
   },
-  confirmationContainer: {
+  confirmation: {
+    alignItems: 'center',
+    paddingVertical: Spacing.xl,
+  },
+  confirmationIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.positiveMuted,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: Spacing.xxxl,
-    paddingHorizontal: Spacing.lg,
-  },
-  confirmationIconContainer: {
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.md,
   },
   confirmationTitle: {
-    fontSize: Typography.sizes.xxl,
-    color: Colors.white,
-    fontWeight: Typography.weights.bold,
-    marginBottom: Spacing.md,
+    ...Type.title2,
     textAlign: 'center',
   },
   confirmationText: {
-    fontSize: Typography.sizes.md,
-    color: Colors.lightGray,
+    ...Type.body,
+    color: Colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 22,
+    marginTop: Spacing.sm,
   },
 });

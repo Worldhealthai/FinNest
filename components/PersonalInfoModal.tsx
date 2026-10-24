@@ -1,35 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  Alert,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Modal from './Modal';
-import GlassCard from './GlassCard';
-import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
+import { Input, Button, SectionHeader } from '@/components/ui';
+import { Colors, Spacing, Type, BorderRadius } from '@/constants/theme';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import { supabase } from '@/lib/supabase';
+import { haptics } from '@/utils/haptics';
 
 interface PersonalInfoModalProps {
   visible: boolean;
   onClose: () => void;
 }
 
+type PasswordErrors = Partial<Record<'current' | 'new' | 'confirm' | 'form', string>>;
+
+function EyeToggle({ shown, onPress }: { shown: boolean; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} hitSlop={10} accessibilityLabel={shown ? 'Hide password' : 'Show password'}>
+      <Ionicons name={shown ? 'eye-off-outline' : 'eye-outline'} size={20} color={Colors.textTertiary} />
+    </Pressable>
+  );
+}
+
 export default function PersonalInfoModal({ visible, onClose }: PersonalInfoModalProps) {
   const { userProfile, updateProfile, isGuest } = useOnboarding();
 
   const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [postcode, setPostcode] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
+  const [nameError, setNameError] = useState<string | null>(null);
 
   // Password change states
   const [currentPassword, setCurrentPassword] = useState('');
@@ -38,58 +38,68 @@ export default function PersonalInfoModal({ visible, onClose }: PersonalInfoModa
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+  const [passwordErrors, setPasswordErrors] = useState<PasswordErrors>({});
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordChanged, setPasswordChanged] = useState(false);
 
   // Load user profile data when modal opens
   useEffect(() => {
     if (visible) {
       setFullName(userProfile.fullName || '');
-      setEmail(userProfile.email || '');
       setPhone(userProfile.phoneNumber || '');
       setDateOfBirth(userProfile.dateOfBirth || '');
+      setNameError(null);
     }
   }, [visible, userProfile]);
 
+  // Start each visit with a clean password form
+  useEffect(() => {
+    if (!visible) {
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+      setPasswordErrors({});
+      setPasswordChanged(false);
+    }
+  }, [visible]);
+
   const handleSave = async () => {
-    if (!fullName.trim() || !email.trim()) {
-      Alert.alert('Error', 'Please fill in all required fields');
+    if (!fullName.trim()) {
+      setNameError('Please enter your full name');
+      haptics.warning();
       return;
     }
 
-    // Update the user profile in context and AsyncStorage
+    // Email is read-only here: it's the login identity, which this sheet
+    // can't change, so it's left out of the update.
     updateProfile({
       fullName,
-      email,
       phoneNumber: phone,
       dateOfBirth,
     });
 
-    Alert.alert('Success', 'Personal information updated successfully!');
+    haptics.success();
     onClose();
   };
 
   const handlePasswordChange = async () => {
-    // Guest users can't change password
-    if (isGuest) {
-      Alert.alert('Not Available', 'Password change is not available in guest mode. Please create an account.');
-      return;
-    }
+    setPasswordChanged(false);
 
     // Validation
-    if (!currentPassword || !newPassword || !confirmNewPassword) {
-      Alert.alert('Error', 'Please fill in all password fields');
+    const errors: PasswordErrors = {};
+    if (!currentPassword) errors.current = 'Enter your current password';
+    if (!newPassword) errors.new = 'Enter a new password';
+    else if (newPassword.length < 6) errors.new = 'New password must be at least 6 characters long';
+    if (!confirmNewPassword) errors.confirm = 'Confirm your new password';
+    else if (newPassword && newPassword !== confirmNewPassword) errors.confirm = 'New passwords do not match';
+
+    setPasswordErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      haptics.warning();
       return;
     }
 
-    if (newPassword.length < 6) {
-      Alert.alert('Error', 'New password must be at least 6 characters long');
-      return;
-    }
-
-    if (newPassword !== confirmNewPassword) {
-      Alert.alert('Error', 'New passwords do not match');
-      return;
-    }
-
+    setPasswordSaving(true);
     try {
       // First verify current password by attempting to sign in
       const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -98,36 +108,37 @@ export default function PersonalInfoModal({ visible, onClose }: PersonalInfoModa
       });
 
       if (signInError) {
-        Alert.alert('Error', 'Current password is incorrect');
+        setPasswordErrors({ current: 'Current password is incorrect' });
+        haptics.warning();
         return;
       }
 
       // Update password
       const { error: updateError } = await supabase.auth.updateUser({
-        password: newPassword
+        password: newPassword,
       });
 
       if (updateError) {
         throw updateError;
       }
 
-      Alert.alert(
-        'Password Changed',
-        'Your password has been updated successfully!',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              setCurrentPassword('');
-              setNewPassword('');
-              setConfirmNewPassword('');
-            },
-          },
-        ]
-      );
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+      setPasswordChanged(true);
+      haptics.success();
     } catch (error: any) {
       console.error('Password change error:', error);
-      Alert.alert('Error', error.message || 'Failed to change password. Please try again.');
+      setPasswordErrors({ form: error?.message || 'Failed to change password. Please try again.' });
+    } finally {
+      setPasswordSaving(false);
+    }
+  };
+
+  const clearPasswordError = (key: keyof PasswordErrors) => {
+    setPasswordChanged(false);
+    if (passwordErrors[key] || passwordErrors.form) {
+      setPasswordErrors((e) => ({ ...e, [key]: undefined, form: undefined }));
     }
   };
 
@@ -135,326 +146,169 @@ export default function PersonalInfoModal({ visible, onClose }: PersonalInfoModa
     <Modal
       visible={visible}
       onClose={onClose}
-      title="Personal Information"
-      icon="person-outline"
+      title="Personal information"
+      footer={<Button title="Save changes" onPress={handleSave} />}
     >
-      <View style={styles.container}>
-        {/* Info Notice */}
-        <GlassCard style={styles.noticeCard} intensity="medium">
-          <View style={styles.noticeHeader}>
-            <Ionicons name="information-circle" size={20} color={Colors.info} />
-            <Text style={styles.noticeText}>
-              Your information is encrypted and secure
-            </Text>
-          </View>
-        </GlassCard>
-
-        {/* Full Name */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Full Name *</Text>
-          <GlassCard style={styles.inputCard} intensity="medium">
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your full name"
-              placeholderTextColor={Colors.mediumGray}
-              value={fullName}
-              onChangeText={setFullName}
-            />
-          </GlassCard>
-        </View>
-
-        {/* Email */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Email Address *</Text>
-          <GlassCard style={styles.inputCard} intensity="medium">
-            <TextInput
-              style={styles.input}
-              placeholder="your.email@example.com"
-              placeholderTextColor={Colors.mediumGray}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-          </GlassCard>
-        </View>
-
-        {/* Phone */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Phone Number</Text>
-          <GlassCard style={styles.inputCard} intensity="medium">
-            <TextInput
-              style={styles.input}
-              placeholder="+44 7700 900000"
-              placeholderTextColor={Colors.mediumGray}
-              value={phone}
-              onChangeText={setPhone}
-              keyboardType="phone-pad"
-            />
-          </GlassCard>
-        </View>
-
-        {/* Address */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Address</Text>
-          <GlassCard style={styles.inputCard} intensity="medium">
-            <TextInput
-              style={styles.input}
-              placeholder="Street address"
-              placeholderTextColor={Colors.mediumGray}
-              value={address}
-              onChangeText={setAddress}
-            />
-          </GlassCard>
-        </View>
-
-        {/* City and Postcode */}
-        <View style={styles.row}>
-          <View style={[styles.inputGroup, { flex: 1, marginRight: Spacing.sm }]}>
-            <Text style={styles.label}>City</Text>
-            <GlassCard style={styles.inputCard} intensity="medium">
-              <TextInput
-                style={styles.input}
-                placeholder="City"
-                placeholderTextColor={Colors.mediumGray}
-                value={city}
-                onChangeText={setCity}
-              />
-            </GlassCard>
-          </View>
-
-          <View style={[styles.inputGroup, { flex: 1, marginLeft: Spacing.sm }]}>
-            <Text style={styles.label}>Postcode</Text>
-            <GlassCard style={styles.inputCard} intensity="medium">
-              <TextInput
-                style={styles.input}
-                placeholder="SW1A 1AA"
-                placeholderTextColor={Colors.mediumGray}
-                value={postcode}
-                onChangeText={setPostcode}
-                autoCapitalize="characters"
-              />
-            </GlassCard>
-          </View>
-        </View>
-
-        {/* Date of Birth */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Date of Birth</Text>
-          <GlassCard style={styles.inputCard} intensity="medium">
-            <TextInput
-              style={styles.input}
-              placeholder="DD/MM/YYYY"
-              placeholderTextColor={Colors.mediumGray}
-              value={dateOfBirth}
-              onChangeText={setDateOfBirth}
-            />
-          </GlassCard>
-        </View>
-
-        {/* Password Change Section */}
-        <View style={styles.divider} />
-        <Text style={styles.sectionTitle}>Change Password</Text>
-
-        {/* Current Password */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Current Password</Text>
-          <GlassCard style={styles.inputCard} intensity="medium">
-            <View style={styles.passwordContainer}>
-              <TextInput
-                style={[styles.input, styles.passwordInput]}
-                placeholder="Enter current password"
-                placeholderTextColor={Colors.mediumGray}
-                value={currentPassword}
-                onChangeText={setCurrentPassword}
-                secureTextEntry={!showCurrentPassword}
-              />
-              <TouchableOpacity
-                onPress={() => setShowCurrentPassword(!showCurrentPassword)}
-                style={styles.eyeButton}
-              >
-                <Ionicons
-                  name={showCurrentPassword ? 'eye-off-outline' : 'eye-outline'}
-                  size={20}
-                  color={Colors.lightGray}
-                />
-              </TouchableOpacity>
-            </View>
-          </GlassCard>
-        </View>
-
-        {/* New Password */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>New Password</Text>
-          <GlassCard style={styles.inputCard} intensity="medium">
-            <View style={styles.passwordContainer}>
-              <TextInput
-                style={[styles.input, styles.passwordInput]}
-                placeholder="Enter new password"
-                placeholderTextColor={Colors.mediumGray}
-                value={newPassword}
-                onChangeText={setNewPassword}
-                secureTextEntry={!showNewPassword}
-              />
-              <TouchableOpacity
-                onPress={() => setShowNewPassword(!showNewPassword)}
-                style={styles.eyeButton}
-              >
-                <Ionicons
-                  name={showNewPassword ? 'eye-off-outline' : 'eye-outline'}
-                  size={20}
-                  color={Colors.lightGray}
-                />
-              </TouchableOpacity>
-            </View>
-          </GlassCard>
-        </View>
-
-        {/* Confirm New Password */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Confirm New Password</Text>
-          <GlassCard style={styles.inputCard} intensity="medium">
-            <View style={styles.passwordContainer}>
-              <TextInput
-                style={[styles.input, styles.passwordInput]}
-                placeholder="Confirm new password"
-                placeholderTextColor={Colors.mediumGray}
-                value={confirmNewPassword}
-                onChangeText={setConfirmNewPassword}
-                secureTextEntry={!showConfirmNewPassword}
-              />
-              <TouchableOpacity
-                onPress={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
-                style={styles.eyeButton}
-              >
-                <Ionicons
-                  name={showConfirmNewPassword ? 'eye-off-outline' : 'eye-outline'}
-                  size={20}
-                  color={Colors.lightGray}
-                />
-              </TouchableOpacity>
-            </View>
-          </GlassCard>
-        </View>
-
-        {/* Change Password Button */}
-        <TouchableOpacity onPress={handlePasswordChange}>
-          <LinearGradient
-            colors={['#4A90E2', '#2B4F7E']}
-            style={styles.passwordButton}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-          >
-            <Ionicons name="lock-closed" size={24} color={Colors.white} />
-            <Text style={styles.passwordButtonText}>Update Password</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-
-        {/* Save Button */}
-        <TouchableOpacity onPress={handleSave}>
-          <LinearGradient
-            colors={Colors.goldGradient}
-            style={styles.saveButton}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-          >
-            <Ionicons name="checkmark-circle" size={24} color={Colors.deepNavy} />
-            <Text style={styles.saveButtonText}>Save Changes</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+      {/* ─── Details ─── */}
+      <SectionHeader title="Details" style={styles.firstHeader} />
+      <View style={styles.fields}>
+        <Input
+          label="Full name"
+          icon="person-outline"
+          value={fullName}
+          onChangeText={(t) => {
+            setFullName(t);
+            if (nameError) setNameError(null);
+          }}
+          placeholder="Your full name"
+          autoCapitalize="words"
+          autoComplete="name"
+          error={nameError}
+        />
+        <Input
+          label="Email"
+          icon="mail-outline"
+          value={userProfile.email || ''}
+          editable={false}
+          hint="This is your sign-in email. Contact support to change your email."
+        />
+        <Input
+          label="Phone number (optional)"
+          icon="call-outline"
+          value={phone}
+          onChangeText={setPhone}
+          placeholder="+44 7700 900000"
+          keyboardType="phone-pad"
+          autoComplete="tel"
+        />
+        <Input
+          label="Date of birth (optional)"
+          icon="calendar-outline"
+          value={dateOfBirth}
+          onChangeText={setDateOfBirth}
+          placeholder="DD/MM/YYYY"
+        />
       </View>
+
+      {/* ─── Password ─── */}
+      <SectionHeader title="Password" />
+      {isGuest ? (
+        <Text style={styles.guestText}>
+          Password change is not available in guest mode. Create an account to set a password.
+        </Text>
+      ) : (
+        <View style={styles.fields}>
+          <Input
+            label="Current password"
+            icon="lock-closed-outline"
+            value={currentPassword}
+            onChangeText={(t) => {
+              setCurrentPassword(t);
+              clearPasswordError('current');
+            }}
+            placeholder="Enter current password"
+            secureTextEntry={!showCurrentPassword}
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="current-password"
+            error={passwordErrors.current}
+            editable={!passwordSaving}
+            right={<EyeToggle shown={showCurrentPassword} onPress={() => setShowCurrentPassword(!showCurrentPassword)} />}
+          />
+          <Input
+            label="New password"
+            icon="lock-closed-outline"
+            value={newPassword}
+            onChangeText={(t) => {
+              setNewPassword(t);
+              clearPasswordError('new');
+            }}
+            placeholder="At least 6 characters"
+            secureTextEntry={!showNewPassword}
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="new-password"
+            error={passwordErrors.new}
+            editable={!passwordSaving}
+            right={<EyeToggle shown={showNewPassword} onPress={() => setShowNewPassword(!showNewPassword)} />}
+          />
+          <Input
+            label="Confirm new password"
+            icon="lock-closed-outline"
+            value={confirmNewPassword}
+            onChangeText={(t) => {
+              setConfirmNewPassword(t);
+              clearPasswordError('confirm');
+            }}
+            placeholder="Repeat your new password"
+            secureTextEntry={!showConfirmNewPassword}
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="new-password"
+            error={passwordErrors.confirm}
+            editable={!passwordSaving}
+            right={
+              <EyeToggle
+                shown={showConfirmNewPassword}
+                onPress={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
+              />
+            }
+          />
+
+          {passwordErrors.form ? (
+            <View style={[styles.banner, styles.bannerError]} accessibilityLiveRegion="polite">
+              <Ionicons name="alert-circle" size={18} color={Colors.negative} />
+              <Text style={styles.bannerText}>{passwordErrors.form}</Text>
+            </View>
+          ) : null}
+          {passwordChanged ? (
+            <View style={[styles.banner, styles.bannerSuccess]} accessibilityLiveRegion="polite">
+              <Ionicons name="checkmark-circle" size={18} color={Colors.positive} />
+              <Text style={styles.bannerText}>Your password has been updated.</Text>
+            </View>
+          ) : null}
+
+          <Button
+            title="Update password"
+            variant="secondary"
+            onPress={handlePasswordChange}
+            loading={passwordSaving}
+          />
+        </View>
+      )}
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  firstHeader: {
+    marginTop: Spacing.sm,
+  },
+  fields: {
     gap: Spacing.md,
   },
-  noticeCard: {
-    padding: Spacing.md,
-    marginBottom: Spacing.sm,
+  guestText: {
+    ...Type.callout,
   },
-  noticeHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  noticeText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    flex: 1,
-  },
-  inputGroup: {
-    marginBottom: Spacing.sm,
-  },
-  label: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.white,
-    fontWeight: Typography.weights.semibold,
-    marginBottom: Spacing.sm,
-  },
-  inputCard: {
-    padding: Spacing.md,
-  },
-  input: {
-    fontSize: Typography.sizes.md,
-    color: Colors.white,
-    fontWeight: Typography.weights.medium,
-  },
-  row: {
+  banner: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    gap: 10,
+    padding: 14,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
   },
-  saveButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    gap: Spacing.sm,
-    marginTop: Spacing.lg,
+  bannerSuccess: {
+    backgroundColor: Colors.positiveMuted,
+    borderColor: 'rgba(52, 211, 153, 0.3)',
   },
-  saveButtonText: {
-    fontSize: Typography.sizes.md,
-    color: Colors.deepNavy,
-    fontWeight: Typography.weights.bold,
+  bannerError: {
+    backgroundColor: Colors.negativeMuted,
+    borderColor: 'rgba(248, 113, 113, 0.3)',
   },
-  divider: {
-    height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    marginVertical: Spacing.xl,
-  },
-  sectionTitle: {
-    fontSize: Typography.sizes.lg,
-    color: Colors.white,
-    fontWeight: Typography.weights.bold,
-    marginBottom: Spacing.md,
-  },
-  passwordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  passwordInput: {
+  bannerText: {
+    ...Type.callout,
+    color: Colors.text,
     flex: 1,
-  },
-  eyeButton: {
-    padding: Spacing.xs,
-    marginLeft: Spacing.sm,
-  },
-  passwordButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    gap: Spacing.sm,
-    marginTop: Spacing.md,
-    marginBottom: Spacing.md,
-  },
-  passwordButtonText: {
-    fontSize: Typography.sizes.md,
-    color: Colors.white,
-    fontWeight: Typography.weights.bold,
   },
 });

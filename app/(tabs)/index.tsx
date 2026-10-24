@@ -1,909 +1,649 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert, Pressable, Platform, RefreshControl } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import AnimatedBackground from '@/components/AnimatedBackground';
-import GlassCard from '@/components/GlassCard';
 import { withErrorBoundary } from '@/components/ErrorBoundary';
 import AddISAContributionModal, { ISAContribution } from '@/components/AddISAContributionModal';
 import EditISAContributionModal from '@/components/EditISAContributionModal';
-import { Colors, Spacing, Typography } from '@/constants/theme';
-import { ISA_INFO, ISA_ANNUAL_ALLOWANCE, LIFETIME_ISA_MAX, getDaysUntilTaxYearEnd, formatCurrency, getTaxYearDates } from '@/constants/isaData';
+import {
+  Screen,
+  Card,
+  Button,
+  IconTile,
+  ListItem,
+  ListGroup,
+  ProgressBar,
+  Chip,
+  EmptyState,
+  SectionHeader,
+  ActionSheet,
+} from '@/components/ui';
+import type { SheetAction } from '@/components/ui';
+import { Colors, Type, Spacing, BorderRadius, Shadows } from '@/constants/theme';
+import {
+  ISA_ANNUAL_ALLOWANCE,
+  LIFETIME_ISA_MAX,
+  LIFETIME_ISA_BONUS_RATE,
+  ISA_TYPE_ORDER,
+  ISA_LABELS,
+  ISA_ICONS,
+  isaColor,
+  getDaysUntilTaxYearEnd,
+  formatCurrency,
+} from '@/constants/isaData';
 import { getCurrentTaxYear, isDateInTaxYear, parseDateKey } from '@/utils/taxYear';
 import { loadISASettings, isFlexibleFromSettings, ISAAccountSettings } from '@/utils/isaSettings';
-import { loadContributions, saveContribution, updateContribution as updateContributionDB, deleteContribution as deleteContributionDB, SaveContributionResult } from '@/lib/contributions';
+import {
+  loadContributions,
+  saveContribution,
+  updateContribution as updateContributionDB,
+  deleteContribution as deleteContributionDB,
+  ISAContribution as DBContribution,
+} from '@/lib/contributions';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import { sendISALimitNotification } from '@/utils/notificationService';
+import { haptics } from '@/utils/haptics';
 
 const CONTRIBUTIONS_STORAGE_KEY = '@finnest_contributions';
+const ACTIVITY_PREVIEW_COUNT = 6;
 
-// Helper to group contributions by ISA type and provider
-const groupContributions = (contributions: ISAContribution[]) => {
-  const grouped: Record<string, { providers: Record<string, { contributed: number; balance: number }>, total: number }> = {
-    cash: { providers: {}, total: 0 },
-    stocks_shares: { providers: {}, total: 0 },
-    lifetime: { providers: {}, total: 0 },
-    innovative_finance: { providers: {}, total: 0 },
-  };
+// For flexible ISAs a withdrawal frees the allowance again; for non-flexible
+// ISAs the withdrawn amount stays counted. Settings must already be loaded —
+// this runs during render, so it can't await the async isISAFlexible().
+const countsTowardAllowance = (c: ISAContribution, settings: ISAAccountSettings) =>
+  !(c.withdrawn && isFlexibleFromSettings(settings, c.provider, c.isaType));
 
-  contributions.forEach(contribution => {
-    const type = contribution.isaType;
-    if (!grouped[type].providers[contribution.provider]) {
-      grouped[type].providers[contribution.provider] = { contributed: 0, balance: 0 };
-    }
+const calculateAllowanceUsed = (contributions: ISAContribution[], settings: ISAAccountSettings) =>
+  contributions.reduce((sum, c) => (countsTowardAllowance(c, settings) ? sum + c.amount : sum), 0);
 
-    // Contributed total includes withdrawn amounts (they were still contributed)
-    grouped[type].providers[contribution.provider].contributed += contribution.amount;
-    grouped[type].total += contribution.amount;
+const formatShortDate = (date: string) =>
+  parseDateKey(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
-    // Balance only includes active (not withdrawn) amounts
-    if (!contribution.withdrawn) {
-      grouped[type].providers[contribution.provider].balance += contribution.amount;
-    }
-  });
-
-  return grouped;
+const greeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
 };
 
-// Helper to calculate total allowance used
-// For flexible ISAs: withdrawn contributions free up allowance (don't count)
-// For non-flexible ISAs: withdrawn contributions still count toward allowance
-// Only truly deleted entries never count
-const calculateAllowanceUsed = (
-  contributions: ISAContribution[],
-  settings: ISAAccountSettings
-) => {
-  let totalUsed = 0;
+interface Confirmation {
+  title: string;
+  message: string;
+  actionLabel: string;
+  icon: SheetAction['icon'];
+  destructive?: boolean;
+  onConfirm: () => void;
+}
 
-  for (const contribution of contributions) {
-    // For flexible ISAs, withdrawn contributions don't count toward allowance
-    // For non-flexible ISAs, withdrawn contributions still count.
-    // Note: flexibility must be resolved synchronously here — pass in settings
-    // loaded once via loadISASettings() rather than the async isISAFlexible().
-    const isaFlexible = isFlexibleFromSettings(settings, contribution.provider, contribution.isaType);
-
-    if (contribution.withdrawn && isaFlexible) {
-      // Flexible ISA withdrawal - doesn't count toward allowance
-      continue;
-    }
-
-    // Add to allowance used
-    totalUsed += contribution.amount;
-  }
-
-  return totalUsed;
-};
-
-function DashboardScreen() {
-  const { isGuest } = useOnboarding();
+function HomeScreen() {
+  const { isGuest, userProfile } = useOnboarding();
   const [contributions, setContributions] = useState<ISAContribution[]>([]);
-  const [expandedISA, setExpandedISA] = useState<string | null>(null);
-  const [allowanceUsed, setAllowanceUsed] = useState<number>(0);
   const [isaSettings, setIsaSettings] = useState<ISAAccountSettings>({});
+  const [loaded, setLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  const [addVisible, setAddVisible] = useState(false);
+  const [editVisible, setEditVisible] = useState(false);
+  const [selected, setSelected] = useState<ISAContribution | null>(null);
+  const [menuFor, setMenuFor] = useState<ISAContribution | null>(null);
+  const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
+  const [notice, setNotice] = useState<{ title: string; message: string } | null>(null);
+  const [typeFilter, setTypeFilter] = useState<string | null>(null);
+  const [showAllActivity, setShowAllActivity] = useState(false);
+
+  const currentTaxYear = getCurrentTaxYear();
+  const daysLeft = getDaysUntilTaxYearEnd();
+
+  // ─── Derived figures for the current tax year ───
+  const yearContributions = useMemo(
+    () =>
+      contributions
+        .filter((c) => isDateInTaxYear(parseDateKey(c.date), currentTaxYear))
+        .sort((a, b) => parseDateKey(b.date).getTime() - parseDateKey(a.date).getTime()),
+    [contributions, currentTaxYear.startYear]
+  );
+
+  const allowanceUsed = useMemo(
+    () => calculateAllowanceUsed(yearContributions, isaSettings),
+    [yearContributions, isaSettings]
+  );
+  const remaining = Math.max(0, ISA_ANNUAL_ALLOWANCE - allowanceUsed);
+  const exceededBy = Math.max(0, allowanceUsed - ISA_ANNUAL_ALLOWANCE);
+  const usedFraction = allowanceUsed / ISA_ANNUAL_ALLOWANCE;
+
+  const byType = useMemo(() => {
+    const result: Record<string, { used: number; active: number; providers: Set<string> }> = {};
+    ISA_TYPE_ORDER.forEach((t) => (result[t] = { used: 0, active: 0, providers: new Set() }));
+    yearContributions.forEach((c) => {
+      const bucket = result[c.isaType];
+      if (!bucket) return;
+      if (countsTowardAllowance(c, isaSettings)) bucket.used += c.amount;
+      if (!c.withdrawn) bucket.active += c.amount;
+      bucket.providers.add(c.provider);
+    });
+    return result;
+  }, [yearContributions, isaSettings]);
+
+  const typesInUse = ISA_TYPE_ORDER.filter((t) => byType[t].providers.size > 0);
+  const lisaPaidIn = Math.min(byType.lifetime.active, LIFETIME_ISA_MAX);
+  const lisaBonus = lisaPaidIn * LIFETIME_ISA_BONUS_RATE;
+  const lisaBonusLeft = (LIFETIME_ISA_MAX - lisaPaidIn) * LIFETIME_ISA_BONUS_RATE;
+  const hasEverUsedLisa = contributions.some((c) => c.isaType === 'lifetime');
+  const hasOlderContributions = contributions.length > yearContributions.length;
+
+  const filteredActivity = typeFilter ? yearContributions.filter((c) => c.isaType === typeFilter) : yearContributions;
+  const visibleActivity = showAllActivity ? filteredActivity : filteredActivity.slice(0, ACTIVITY_PREVIEW_COUNT);
+
+  // One contextual insight, highest priority first — never a stack of banners
+  const insight = useMemo(() => {
+    if (exceededBy > 0) {
+      return {
+        icon: 'alert-circle-outline' as const,
+        tone: Colors.negative,
+        text: `You're ${formatCurrency(exceededBy)} over this year's allowance. Contact your ISA provider about the excess.`,
+      };
+    }
+    if (usedFraction >= 0.9 && remaining > 0) {
+      return {
+        icon: 'flag-outline' as const,
+        tone: Colors.accent,
+        text: `Nearly there — only ${formatCurrency(remaining)} of allowance left this tax year.`,
+      };
+    }
+    if (daysLeft <= 30 && remaining > 0) {
+      return {
+        icon: 'time-outline' as const,
+        tone: Colors.caution,
+        text: `${daysLeft} days until the tax year ends. Unused allowance (${formatCurrency(remaining)}) won't carry over.`,
+      };
+    }
+    if (hasEverUsedLisa && lisaBonusLeft > 0) {
+      return {
+        icon: 'gift-outline' as const,
+        tone: Colors.positive,
+        text: `You can still earn up to ${formatCurrency(lisaBonusLeft)} in Lifetime ISA bonus this year.`,
+      };
+    }
+    return null;
+  }, [exceededBy, usedFraction, remaining, daysLeft, hasEverUsedLisa, lisaBonusLeft]);
+
+  // ─── Data loading & persistence ───
+  const loadData = useCallback(async () => {
+    try {
+      setIsaSettings(await loadISASettings());
+      if (isGuest) {
+        const saved = await AsyncStorage.getItem(CONTRIBUTIONS_STORAGE_KEY);
+        setContributions(saved ? JSON.parse(saved) : []);
+      } else {
+        setContributions(await loadContributions());
+      }
+    } catch (error) {
+      console.error('Error loading contributions:', error);
+    } finally {
+      setLoaded(true);
+    }
+  }, [isGuest]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await loadISAData();
+    await loadData();
     setRefreshing(false);
   };
 
-  // Filter contributions by current tax year only
-  const currentTaxYear = getCurrentTaxYear();
-  const filteredContributions = contributions.filter(contribution =>
-    isDateInTaxYear(parseDateKey(contribution.date), currentTaxYear)
-  );
-
-  const groupedISAs = groupContributions(filteredContributions);
-  const total = Object.values(groupedISAs).reduce((s, i) => s + i.total, 0);
-  // Use allowanceUsed instead of total for calculating remaining allowance
-  // This accounts for deleted non-flexible contributions
-  const remaining = ISA_ANNUAL_ALLOWANCE - allowanceUsed;
-  const days = getDaysUntilTaxYearEnd();
-  const taxYear = getTaxYearDates();
-  // Use allowanceUsed for percentage calculation too
-  const percent = (allowanceUsed / ISA_ANNUAL_ALLOWANCE) * 100;
-  const lisaBonus = groupedISAs.lifetime.total * 0.25;
-
-  // Modal state
-  const [addContributionVisible, setAddContributionVisible] = useState(false);
-  const [editContributionVisible, setEditContributionVisible] = useState(false);
-  const [selectedContribution, setSelectedContribution] = useState<ISAContribution | null>(null);
-  const [preSelectedISAType, setPreSelectedISAType] = useState<string | undefined>(undefined);
-
-  // Load saved ISA data on mount
-  useEffect(() => {
-    loadISAData();
-  }, []);
-
-  // Calculate allowance used (withdrawn contributions count, deleted don't)
-  useEffect(() => {
-    const used = calculateAllowanceUsed(filteredContributions, isaSettings);
-    setAllowanceUsed(used);
-  }, [filteredContributions, isaSettings]);
-
-  const loadISAData = async () => {
+  const persistGuest = async (next: ISAContribution[]) => {
+    setContributions(next);
     try {
-      // Load flexibility settings first so allowance math is correct
-      setIsaSettings(await loadISASettings());
-
-      // Guest users: load from AsyncStorage
-      if (isGuest) {
-        console.log('=== Loading contributions from AsyncStorage (Guest Mode) ===');
-        const savedData = await AsyncStorage.getItem(CONTRIBUTIONS_STORAGE_KEY);
-
-        if (savedData) {
-          const parsed = JSON.parse(savedData);
-          console.log('✅ Loaded', parsed.length, 'contributions');
-          setContributions(parsed);
-        }
-        return;
-      }
-
-      // Authenticated users: load from Supabase
-      console.log('=== Loading contributions from Supabase ===');
-      const data = await loadContributions();
-      console.log('✅ Loaded', data.length, 'contributions from Supabase');
-      setContributions(data);
+      await AsyncStorage.setItem(CONTRIBUTIONS_STORAGE_KEY, JSON.stringify(next));
     } catch (error) {
-      console.error('❌ Error loading contributions:', error);
-    }
-  };
-
-  const saveContributions = async (contributionsData: ISAContribution[]) => {
-    try {
-      // Only used for guest mode - save to AsyncStorage
-      if (isGuest) {
-        console.log('=== Saving contributions (Guest Mode) ===');
-        const jsonData = JSON.stringify(contributionsData);
-        await AsyncStorage.setItem(CONTRIBUTIONS_STORAGE_KEY, jsonData);
-        console.log('✅ Saved to AsyncStorage');
-      }
-      // For authenticated users, contributions are saved individually to Supabase
-    } catch (error) {
-      console.error('❌ Error saving contributions:', error);
+      console.error('Error saving contributions:', error);
     }
   };
 
   const handleAddContribution = async (contribution: ISAContribution) => {
-    console.log('=== handleAddContribution called ===');
-    console.log('Contribution received:', contribution);
-
+    let next = contributions;
     if (isGuest) {
-      // Guest mode: save to AsyncStorage
-      const updatedContributions = [...contributions, contribution];
-      setContributions(updatedContributions);
-      await saveContributions(updatedContributions);
+      next = [...contributions, contribution];
+      await persistGuest(next);
     } else {
-      // Authenticated: save via Edge Function (validates allowance limits)
-      const result: SaveContributionResult = await saveContribution(contribution);
+      // Authenticated: the Edge Function validates allowance limits server-side
+      const result = await saveContribution(contribution as Omit<DBContribution, 'id'>);
       if (result.error) {
-        // Alert.alert is a no-op on web — use window.alert there
-        if (Platform.OS === 'web') {
-          if (typeof window !== 'undefined') window.alert(`Cannot Add Contribution\n\n${result.error}`);
-        } else {
-          Alert.alert('Cannot Add Contribution', result.error);
-        }
+        setNotice({ title: "Couldn't add contribution", message: result.error });
         return;
       }
-      // Reload all contributions from Supabase to ensure sync
-      await loadISAData();
+      await loadData();
     }
 
-    // Calculate new total and send notification if milestone reached
-    const allContributions = isGuest ? [...contributions, contribution] : contributions;
-    const currentYearContributions = allContributions.filter(c =>
+    haptics.success();
+    const updatedYear = (isGuest ? next : [...contributions, contribution]).filter((c) =>
       isDateInTaxYear(parseDateKey(c.date), currentTaxYear)
     );
-    const newTotal = calculateAllowanceUsed(currentYearContributions, isaSettings);
-    await sendISALimitNotification(newTotal, ISA_ANNUAL_ALLOWANCE);
-
-    console.log('Contribution added and saved successfully');
+    await sendISALimitNotification(calculateAllowanceUsed(updatedYear, isaSettings), ISA_ANNUAL_ALLOWANCE);
   };
 
-  const handleEditContribution = (contribution: ISAContribution) => {
-    setSelectedContribution(contribution);
-    setEditContributionVisible(true);
-  };
-
-  const handleUpdateContribution = async (updatedContribution: ISAContribution) => {
-    console.log('=== handleUpdateContribution called ===');
-    console.log('Updated contribution received:', updatedContribution);
-
+  const handleUpdateContribution = async (updated: ISAContribution) => {
     if (isGuest) {
-      // Guest mode: update in AsyncStorage
-      const updatedContributions = contributions.map(c =>
-        c.id === updatedContribution.id ? updatedContribution : c
-      );
-      setContributions(updatedContributions);
-      await saveContributions(updatedContributions);
-    } else {
-      // Authenticated: update in Supabase
-      const success = await updateContributionDB(updatedContribution.id, updatedContribution);
-      if (success) {
-        await loadISAData();
-      }
-    }
-
-    console.log('Contribution updated and saved successfully');
-  };
-
-  const handleWithdrawContribution = async (contributionId: string) => {
-    const contribution = contributions.find(c => c.id === contributionId);
-    if (!contribution) return;
-
-    const isaFlexible = isFlexibleFromSettings(isaSettings, contribution.provider, contribution.isaType);
-    const message = isaFlexible
-      ? `Withdraw this ${formatCurrency(contribution.amount)} contribution from ${contribution.provider}?\n\nThis is a flexible ISA - withdrawing will free up ${formatCurrency(contribution.amount)} of your allowance for re-contribution this tax year.`
-      : `Withdraw this ${formatCurrency(contribution.amount)} contribution from ${contribution.provider}?\n\nThe contribution will be marked as withdrawn, but the allowance remains used for this tax year (non-flexible ISA rules).`;
-
-    const performWithdraw = async () => {
-      console.log(`Marking contribution as withdrawn - ${isaFlexible ? 'allowance freed up (flexible ISA)' : 'allowance remains used (non-flexible ISA)'}`);
-
-      if (isGuest) {
-        // Guest mode: update in AsyncStorage
-        const updatedContributions = contributions.map(c =>
-          c.id === contributionId
-            ? { ...c, withdrawn: true, withdrawnDate: new Date().toISOString() }
-            : c
-        );
-        setContributions(updatedContributions);
-        await saveContributions(updatedContributions);
-      } else {
-        // Authenticated: update in Supabase
-        const success = await updateContributionDB(contributionId, { withdrawn: true });
-        if (success) {
-          await loadISAData();
-        }
-      }
-
-      console.log('✅ Contribution marked as withdrawn:', contributionId);
-    };
-
-    // Use native browser confirm on web, Alert.alert on mobile
-    if (Platform.OS === 'web') {
-      if (typeof window !== 'undefined' && window.confirm(message)) {
-        await performWithdraw();
-      }
-    } else {
-      Alert.alert(
-        'Withdraw Contribution',
-        message,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Withdraw',
-            style: 'default',
-            onPress: performWithdraw,
-          },
-        ]
-      );
+      await persistGuest(contributions.map((c) => (c.id === updated.id ? updated : c)));
+    } else if (await updateContributionDB(updated.id, updated as Partial<DBContribution>)) {
+      await loadData();
     }
   };
 
-  const handleDeleteContribution = async (contributionId: string) => {
-    const contribution = contributions.find(c => c.id === contributionId);
-    if (!contribution) return;
-
-    const message = `Delete this ${formatCurrency(contribution.amount)} entry from ${contribution.provider}?\n\nThis will completely remove the entry and restore your allowance.\n\nOnly use this if the entry was added by mistake!`;
-
-    const performDelete = async () => {
-      console.log(`Deleting contribution - allowance will be restored`);
-
-      if (isGuest) {
-        // Guest mode: delete from AsyncStorage
-        const updatedContributions = contributions.filter(c => c.id !== contributionId);
-        setContributions(updatedContributions);
-        await saveContributions(updatedContributions);
-      } else {
-        // Authenticated: delete from Supabase
-        const success = await deleteContributionDB(contributionId);
-        if (success) {
-          await loadISAData();
-        }
-      }
-
-      console.log('✅ Contribution deleted:', contributionId);
-    };
-
-    // Use native browser confirm on web, Alert.alert on mobile
-    if (Platform.OS === 'web') {
-      if (typeof window !== 'undefined' && window.confirm(message)) {
-        await performDelete();
-      }
-    } else {
-      Alert.alert(
-        'Delete Entry',
-        message,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Delete',
-            style: 'destructive',
-            onPress: performDelete
-          }
-        ]
+  const withdraw = async (contribution: ISAContribution) => {
+    if (isGuest) {
+      await persistGuest(
+        contributions.map((c) =>
+          c.id === contribution.id ? { ...c, withdrawn: true, withdrawnDate: new Date().toISOString() } : c
+        )
       );
+    } else if (await updateContributionDB(contribution.id, { withdrawn: true })) {
+      await loadData();
     }
   };
 
-  const handleAddISA = (isaType: string, event: any) => {
-    // Stop event propagation to prevent card from expanding
-    event?.stopPropagation?.();
-    setPreSelectedISAType(isaType);
-    setAddContributionVisible(true);
+  const remove = async (contribution: ISAContribution) => {
+    if (isGuest) {
+      await persistGuest(contributions.filter((c) => c.id !== contribution.id));
+    } else if (await deleteContributionDB(contribution.id)) {
+      await loadData();
+    }
   };
+
+  const askWithdraw = (c: ISAContribution) => {
+    const flexible = isFlexibleFromSettings(isaSettings, c.provider, c.isaType);
+    setConfirmation({
+      title: `Withdraw ${formatCurrency(c.amount)}?`,
+      message: flexible
+        ? `${c.provider} is a flexible ISA, so withdrawing frees up ${formatCurrency(c.amount)} of allowance to pay back in this tax year.`
+        : `The contribution will be marked as withdrawn. Because this ISA isn't flexible, the allowance stays used for this tax year.`,
+      actionLabel: 'Mark as withdrawn',
+      icon: 'arrow-undo-outline',
+      onConfirm: () => withdraw(c),
+    });
+  };
+
+  const askDelete = (c: ISAContribution) => {
+    setConfirmation({
+      title: 'Delete this entry?',
+      message: `This removes the ${formatCurrency(c.amount)} entry from ${c.provider} completely and restores the allowance. Only use this for entries added by mistake.`,
+      actionLabel: 'Delete entry',
+      icon: 'trash-outline',
+      destructive: true,
+      onConfirm: () => remove(c),
+    });
+  };
+
+  const openAdd = () => {
+    haptics.impact();
+    setAddVisible(true);
+  };
+
+  // ─── Render ───
+  const firstName = !isGuest && userProfile.fullName ? userProfile.fullName.trim().split(/\s+/)[0] : '';
 
   return (
-    <View style={styles.container}>
-      <AnimatedBackground />
-      <SafeAreaView style={styles.safe} edges={['top']}>
-        <ScrollView
-          contentContainerStyle={styles.scroll}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              tintColor={Colors.gold}
-              colors={[Colors.gold]}
-              progressBackgroundColor={Colors.deepNavy}
-            />
-          }
+    <Screen
+      eyebrow={`${currentTaxYear.label} tax year`}
+      title={firstName ? `${greeting()}, ${firstName}` : greeting()}
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
+      contentStyle={styles.content}
+      overlay={
+        // Hidden while the empty state shows its own "Add contribution" button
+        loaded && yearContributions.length === 0 ? undefined : (
+        <Pressable
+          onPress={openAdd}
+          accessibilityRole="button"
+          accessibilityLabel="Add contribution"
+          style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}
         >
-          <View style={styles.header}>
-            <View>
-              <Text style={styles.title}>ISA Dashboard</Text>
-              <Text style={styles.year}>{taxYear.start.getFullYear()}/{taxYear.end.getFullYear()} Tax Year</Text>
-            </View>
-            <Image source={require('@/assets/logo.png')} style={styles.logo} resizeMode="contain" />
+          <Ionicons name="add" size={28} color={Colors.onAccent} />
+        </Pressable>
+        )
+      }
+    >
+      {/* ─── Allowance hero ─── */}
+      <Card>
+        <Text style={styles.overline}>{exceededBy > 0 ? 'Over allowance by' : 'Allowance remaining'}</Text>
+        <Text
+          style={[styles.heroValue, exceededBy > 0 && { color: Colors.negative }]}
+          accessibilityLabel={`${formatCurrency(exceededBy > 0 ? exceededBy : remaining)} ${exceededBy > 0 ? 'over' : 'remaining'}`}
+        >
+          {formatCurrency(exceededBy > 0 ? exceededBy : remaining)}
+        </Text>
+        <Text style={styles.heroCaption}>of your {formatCurrency(ISA_ANNUAL_ALLOWANCE)} allowance</Text>
+
+        <ProgressBar
+          height={10}
+          style={styles.heroBar}
+          segments={ISA_TYPE_ORDER.map((t) => ({
+            value: byType[t].used / ISA_ANNUAL_ALLOWANCE,
+            color: isaColor(t),
+          }))}
+        />
+
+        <View style={styles.heroFooter}>
+          <Text style={styles.heroMeta}>
+            <Text style={styles.heroMetaStrong}>{formatCurrency(allowanceUsed)}</Text> used ·{' '}
+            {Math.min(100, Math.round(usedFraction * 100))}%
+          </Text>
+          <View style={styles.daysPill}>
+            <Ionicons name="calendar-outline" size={13} color={Colors.textSecondary} />
+            <Text style={styles.daysText}>{daysLeft} days left</Text>
           </View>
+        </View>
+      </Card>
 
-          {allowanceUsed >= ISA_ANNUAL_ALLOWANCE && (
-            <GlassCard style={styles.card} intensity="dark">
-              <View style={styles.row}>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.warn, { color: allowanceUsed > ISA_ANNUAL_ALLOWANCE ? Colors.error : Colors.gold }]}>
-                    {allowanceUsed > ISA_ANNUAL_ALLOWANCE ? 'Allowance Exceeded!' : '🎯 ISA Limit Reached!'}
-                  </Text>
-                  <Text style={styles.sub}>
-                    {allowanceUsed > ISA_ANNUAL_ALLOWANCE
-                      ? `You've exceeded the £20,000 annual limit by ${formatCurrency(allowanceUsed - ISA_ANNUAL_ALLOWANCE)}`
-                      : 'Congratulations! You\'ve maximized your £20,000 annual ISA allowance.'
-                    }
-                  </Text>
-                </View>
-              </View>
-            </GlassCard>
+      {/* ─── Single contextual insight ─── */}
+      {insight && (
+        <View style={[styles.insight, { borderColor: insight.tone + '55', backgroundColor: insight.tone + '14' }]}>
+          <Ionicons name={insight.icon} size={20} color={insight.tone} />
+          <Text style={styles.insightText}>{insight.text}</Text>
+        </View>
+      )}
+
+      {loaded && yearContributions.length === 0 ? (
+        /* ─── First-run / empty year ─── */
+        <Card style={styles.emptyCard}>
+          <EmptyState
+            icon="sparkles-outline"
+            title={hasOlderContributions ? 'Nothing logged this tax year' : 'Start tracking your ISAs'}
+            message={
+              hasOlderContributions
+                ? `Your ${currentTaxYear.label} allowance is untouched. Log a contribution when you pay into an ISA.`
+                : 'Log a contribution whenever you pay into an ISA and we\'ll keep your allowance up to date.'
+            }
+            actionLabel="Add contribution"
+            onAction={openAdd}
+          />
+        </Card>
+      ) : (
+        <>
+          {/* ─── Breakdown by ISA type ─── */}
+          <SectionHeader title="This tax year" />
+          <ListGroup>
+            {typesInUse.map((t) => {
+              const providers = byType[t].providers.size;
+              const parts = [`${providers} provider${providers === 1 ? '' : 's'}`];
+              if (t === 'lifetime' && lisaBonus > 0) parts.push(`+${formatCurrency(lisaBonus)} bonus`);
+              return (
+                <ListItem
+                  key={t}
+                  icon={ISA_ICONS[t]}
+                  iconColor={isaColor(t)}
+                  title={ISA_LABELS[t]}
+                  subtitle={parts.join(' · ')}
+                  value={formatCurrency(byType[t].active)}
+                />
+              );
+            })}
+          </ListGroup>
+
+          {/* ─── Activity ─── */}
+          <SectionHeader title="Activity" />
+          {typesInUse.length > 1 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.chips}
+              style={styles.chipsScroll}
+            >
+              <Chip label="All" selected={!typeFilter} onPress={() => setTypeFilter(null)} />
+              {typesInUse.map((t) => (
+                <Chip
+                  key={t}
+                  label={ISA_LABELS[t].replace(' ISA', '')}
+                  dotColor={isaColor(t)}
+                  selected={typeFilter === t}
+                  onPress={() => setTypeFilter(typeFilter === t ? null : t)}
+                />
+              ))}
+            </ScrollView>
           )}
 
-          {allowanceUsed >= ISA_ANNUAL_ALLOWANCE * 0.9 && allowanceUsed < ISA_ANNUAL_ALLOWANCE && (
-            <GlassCard style={styles.card} intensity="dark">
-              <View style={styles.row}>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.warn, { color: Colors.gold }]}>🚩 Nearly There!</Text>
-                  <Text style={styles.sub}>
-                    You're at {Math.round(percent)}% of your ISA limit! Only {formatCurrency(remaining)} remaining.
-                  </Text>
-                </View>
-              </View>
-            </GlassCard>
+          <ListGroup>
+            {visibleActivity.map((c) => (
+              <ListItem
+                key={c.id}
+                leading={<IconTile name={ISA_ICONS[c.isaType] ?? 'wallet-outline'} color={isaColor(c.isaType)} size={36} />}
+                title={c.provider}
+                subtitle={`${formatShortDate(c.date)} · ${
+                  c.withdrawn ? 'Withdrawn' : (ISA_LABELS[c.isaType] ?? 'ISA').replace(' ISA', '')
+                }`}
+                value={formatCurrency(c.amount)}
+                muted={c.withdrawn}
+                onPress={() => setMenuFor(c)}
+              />
+            ))}
+          </ListGroup>
+
+          {filteredActivity.length > ACTIVITY_PREVIEW_COUNT && (
+            <Button
+              title={showAllActivity ? 'Show less' : `Show all ${filteredActivity.length}`}
+              variant="ghost"
+              size="md"
+              onPress={() => setShowAllActivity(!showAllActivity)}
+              style={styles.showAll}
+            />
           )}
 
-          {days <= 30 && (
-            <GlassCard style={styles.card} intensity="dark">
-              <View style={styles.row}>
-                <Ionicons name="warning" size={24} color={Colors.warning} />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={styles.warn}>Tax Year Ends in {days} Days!</Text>
-                  <Text style={styles.sub}>Use your {formatCurrency(remaining)} allowance</Text>
-                </View>
-              </View>
-            </GlassCard>
+          {hasOlderContributions && (
+            <Pressable
+              onPress={() => router.push('/(tabs)/analytics')}
+              style={({ pressed }) => [styles.historyLink, pressed && { opacity: 0.6 }]}
+              accessibilityRole="link"
+            >
+              <Text style={styles.historyText}>See previous tax years in Insights</Text>
+              <Ionicons name="arrow-forward" size={14} color={Colors.accent} />
+            </Pressable>
           )}
+        </>
+      )}
 
-          <GlassCard style={styles.card} intensity="dark">
-            <Text style={styles.label}>Annual ISA Allowance</Text>
-            <Text style={styles.big}>{formatCurrency(ISA_ANNUAL_ALLOWANCE)}</Text>
-            <View style={styles.bar}>
-              {/* Clamp: an exceeded allowance must not overflow the track */}
-              <LinearGradient colors={Colors.goldGradient} style={{ width: `${Math.min(100, Math.max(0, percent))}%`, height: '100%', borderRadius: 6 }} />
-            </View>
-            <View style={styles.stats}>
-              <View style={styles.stat}>
-                <Text style={styles.statLabel}>Used</Text>
-                {/* allowanceUsed (not raw total) so the £ figure matches the % */}
-                <Text style={styles.statVal}>{formatCurrency(allowanceUsed)}</Text>
-                <Text style={styles.statPer}>{percent.toFixed(0)}%</Text>
-              </View>
-              <View style={styles.div} />
-              <View style={styles.stat}>
-                <Text style={styles.statLabel}>Left</Text>
-                <Text style={styles.statVal}>{formatCurrency(Math.max(0, remaining))}</Text>
-                <Text style={styles.statPer}>{Math.max(0, 100 - percent).toFixed(0)}%</Text>
-              </View>
-              <View style={styles.div} />
-              <View style={styles.stat}>
-                <Text style={styles.statLabel}>Days</Text>
-                <Text style={styles.statVal}>{days}</Text>
-                <Text style={styles.statPer}>left</Text>
-              </View>
-            </View>
-          </GlassCard>
-
-          <Text style={styles.section}>My ISAs</Text>
-
-          {/* Cash ISA */}
-          <Pressable onPress={() => setExpandedISA(expandedISA === 'cash' ? null : 'cash')} style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}>
-            <GlassCard style={styles.card} intensity="medium">
-              <View style={styles.row}>
-                <View style={[styles.icon, { backgroundColor: ISA_INFO.cash.color + '30' }]}>
-                  <Ionicons name="cash" size={24} color={ISA_INFO.cash.color} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.name}>Cash ISA</Text>
-                  <Text style={styles.sub}>
-                    {Object.keys(groupedISAs.cash.providers).length > 0
-                      ? `${Object.keys(groupedISAs.cash.providers).length} provider${Object.keys(groupedISAs.cash.providers).length > 1 ? 's' : ''} • Low Risk`
-                      : 'No contributions yet'}
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  onPress={(e) => handleAddISA('cash', e)}
-                  style={{ padding: 8, marginRight: 4 }}
-                  activeOpacity={0.6}
-                >
-                  <Ionicons name="add-circle-outline" size={24} color={Colors.gold} />
-                </TouchableOpacity>
-                <Ionicons name={expandedISA === 'cash' ? "chevron-up" : "chevron-down"} size={20} color={Colors.lightGray} />
-              </View>
-              <View style={[styles.row, { marginTop: 12 }]}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.sub}>Total Contributed</Text>
-                  <Text style={styles.val}>{formatCurrency(groupedISAs.cash.total)}</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.sub}>Balance</Text>
-                  <Text style={[styles.val, { color: Colors.success }]}>{formatCurrency(groupedISAs.cash.total)}</Text>
-                </View>
-              </View>
-
-              {expandedISA === 'cash' && filteredContributions.filter(c => c.isaType === 'cash').length > 0 && (
-                <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.glassLight }}>
-                  <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Contributions:</Text>
-                  {filteredContributions.filter(c => c.isaType === 'cash').map((contribution) => (
-                    <View key={contribution.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingLeft: 12, paddingVertical: 8, backgroundColor: contribution.withdrawn ? 'rgba(255, 165, 0, 0.1)' : 'rgba(255, 255, 255, 0.05)', borderRadius: 8, borderWidth: contribution.withdrawn ? 1 : 0, borderColor: contribution.withdrawn ? 'rgba(255, 165, 0, 0.3)' : 'transparent' }}>
-                      <View style={{ flex: 1 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                          <Text style={styles.sub}>{contribution.provider}</Text>
-                          {contribution.withdrawn && (
-                            <Text style={{ fontSize: 10, color: Colors.warning, fontWeight: '600', backgroundColor: 'rgba(255, 165, 0, 0.2)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>WITHDRAWN</Text>
-                          )}
-                        </View>
-                        <Text style={[styles.sub, { fontSize: 12, opacity: 0.7, marginTop: 2 }]}>
-                          {parseDateKey(contribution.date).toLocaleDateString()}
-                        </Text>
-                      </View>
-                      <Text style={[styles.val, { marginRight: 8, textDecorationLine: contribution.withdrawn ? 'line-through' : 'none', opacity: contribution.withdrawn ? 0.6 : 1 }]}>{formatCurrency(contribution.amount)}</Text>
-                      {!contribution.withdrawn && (
-                        <>
-                          <TouchableOpacity
-                            onPress={() => handleEditContribution(contribution)}
-                            style={{ padding: 8 }}
-                            activeOpacity={0.6}
-                          >
-                            <Ionicons name="create-outline" size={20} color={Colors.gold} />
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            onPress={() => handleWithdrawContribution(contribution.id)}
-                            style={{ padding: 8 }}
-                            activeOpacity={0.6}
-                          >
-                            <Ionicons name="arrow-undo-outline" size={20} color={Colors.warning} />
-                          </TouchableOpacity>
-                        </>
-                      )}
-                      <TouchableOpacity
-                        onPress={() => handleDeleteContribution(contribution.id)}
-                        style={{ padding: 8 }}
-                        activeOpacity={0.6}
-                      >
-                        <Ionicons name="trash-outline" size={20} color={Colors.error} />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                </View>
-              )}
-            </GlassCard>
-          </Pressable>
-
-          {/* Stocks & Shares ISA */}
-          <Pressable onPress={() => setExpandedISA(expandedISA === 'stocks_shares' ? null : 'stocks_shares')} style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}>
-            <GlassCard style={styles.card} intensity="medium">
-              <View style={styles.row}>
-                <View style={[styles.icon, { backgroundColor: ISA_INFO.stocks_shares.color + '30' }]}>
-                  <Ionicons name="trending-up" size={24} color={ISA_INFO.stocks_shares.color} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.name}>Stocks & Shares ISA</Text>
-                  <Text style={styles.sub}>
-                    {Object.keys(groupedISAs.stocks_shares.providers).length > 0
-                      ? `${Object.keys(groupedISAs.stocks_shares.providers).length} provider${Object.keys(groupedISAs.stocks_shares.providers).length > 1 ? 's' : ''} • Medium Risk`
-                      : 'No contributions yet'}
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  onPress={(e) => handleAddISA('stocks_shares', e)}
-                  style={{ padding: 8, marginRight: 4 }}
-                  activeOpacity={0.6}
-                >
-                  <Ionicons name="add-circle-outline" size={24} color={Colors.gold} />
-                </TouchableOpacity>
-                <Ionicons name={expandedISA === 'stocks_shares' ? "chevron-up" : "chevron-down"} size={20} color={Colors.lightGray} />
-              </View>
-              <View style={[styles.row, { marginTop: 12 }]}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.sub}>Total Contributed</Text>
-                  <Text style={styles.val}>{formatCurrency(groupedISAs.stocks_shares.total)}</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.sub}>Balance</Text>
-                  <Text style={[styles.val, { color: Colors.success }]}>{formatCurrency(groupedISAs.stocks_shares.total)}</Text>
-                </View>
-              </View>
-
-              {expandedISA === 'stocks_shares' && filteredContributions.filter(c => c.isaType === 'stocks_shares').length > 0 && (
-                <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.glassLight }}>
-                  <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Contributions:</Text>
-                  {filteredContributions.filter(c => c.isaType === 'stocks_shares').map((contribution) => (
-                    <View key={contribution.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingLeft: 12, paddingVertical: 8, backgroundColor: contribution.withdrawn ? 'rgba(255, 165, 0, 0.1)' : 'rgba(255, 255, 255, 0.05)', borderRadius: 8, borderWidth: contribution.withdrawn ? 1 : 0, borderColor: contribution.withdrawn ? 'rgba(255, 165, 0, 0.3)' : 'transparent' }}>
-                      <View style={{ flex: 1 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                          <Text style={styles.sub}>{contribution.provider}</Text>
-                          {contribution.withdrawn && (
-                            <Text style={{ fontSize: 10, color: Colors.warning, fontWeight: '600', backgroundColor: 'rgba(255, 165, 0, 0.2)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>WITHDRAWN</Text>
-                          )}
-                        </View>
-                        <Text style={[styles.sub, { fontSize: 12, opacity: 0.7, marginTop: 2 }]}>
-                          {parseDateKey(contribution.date).toLocaleDateString()}
-                        </Text>
-                      </View>
-                      <Text style={[styles.val, { marginRight: 8, textDecorationLine: contribution.withdrawn ? 'line-through' : 'none', opacity: contribution.withdrawn ? 0.6 : 1 }]}>{formatCurrency(contribution.amount)}</Text>
-                      {!contribution.withdrawn && (
-                        <>
-                          <TouchableOpacity
-                            onPress={() => handleEditContribution(contribution)}
-                            style={{ padding: 8 }}
-                            activeOpacity={0.6}
-                          >
-                            <Ionicons name="create-outline" size={20} color={Colors.gold} />
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            onPress={() => handleWithdrawContribution(contribution.id)}
-                            style={{ padding: 8 }}
-                            activeOpacity={0.6}
-                          >
-                            <Ionicons name="arrow-undo-outline" size={20} color={Colors.warning} />
-                          </TouchableOpacity>
-                        </>
-                      )}
-                      <TouchableOpacity
-                        onPress={() => handleDeleteContribution(contribution.id)}
-                        style={{ padding: 8 }}
-                        activeOpacity={0.6}
-                      >
-                        <Ionicons name="trash-outline" size={20} color={Colors.error} />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                </View>
-              )}
-            </GlassCard>
-          </Pressable>
-
-          {/* Lifetime ISA */}
-          <Pressable onPress={() => setExpandedISA(expandedISA === 'lifetime' ? null : 'lifetime')} style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}>
-            <GlassCard style={styles.card} intensity="medium">
-              <View style={styles.row}>
-                <View style={[styles.icon, { backgroundColor: ISA_INFO.lifetime.color + '30' }]}>
-                  <Ionicons name="home" size={24} color={ISA_INFO.lifetime.color} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.name}>Lifetime ISA</Text>
-                  <Text style={styles.sub}>
-                    {Object.keys(groupedISAs.lifetime.providers).length > 0
-                      ? `${Object.keys(groupedISAs.lifetime.providers).length} provider${Object.keys(groupedISAs.lifetime.providers).length > 1 ? 's' : ''} • 25% Gov Bonus`
-                      : 'No contributions yet'}
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  onPress={(e) => handleAddISA('lifetime', e)}
-                  style={{ padding: 8, marginRight: 4 }}
-                  activeOpacity={0.6}
-                >
-                  <Ionicons name="add-circle-outline" size={24} color={Colors.gold} />
-                </TouchableOpacity>
-                <Ionicons name={expandedISA === 'lifetime' ? "chevron-up" : "chevron-down"} size={20} color={Colors.lightGray} />
-              </View>
-              <View style={[styles.row, { marginTop: 12 }]}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.sub}>Total Contributed</Text>
-                  <Text style={styles.val}>{formatCurrency(groupedISAs.lifetime.total)}</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.sub}>Gov Bonus</Text>
-                  <Text style={[styles.val, { color: ISA_INFO.lifetime.color }]}>+{formatCurrency(lisaBonus)}</Text>
-                </View>
-              </View>
-              <View style={[styles.bar, { marginTop: 12, height: 4 }]}>
-                <View style={{ width: `${(groupedISAs.lifetime.total / LIFETIME_ISA_MAX) * 100}%`, height: '100%', backgroundColor: ISA_INFO.lifetime.color, borderRadius: 2 }} />
-              </View>
-              <Text style={[styles.sub, { marginTop: 4 }]}>{formatCurrency(LIFETIME_ISA_MAX - groupedISAs.lifetime.total)} left for max bonus</Text>
-
-              {expandedISA === 'lifetime' && filteredContributions.filter(c => c.isaType === 'lifetime').length > 0 && (
-                <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.glassLight }}>
-                  <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Contributions:</Text>
-                  {filteredContributions.filter(c => c.isaType === 'lifetime').map((contribution) => (
-                    <View key={contribution.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingLeft: 12, paddingVertical: 8, backgroundColor: contribution.withdrawn ? 'rgba(255, 165, 0, 0.1)' : 'rgba(255, 255, 255, 0.05)', borderRadius: 8, borderWidth: contribution.withdrawn ? 1 : 0, borderColor: contribution.withdrawn ? 'rgba(255, 165, 0, 0.3)' : 'transparent' }}>
-                      <View style={{ flex: 1 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                          <Text style={styles.sub}>{contribution.provider}</Text>
-                          {contribution.withdrawn && (
-                            <Text style={{ fontSize: 10, color: Colors.warning, fontWeight: '600', backgroundColor: 'rgba(255, 165, 0, 0.2)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>WITHDRAWN</Text>
-                          )}
-                        </View>
-                        <Text style={[styles.sub, { fontSize: 12, opacity: 0.7, marginTop: 2 }]}>
-                          {parseDateKey(contribution.date).toLocaleDateString()}
-                        </Text>
-                      </View>
-                      <Text style={[styles.val, { marginRight: 8, textDecorationLine: contribution.withdrawn ? 'line-through' : 'none', opacity: contribution.withdrawn ? 0.6 : 1 }]}>{formatCurrency(contribution.amount)}</Text>
-                      {!contribution.withdrawn && (
-                        <>
-                          <TouchableOpacity
-                            onPress={() => handleEditContribution(contribution)}
-                            style={{ padding: 8 }}
-                            activeOpacity={0.6}
-                          >
-                            <Ionicons name="create-outline" size={20} color={Colors.gold} />
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            onPress={() => handleWithdrawContribution(contribution.id)}
-                            style={{ padding: 8 }}
-                            activeOpacity={0.6}
-                          >
-                            <Ionicons name="arrow-undo-outline" size={20} color={Colors.warning} />
-                          </TouchableOpacity>
-                        </>
-                      )}
-                      <TouchableOpacity
-                        onPress={() => handleDeleteContribution(contribution.id)}
-                        style={{ padding: 8 }}
-                        activeOpacity={0.6}
-                      >
-                        <Ionicons name="trash-outline" size={20} color={Colors.error} />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                </View>
-              )}
-            </GlassCard>
-          </Pressable>
-
-          {/* Innovative Finance ISA */}
-          <Pressable onPress={() => setExpandedISA(expandedISA === 'innovative_finance' ? null : 'innovative_finance')} style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}>
-            <GlassCard style={styles.card} intensity="medium">
-              <View style={styles.row}>
-                <View style={[styles.icon, { backgroundColor: ISA_INFO.innovative_finance.color + '30' }]}>
-                  <Ionicons name="flash" size={24} color={ISA_INFO.innovative_finance.color} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.name}>Innovative Finance ISA</Text>
-                  <Text style={styles.sub}>
-                    {Object.keys(groupedISAs.innovative_finance.providers).length > 0
-                      ? `${Object.keys(groupedISAs.innovative_finance.providers).length} provider${Object.keys(groupedISAs.innovative_finance.providers).length > 1 ? 's' : ''} • High Risk`
-                      : 'No contributions yet'}
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  onPress={(e) => handleAddISA('innovative_finance', e)}
-                  style={{ padding: 8, marginRight: 4 }}
-                  activeOpacity={0.6}
-                >
-                  <Ionicons name="add-circle-outline" size={24} color={Colors.gold} />
-                </TouchableOpacity>
-                <Ionicons name={expandedISA === 'innovative_finance' ? "chevron-up" : "chevron-down"} size={20} color={Colors.lightGray} />
-              </View>
-              <View style={[styles.row, { marginTop: 12 }]}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.sub}>Total Contributed</Text>
-                  <Text style={styles.val}>{formatCurrency(groupedISAs.innovative_finance.total)}</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.sub}>Balance</Text>
-                  <Text style={[styles.val, { color: Colors.success }]}>{formatCurrency(groupedISAs.innovative_finance.total)}</Text>
-                </View>
-              </View>
-
-              {expandedISA === 'innovative_finance' && filteredContributions.filter(c => c.isaType === 'innovative_finance').length > 0 && (
-                <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.glassLight }}>
-                  <Text style={[styles.sub, { marginBottom: 12, fontWeight: '600' }]}>Contributions:</Text>
-                  {filteredContributions.filter(c => c.isaType === 'innovative_finance').map((contribution) => (
-                    <View key={contribution.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingLeft: 12, paddingVertical: 8, backgroundColor: contribution.withdrawn ? 'rgba(255, 165, 0, 0.1)' : 'rgba(255, 255, 255, 0.05)', borderRadius: 8, borderWidth: contribution.withdrawn ? 1 : 0, borderColor: contribution.withdrawn ? 'rgba(255, 165, 0, 0.3)' : 'transparent' }}>
-                      <View style={{ flex: 1 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                          <Text style={styles.sub}>{contribution.provider}</Text>
-                          {contribution.withdrawn && (
-                            <Text style={{ fontSize: 10, color: Colors.warning, fontWeight: '600', backgroundColor: 'rgba(255, 165, 0, 0.2)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>WITHDRAWN</Text>
-                          )}
-                        </View>
-                        <Text style={[styles.sub, { fontSize: 12, opacity: 0.7, marginTop: 2 }]}>
-                          {parseDateKey(contribution.date).toLocaleDateString()}
-                        </Text>
-                      </View>
-                      <Text style={[styles.val, { marginRight: 8, textDecorationLine: contribution.withdrawn ? 'line-through' : 'none', opacity: contribution.withdrawn ? 0.6 : 1 }]}>{formatCurrency(contribution.amount)}</Text>
-                      {!contribution.withdrawn && (
-                        <>
-                          <TouchableOpacity
-                            onPress={() => handleEditContribution(contribution)}
-                            style={{ padding: 8 }}
-                            activeOpacity={0.6}
-                          >
-                            <Ionicons name="create-outline" size={20} color={Colors.gold} />
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            onPress={() => handleWithdrawContribution(contribution.id)}
-                            style={{ padding: 8 }}
-                            activeOpacity={0.6}
-                          >
-                            <Ionicons name="arrow-undo-outline" size={20} color={Colors.warning} />
-                          </TouchableOpacity>
-                        </>
-                      )}
-                      <TouchableOpacity
-                        onPress={() => handleDeleteContribution(contribution.id)}
-                        style={{ padding: 8 }}
-                        activeOpacity={0.6}
-                      >
-                        <Ionicons name="trash-outline" size={20} color={Colors.error} />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                </View>
-              )}
-            </GlassCard>
-          </Pressable>
-
-          <Pressable
-            onPress={() => {
-              setPreSelectedISAType(undefined);
-              setAddContributionVisible(true);
-            }}
-            style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
-          >
-            <GlassCard style={styles.card} intensity="light">
-              <View style={{ alignItems: 'center', paddingVertical: 12 }}>
-                <Ionicons name="add-circle" size={32} color={Colors.gold} />
-                <Text style={[styles.name, { marginTop: 8 }]}>Add ISA Contribution</Text>
-                <Text style={styles.sub}>Track contributions from any provider</Text>
-              </View>
-            </GlassCard>
-          </Pressable>
-
-          <View style={{ height: 100 }} />
-        </ScrollView>
-      </SafeAreaView>
-
-      {/* Floating add button — the primary action shouldn't require scrolling
-          to the bottom of the dashboard on a phone */}
-      <Pressable
-        onPress={() => {
-          setPreSelectedISAType(undefined);
-          setAddContributionVisible(true);
-        }}
-        style={({ pressed }) => [styles.fab, pressed && { transform: [{ scale: 0.92 }] }]}
-      >
-        <LinearGradient
-          colors={Colors.goldGradient}
-          style={styles.fabGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <Ionicons name="add" size={30} color={Colors.deepNavy} />
-        </LinearGradient>
-      </Pressable>
-
-      {/* Add ISA Contribution Modal */}
-      <AddISAContributionModal
-        visible={addContributionVisible}
-        onClose={() => {
-          setAddContributionVisible(false);
-          setPreSelectedISAType(undefined);
-        }}
-        onAdd={handleAddContribution}
-        preSelectedType={preSelectedISAType}
-        currentISAs={{
-          cash: {
-            contributed: groupedISAs.cash.total,
-            balance: groupedISAs.cash.total,
-            provider: Object.keys(groupedISAs.cash.providers)[0] || 'None',
-          },
-          stocks_shares: {
-            contributed: groupedISAs.stocks_shares.total,
-            balance: groupedISAs.stocks_shares.total,
-            provider: Object.keys(groupedISAs.stocks_shares.providers)[0] || 'None',
-          },
-          lifetime: {
-            contributed: groupedISAs.lifetime.total,
-            balance: groupedISAs.lifetime.total,
-            provider: Object.keys(groupedISAs.lifetime.providers)[0] || 'None',
-          },
-          innovative_finance: {
-            contributed: groupedISAs.innovative_finance.total,
-            balance: groupedISAs.innovative_finance.total,
-            provider: Object.keys(groupedISAs.innovative_finance.providers)[0] || 'None',
-          },
-        }}
+      {/* ─── Sheets & modals ─── */}
+      <ActionSheet
+        visible={!!menuFor}
+        onClose={() => setMenuFor(null)}
+        title={menuFor ? `${formatCurrency(menuFor.amount)} · ${menuFor.provider}` : undefined}
+        message={menuFor ? `${ISA_LABELS[menuFor.isaType] ?? 'ISA'} · ${formatShortDate(menuFor.date)}` : undefined}
+        actions={
+          menuFor
+            ? [
+                ...(!menuFor.withdrawn
+                  ? [
+                      {
+                        label: 'Edit contribution',
+                        icon: 'create-outline' as const,
+                        onPress: () => {
+                          setSelected(menuFor);
+                          setEditVisible(true);
+                        },
+                      },
+                      {
+                        label: 'Mark as withdrawn',
+                        icon: 'arrow-undo-outline' as const,
+                        description: 'You took this money out of the ISA',
+                        onPress: () => askWithdraw(menuFor),
+                      },
+                    ]
+                  : []),
+                {
+                  label: 'Delete entry',
+                  icon: 'trash-outline' as const,
+                  destructive: true,
+                  description: 'Added by mistake',
+                  onPress: () => askDelete(menuFor),
+                },
+              ]
+            : []
+        }
       />
 
-      {/* Edit ISA Contribution Modal */}
+      <ActionSheet
+        visible={!!confirmation}
+        onClose={() => setConfirmation(null)}
+        title={confirmation?.title}
+        message={confirmation?.message}
+        actions={
+          confirmation
+            ? [
+                {
+                  label: confirmation.actionLabel,
+                  icon: confirmation.icon,
+                  destructive: confirmation.destructive,
+                  onPress: confirmation.onConfirm,
+                },
+              ]
+            : []
+        }
+      />
+
+      <ActionSheet
+        visible={!!notice}
+        onClose={() => setNotice(null)}
+        title={notice?.title}
+        message={notice?.message}
+        actions={[]}
+        cancelLabel="OK"
+      />
+
+      <AddISAContributionModal
+        visible={addVisible}
+        onClose={() => setAddVisible(false)}
+        onAdd={handleAddContribution}
+        currentISAs={Object.fromEntries(
+          ISA_TYPE_ORDER.map((t) => [
+            t,
+            {
+              contributed: byType[t].used,
+              balance: byType[t].active,
+              provider: [...byType[t].providers][0] || 'None',
+            },
+          ])
+        )}
+      />
+
       <EditISAContributionModal
-        visible={editContributionVisible}
+        visible={editVisible}
         onClose={() => {
-          setEditContributionVisible(false);
-          setSelectedContribution(null);
+          setEditVisible(false);
+          setSelected(null);
         }}
         onUpdate={handleUpdateContribution}
-        contribution={selectedContribution}
+        contribution={selected}
       />
-    </View>
+    </Screen>
   );
 }
 
-export default withErrorBoundary(DashboardScreen);
+export default withErrorBoundary(HomeScreen);
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  safe: { flex: 1 },
-  scroll: { padding: Spacing.md },
+  content: {
+    // Clear the floating add button so the last row stays tappable
+    paddingBottom: 104,
+  },
+  overline: {
+    ...Type.overline,
+  },
+  heroValue: {
+    ...Type.display,
+    ...Type.number,
+    marginTop: 8,
+  },
+  heroCaption: {
+    ...Type.callout,
+    marginTop: 2,
+  },
+  heroBar: {
+    marginTop: 20,
+  },
+  heroFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 14,
+  },
+  heroMeta: {
+    ...Type.caption,
+  },
+  heroMetaStrong: {
+    color: Colors.text,
+    fontWeight: '600',
+  },
+  daysPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: BorderRadius.full,
+    backgroundColor: Colors.surfaceRaised,
+  },
+  daysText: {
+    ...Type.caption,
+    fontWeight: '600',
+  },
+  insight: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginTop: 12,
+    padding: 14,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+  },
+  insightText: {
+    ...Type.callout,
+    color: Colors.text,
+    flex: 1,
+  },
+  emptyCard: {
+    marginTop: Spacing.lg,
+  },
+  chipsScroll: {
+    marginHorizontal: -20,
+    marginBottom: 12,
+  },
+  chips: {
+    gap: 8,
+    paddingHorizontal: 20,
+  },
+  showAll: {
+    marginTop: 8,
+  },
+  historyLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: Spacing.lg,
+    paddingVertical: 8,
+  },
+  historyText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.accent,
+  },
   fab: {
     position: 'absolute',
     right: 20,
-    bottom: 110,
-    borderRadius: 30,
-    shadowColor: Colors.gold,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.45,
-    shadowRadius: 14,
-    elevation: 10,
-  },
-  fabGradient: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    bottom: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
+    ...Shadows.gold,
   },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.lg },
-  title: { fontSize: Typography.sizes.xxl, color: Colors.white, fontWeight: Typography.weights.bold },
-  year: { fontSize: Typography.sizes.sm, color: Colors.gold, marginTop: 4, fontWeight: Typography.weights.semibold },
-  logo: { width: 60, height: 60 },
-  card: { marginBottom: Spacing.sm, padding: Spacing.md },
-  row: { flexDirection: 'row', alignItems: 'center' },
-  label: { fontSize: Typography.sizes.sm, color: Colors.lightGray, marginBottom: 4 },
-  big: { fontSize: Typography.sizes.xxxl, color: Colors.gold, fontWeight: Typography.weights.extrabold, marginBottom: 12 },
-  bar: { height: 12, backgroundColor: Colors.glassLight, borderRadius: 6, overflow: 'hidden', marginBottom: 12 },
-  stats: { flexDirection: 'row', justifyContent: 'space-between' },
-  stat: { flex: 1, alignItems: 'center' },
-  statLabel: { fontSize: Typography.sizes.xs, color: Colors.lightGray, marginBottom: 4 },
-  statVal: { fontSize: Typography.sizes.md, color: Colors.white, fontWeight: Typography.weights.bold },
-  statPer: { fontSize: Typography.sizes.xs, color: Colors.gold, fontWeight: Typography.weights.semibold, marginTop: 2 },
-  div: { width: 1, backgroundColor: Colors.glassLight, marginHorizontal: Spacing.sm },
-  section: { fontSize: Typography.sizes.lg, color: Colors.white, fontWeight: Typography.weights.bold, marginBottom: Spacing.md, marginTop: Spacing.md },
-  icon: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
-  name: { fontSize: Typography.sizes.md, color: Colors.white, fontWeight: Typography.weights.semibold },
-  sub: { fontSize: Typography.sizes.xs, color: Colors.lightGray, marginTop: 2 },
-  val: { fontSize: Typography.sizes.md, color: Colors.white, fontWeight: Typography.weights.bold, marginTop: 2 },
-  warn: { fontSize: Typography.sizes.md, color: Colors.warning, fontWeight: Typography.weights.bold },
+  fabPressed: {
+    backgroundColor: Colors.accentPressed,
+    transform: [{ scale: 0.94 }],
+  },
 });

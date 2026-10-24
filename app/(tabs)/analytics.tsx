@@ -1,710 +1,562 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Modal, Pressable } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { LineChart } from 'react-native-chart-kit';
 import { useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import AnimatedBackground from '@/components/AnimatedBackground';
-import GlassCard from '@/components/GlassCard';
 import { withErrorBoundary } from '@/components/ErrorBoundary';
-import { Colors, Spacing, Typography } from '@/constants/theme';
-import { formatCurrency, ISA_INFO, ISA_ANNUAL_ALLOWANCE } from '@/constants/isaData';
-import { Dimensions } from 'react-native';
+import Modal from '@/components/Modal';
+import { ISAContribution } from '@/components/AddISAContributionModal';
+import { Screen, Card, ListItem, ListGroup, ProgressBar, SectionHeader, EmptyState, Button } from '@/components/ui';
+import { Colors, Type, Spacing, BorderRadius } from '@/constants/theme';
+import {
+  ISA_ANNUAL_ALLOWANCE,
+  LIFETIME_ISA_MAX,
+  LIFETIME_ISA_BONUS_RATE,
+  ISA_TYPE_ORDER,
+  ISA_LABELS,
+  ISA_ICONS,
+  isaColor,
+  formatCurrency,
+  formatCompactCurrency,
+} from '@/constants/isaData';
 import { getCurrentTaxYear, isDateInTaxYear, getTaxYearFromDate, getTaxYearBoundaries, parseDateKey } from '@/utils/taxYear';
+import { loadISASettings, isFlexibleFromSettings, ISAAccountSettings } from '@/utils/isaSettings';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import { loadContributions as loadContributionsDB } from '@/lib/contributions';
+import { haptics } from '@/utils/haptics';
+import { calculateConsistency } from '@/utils/consistency';
 
-const { width } = Dimensions.get('window');
 const CONTRIBUTIONS_STORAGE_KEY = '@finnest_contributions';
+const MONTHS = ['A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D', 'J', 'F', 'M']; // tax year order, Apr → Mar
+const CHART_YEARS = 5;
+const CHART_HEIGHT = 140;
+const BAR_LABEL_ROW = 26; // year label under each bar
 
-interface ISAContribution {
-  id: string;
-  isaType: string;
-  provider: string;
-  amount: number;
-  date: string;
-  deleted?: boolean;
-  deletedDate?: string;
-}
-
-// Helper to group contributions by ISA type and provider
-const groupContributions = (contributions: ISAContribution[]) => {
-  const grouped: Record<string, { providers: Record<string, { contributed: number; balance: number }>, total: number }> = {
-    cash: { providers: {}, total: 0 },
-    stocks_shares: { providers: {}, total: 0 },
-    lifetime: { providers: {}, total: 0 },
-    innovative_finance: { providers: {}, total: 0 },
-  };
-
-  contributions.forEach(contribution => {
-    // Skip deleted contributions in display
-    if (contribution.deleted) return;
-
-    const type = contribution.isaType;
-    if (!grouped[type].providers[contribution.provider]) {
-      grouped[type].providers[contribution.provider] = { contributed: 0, balance: 0 };
-    }
-    grouped[type].providers[contribution.provider].contributed += contribution.amount;
-    grouped[type].providers[contribution.provider].balance += contribution.amount;
-    grouped[type].total += contribution.amount;
-  });
-
-  return grouped;
-};
-
-// Helper to calculate historical performance by tax year
-const calculateHistoricalPerformance = (contributions: ISAContribution[]) => {
-  const currentTaxYear = getCurrentTaxYear();
-
-  // Group contributions by tax year
-  const byTaxYear: Record<string, number> = {};
-
-  contributions.forEach(contribution => {
-    // Skip deleted contributions
-    if (contribution.deleted) return;
-
-    const taxYear = getTaxYearFromDate(parseDateKey(contribution.date));
-    const yearLabel = taxYear.label;
-
-    if (!byTaxYear[yearLabel]) {
-      byTaxYear[yearLabel] = 0;
-    }
-    byTaxYear[yearLabel] += contribution.amount;
-  });
-
-  // Get the last 3 tax years (excluding current year)
-  const years = [];
-  for (let i = 1; i <= 3; i++) {
-    const taxYear = getTaxYearBoundaries(currentTaxYear.startYear - i);
-    const amount = byTaxYear[taxYear.label] || 0;
-
-    years.push({
-      year: taxYear.label,
-      amount,
-    });
-  }
-
-  return years;
-};
-
-// Helper to calculate contribution trend data for the chart
-const calculateContributionTrend = (contributions: ISAContribution[]) => {
-  if (contributions.length === 0) {
-    return { labels: [], data: [] };
-  }
-
-  const currentTaxYear = getCurrentTaxYear();
-
-  // Group contributions by tax year
-  const byTaxYear: Record<string, number> = {};
-
-  contributions.forEach(contribution => {
-    // Skip deleted contributions
-    if (contribution.deleted) return;
-
-    const taxYear = getTaxYearFromDate(parseDateKey(contribution.date));
-    const yearLabel = taxYear.label;
-
-    if (!byTaxYear[yearLabel]) {
-      byTaxYear[yearLabel] = 0;
-    }
-    byTaxYear[yearLabel] += contribution.amount;
-  });
-
-  // Get all tax years from oldest to current
-  const allYears = Object.keys(byTaxYear).sort();
-
-  // If we have less than 4 years, pad with recent years including current
-  const yearsToShow: string[] = [];
-  const dataPoints: number[] = [];
-
-  if (allYears.length === 0) {
-    // No data, show last 4 years with zeros
-    for (let i = 3; i >= 0; i--) {
-      const year = getTaxYearBoundaries(currentTaxYear.startYear - i);
-      yearsToShow.push(year.label);
-      dataPoints.push(0);
-    }
-  } else if (allYears.length < 4) {
-    // Pad with recent years up to 4 total
-    const yearsNeeded = 4 - allYears.length;
-    for (let i = yearsNeeded; i > 0; i--) {
-      const year = getTaxYearBoundaries(currentTaxYear.startYear - allYears.length - i + 1);
-      yearsToShow.push(year.label);
-      dataPoints.push(0);
-    }
-    // Add actual years
-    allYears.forEach(year => {
-      yearsToShow.push(year);
-      dataPoints.push(byTaxYear[year]);
-    });
-  } else {
-    // Show last 4 years of actual data
-    const lastFourYears = allYears.slice(-4);
-    lastFourYears.forEach(year => {
-      yearsToShow.push(year);
-      dataPoints.push(byTaxYear[year]);
-    });
-  }
-
-  // Format labels to show short form (e.g., "21/22")
-  const labels = yearsToShow.map(year => {
-    const match = year.match(/20(\d{2})\/(\d{2})/);
-    return match ? `${match[1]}/${match[2]}` : year;
-  });
-
-  return { labels, data: dataPoints };
-};
-
-function AnalyticsScreen() {
+function InsightsScreen() {
   const { isGuest } = useOnboarding();
   const [contributions, setContributions] = useState<ISAContribution[]>([]);
-  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [isaSettings, setIsaSettings] = useState<ISAAccountSettings>({});
+  const [loaded, setLoaded] = useState(false);
+  const [showScoreInfo, setShowScoreInfo] = useState(false);
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
-  // Load saved ISA data on mount
-  useEffect(() => {
-    loadISAData();
-  }, [isGuest]);
-
-  // Reload contributions whenever the analytics tab is focused
-  useFocusEffect(
-    React.useCallback(() => {
-      loadISAData();
-    }, [])
-  );
-
-  const loadISAData = async () => {
+  const loadData = useCallback(async () => {
     try {
+      setIsaSettings(await loadISASettings());
       if (isGuest) {
-        // Guest mode: load from AsyncStorage
-        const savedData = await AsyncStorage.getItem(CONTRIBUTIONS_STORAGE_KEY);
-        if (savedData) {
-          const parsed = JSON.parse(savedData);
-          setContributions(parsed);
-        }
+        const saved = await AsyncStorage.getItem(CONTRIBUTIONS_STORAGE_KEY);
+        setContributions(saved ? JSON.parse(saved) : []);
       } else {
-        // Authenticated: load from Supabase
-        const data = await loadContributionsDB();
-        setContributions(data);
+        setContributions(await loadContributionsDB());
       }
     } catch (error) {
       console.error('Error loading contributions:', error);
+    } finally {
+      setLoaded(true);
     }
-  };
+  }, [isGuest]);
 
-  // Filter contributions by current tax year for allowance tracking
-  const currentTaxYear = getCurrentTaxYear();
-  const currentYearContributions = contributions.filter(contribution =>
-    isDateInTaxYear(parseDateKey(contribution.date), currentTaxYear)
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Contributions can change on other tabs; refresh whenever this tab is shown
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
   );
 
-  // For ISA breakdown, show all contributions across all years
-  const groupedISAs = groupContributions(contributions);
+  const currentTaxYear = getCurrentTaxYear();
+  const activeYear = selectedYear ?? currentTaxYear.startYear;
 
-  // For allowance calculations, use only current year
-  const currentYearGrouped = groupContributions(currentYearContributions);
-  const totalSaved = Object.values(currentYearGrouped).reduce((s, i) => s + i.total, 0);
-  const remaining = ISA_ANNUAL_ALLOWANCE - totalSaved;
-  const lifetimeBonus = currentYearGrouped.lifetime.total * 0.25;
+  const yearContributions = useMemo(
+    () => contributions.filter((c) => isDateInTaxYear(parseDateKey(c.date), currentTaxYear)),
+    [contributions, currentTaxYear.startYear]
+  );
 
-  // Calculate Consistency Score - Simple & Transparent
-  const calculateConsistencyScore = (contributions: ISAContribution[]) => {
-    if (contributions.length === 0) {
-      return {
-        score: 0,
-        baseScore: 0,
-        monthsCovered: 0,
-        bonuses: [],
-        rating: '',
-        monthlyHeatmap: Array(12).fill(false)
-      };
-    }
+  // ─── This year ───
+  const savedThisYear = yearContributions.filter((c) => !c.withdrawn).reduce((s, c) => s + c.amount, 0);
+  const allowanceUsed = yearContributions.reduce(
+    (s, c) => (c.withdrawn && isFlexibleFromSettings(isaSettings, c.provider, c.isaType) ? s : s + c.amount),
+    0
+  );
+  const allowanceLeft = Math.max(0, ISA_ANNUAL_ALLOWANCE - allowanceUsed);
+  const lisaPaidIn = Math.min(
+    yearContributions.filter((c) => c.isaType === 'lifetime' && !c.withdrawn).reduce((s, c) => s + c.amount, 0),
+    LIFETIME_ISA_MAX
+  );
+  const lisaBonus = lisaPaidIn * LIFETIME_ISA_BONUS_RATE;
+  const consistency = calculateConsistency(yearContributions, currentTaxYear.startDate);
+  const monthIndexNow = (new Date().getMonth() - currentTaxYear.startDate.getMonth() + 12) % 12;
 
-    const currentTaxYear = getCurrentTaxYear();
+  // ─── Year by year ───
+  const totalsByYear = useMemo(() => {
+    const totals: Record<number, { total: number; byType: Record<string, number> }> = {};
+    contributions.forEach((c) => {
+      if (c.withdrawn) return;
+      const year = getTaxYearFromDate(parseDateKey(c.date)).startYear;
+      totals[year] ??= { total: 0, byType: {} };
+      totals[year].total += c.amount;
+      totals[year].byType[c.isaType] = (totals[year].byType[c.isaType] ?? 0) + c.amount;
+    });
+    return totals;
+  }, [contributions]);
 
-    // Get contributions for current tax year only (exclude withdrawn)
-    const yearContributions = contributions.filter(c =>
-      !c.withdrawn && isDateInTaxYear(parseDateKey(c.date), currentTaxYear)
+  const chartYears = Array.from({ length: CHART_YEARS }, (_, i) => currentTaxYear.startYear - (CHART_YEARS - 1 - i));
+  const chartMax = Math.max(ISA_ANNUAL_ALLOWANCE, ...chartYears.map((y) => totalsByYear[y]?.total ?? 0));
+  const selectedTotals = totalsByYear[activeYear] ?? { total: 0, byType: {} };
+
+  // ─── All time ───
+  const allTimeByType = ISA_TYPE_ORDER.map((t) => ({
+    type: t,
+    amount: contributions.filter((c) => c.isaType === t && !c.withdrawn).reduce((s, c) => s + c.amount, 0),
+  }));
+  const allTimeTotal = allTimeByType.reduce((s, x) => s + x.amount, 0);
+
+  if (loaded && contributions.length === 0) {
+    return (
+      <Screen title="Insights" subtitle="How your saving is going">
+        <Card>
+          <EmptyState
+            icon="pie-chart-outline"
+            title="Insights appear as you save"
+            message="Once you log contributions on the Home tab, you'll see your yearly totals, saving rhythm and LISA bonus here."
+          />
+        </Card>
+      </Screen>
     );
-
-    if (yearContributions.length === 0) {
-      return {
-        score: 0,
-        baseScore: 0,
-        monthsCovered: 0,
-        bonuses: [],
-        rating: '',
-        monthlyHeatmap: Array(12).fill(false)
-      };
-    }
-
-    // BASE SCORE: Simple monthly coverage (0-100%)
-    const monthsWithContributions = new Set(
-      yearContributions.map(c => {
-        const date = parseDateKey(c.date);
-        return date.getMonth(); // 0-11 for Jan-Dec
-      })
-    );
-    const monthsCovered = monthsWithContributions.size;
-    const baseScore = Math.round((monthsCovered / 12) * 100);
-
-    // Create monthly heatmap (April = index 0, March = index 11)
-    const taxYearStart = currentTaxYear.startDate.getMonth(); // April = 3
-    const monthlyHeatmap = Array(12).fill(false);
-    monthsWithContributions.forEach(month => {
-      // Convert calendar month to tax year month (April = 0, May = 1, etc.)
-      const taxYearMonth = (month - taxYearStart + 12) % 12;
-      monthlyHeatmap[taxYearMonth] = true;
-    });
-
-    // BONUSES (transparent and visible)
-    const bonuses: Array<{ name: string; value: number; earned: boolean }> = [];
-
-    // 1. EARLY BIRD BONUS (+10%)
-    const firstContribution = new Date(Math.min(...yearContributions.map(c => parseDateKey(c.date).getTime())));
-    const monthsSinceStart = Math.max(0,
-      (firstContribution.getFullYear() - currentTaxYear.startDate.getFullYear()) * 12 +
-      (firstContribution.getMonth() - currentTaxYear.startDate.getMonth())
-    );
-    const earnedEarlyBird = monthsSinceStart <= 2; // First 3 months (Apr, May, Jun)
-    bonuses.push({
-      name: 'Early Bird',
-      value: 10,
-      earned: earnedEarlyBird
-    });
-
-    // 2. ACTIVE STREAK BONUS (+10%)
-    // Check for 3+ consecutive months
-    let maxStreak = 0;
-    let currentStreak = 0;
-    for (let i = 0; i < 12; i++) {
-      if (monthlyHeatmap[i]) {
-        currentStreak++;
-        maxStreak = Math.max(maxStreak, currentStreak);
-      } else {
-        currentStreak = 0;
-      }
-    }
-    const earnedStreak = maxStreak >= 3;
-    bonuses.push({
-      name: 'Active Streak',
-      value: 10,
-      earned: earnedStreak
-    });
-
-    // 3. FREQUENT SAVER BONUS (+5%)
-    const earnedFrequent = monthsCovered >= 6;
-    bonuses.push({
-      name: 'Frequent Saver',
-      value: 5,
-      earned: earnedFrequent
-    });
-
-    // TOTAL SCORE (base + earned bonuses, capped at 100%)
-    const bonusPoints = bonuses.filter(b => b.earned).reduce((sum, b) => sum + b.value, 0);
-    const totalScore = Math.min(100, baseScore + bonusPoints);
-
-    // RATING
-    let rating = 'Getting Started';
-    if (totalScore >= 90) rating = 'ISA Pro';
-    else if (totalScore >= 75) rating = 'Steady Investor';
-    else if (totalScore >= 60) rating = 'Building Habits';
-    else if (totalScore >= 40) rating = 'Making Progress';
-
-    return {
-      score: totalScore,
-      baseScore,
-      monthsCovered,
-      bonuses,
-      rating,
-      monthlyHeatmap
-    };
-  };
-
-  const consistencyData = calculateConsistencyScore(currentYearContributions);
-
-  // Calculate historical performance data
-  const historicalPerformance = calculateHistoricalPerformance(contributions);
-
-  // Calculate contribution trend for the chart
-  const contributionTrend = calculateContributionTrend(contributions);
-
-  const chartData = {
-    labels: contributionTrend.labels.length > 0 ? contributionTrend.labels : ['21/22', '22/23', '23/24', '24/25'],
-    datasets: [{
-      // react-native-chart-kit crashes natively on NaN/Infinity/undefined, so
-      // coerce every point to a finite number (bad amounts can slip into data).
-      data: (contributionTrend.data.length > 0 ? contributionTrend.data : [0, 0, 0, 0])
-        .map(value => (Number.isFinite(value) ? value : 0)),
-      color: () => Colors.gold
-    }],
-  };
-
-  const showConsistencyInfo = () => {
-    setShowInfoModal(true);
-  };
+  }
 
   return (
-    <View style={styles.container}>
-      <AnimatedBackground />
-      <SafeAreaView style={styles.safe} edges={['top']}>
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          <View style={styles.header}>
-            <Text style={styles.title}>ISA Summary</Text>
-            <Image source={require('@/assets/logo.png')} style={styles.logo} resizeMode="contain" />
-          </View>
+    <Screen title="Insights" subtitle={`${currentTaxYear.label} tax year`}>
+      {/* ─── Key figures ─── */}
+      <View style={styles.grid}>
+        <Stat label="Saved this year" value={formatCurrency(savedThisYear)} />
+        <Stat label="Allowance left" value={formatCurrency(allowanceLeft)} />
+        <Stat
+          label="LISA bonus"
+          value={formatCurrency(lisaBonus)}
+          valueColor={lisaBonus > 0 ? Colors.positive : undefined}
+        />
+        <Stat
+          label="Consistency"
+          value={`${consistency.score}%`}
+          detail={consistency.rating}
+          onPress={() => setShowScoreInfo(true)}
+        />
+      </View>
 
-          <GlassCard style={styles.card} intensity="dark">
-            <Text style={styles.label}>Contribution History</Text>
-            <LineChart
-              data={chartData}
-              width={width - 64}
-              height={220}
-              chartConfig={{
-                backgroundColor: 'transparent',
-                backgroundGradientFrom: 'transparent',
-                backgroundGradientTo: 'transparent',
-                color: (opacity = 1) => `rgba(255, 215, 0, ${opacity})`,
-                labelColor: () => Colors.lightGray,
-                strokeWidth: 3,
-                propsForDots: { r: '5', stroke: Colors.gold, strokeWidth: '2' },
-              }}
-              bezier
-              style={{ borderRadius: 16 }}
-              withInnerLines={false}
-              withOuterLines={false}
-            />
-          </GlassCard>
-
-          <Text style={styles.section}>Year Overview</Text>
-
-          {/* Row 1: Total Saved and Remaining */}
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <GlassCard style={[styles.card, { flex: 1 }]} intensity="medium">
-              <Ionicons name="trending-up" size={24} color={Colors.success} />
-              <Text style={styles.big}>{formatCurrency(totalSaved)}</Text>
-              <Text style={styles.sub}>Total Saved</Text>
-            </GlassCard>
-            <GlassCard style={[styles.card, { flex: 1 }]} intensity="medium">
-              <Ionicons name="calendar" size={24} color={Colors.info} />
-              <Text style={styles.big}>{formatCurrency(remaining)}</Text>
-              <Text style={styles.sub}>Remaining</Text>
-            </GlassCard>
-          </View>
-
-          {/* Row 2: Government Bonus and Consistency Score */}
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <GlassCard style={[styles.card, { flex: 1 }]} intensity="medium">
-              <Ionicons name="flash" size={24} color={ISA_INFO.lifetime.color} />
-              <Text style={styles.big}>{formatCurrency(lifetimeBonus)}</Text>
-              <Text style={styles.sub}>Govt Bonus (LISA)</Text>
-            </GlassCard>
-            <GlassCard style={[styles.card, { flex: 1 }]} intensity="medium">
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                <Ionicons name="analytics" size={24} color={Colors.gold} />
-                <TouchableOpacity onPress={showConsistencyInfo} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                  <Ionicons name="information-circle-outline" size={20} color={Colors.lightGray} />
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.big}>{consistencyData.score}%</Text>
-              <Text style={styles.sub}>
-                Consistency Score
-                {consistencyData.score > 0 && (
-                  <Text style={{ color: Colors.gold, fontWeight: Typography.weights.semibold }}> • {consistencyData.rating}</Text>
-                )}
-              </Text>
-            </GlassCard>
-          </View>
-
-          <Text style={styles.section}>ISA Breakdown</Text>
-
-          <GlassCard style={styles.card} intensity="dark">
-            {/* Cash ISA */}
-            {groupedISAs.cash.total > 0 && (
-              <View style={styles.breakdown}>
-                <View style={styles.brow}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.bname}>{ISA_INFO.cash.name}</Text>
-                    <Text style={styles.sub}>
-                      {Object.keys(groupedISAs.cash.providers).join(', ') || 'No providers'}
-                    </Text>
-                  </View>
-                  <Text style={styles.bval}>{formatCurrency(groupedISAs.cash.total)}</Text>
-                </View>
-                <View style={styles.bbar}>
-                  <View style={[styles.bprog, {
-                    width: `${(groupedISAs.cash.total / ISA_ANNUAL_ALLOWANCE) * 100}%`,
-                    backgroundColor: ISA_INFO.cash.color
-                  }]} />
-                </View>
-              </View>
-            )}
-
-            {/* Stocks & Shares ISA */}
-            {groupedISAs.stocks_shares.total > 0 && (
-              <View style={styles.breakdown}>
-                <View style={styles.brow}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.bname}>{ISA_INFO.stocks_shares.name}</Text>
-                    <Text style={styles.sub}>
-                      {Object.keys(groupedISAs.stocks_shares.providers).join(', ') || 'No providers'}
-                    </Text>
-                  </View>
-                  <Text style={styles.bval}>{formatCurrency(groupedISAs.stocks_shares.total)}</Text>
-                </View>
-                <View style={styles.bbar}>
-                  <View style={[styles.bprog, {
-                    width: `${(groupedISAs.stocks_shares.total / ISA_ANNUAL_ALLOWANCE) * 100}%`,
-                    backgroundColor: ISA_INFO.stocks_shares.color
-                  }]} />
-                </View>
-              </View>
-            )}
-
-            {/* Lifetime ISA */}
-            {groupedISAs.lifetime.total > 0 && (
-              <View style={styles.breakdown}>
-                <View style={styles.brow}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.bname}>{ISA_INFO.lifetime.name}</Text>
-                    <Text style={styles.sub}>
-                      {Object.keys(groupedISAs.lifetime.providers).join(', ') || 'No providers'}
-                    </Text>
-                  </View>
-                  <Text style={styles.bval}>{formatCurrency(groupedISAs.lifetime.total)}</Text>
-                </View>
-                <View style={styles.bbar}>
-                  <View style={[styles.bprog, {
-                    width: `${(groupedISAs.lifetime.total / ISA_ANNUAL_ALLOWANCE) * 100}%`,
-                    backgroundColor: ISA_INFO.lifetime.color
-                  }]} />
-                </View>
-              </View>
-            )}
-
-            {/* Innovative Finance ISA (IFISA) */}
-            {groupedISAs.innovative_finance.total > 0 && (
-              <View style={styles.breakdown}>
-                <View style={styles.brow}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.bname}>{ISA_INFO.innovative_finance.name}</Text>
-                    <Text style={styles.sub}>
-                      {Object.keys(groupedISAs.innovative_finance.providers).join(', ') || 'No providers'}
-                    </Text>
-                  </View>
-                  <Text style={styles.bval}>{formatCurrency(groupedISAs.innovative_finance.total)}</Text>
-                </View>
-                <View style={styles.bbar}>
-                  <View style={[styles.bprog, {
-                    width: `${(groupedISAs.innovative_finance.total / ISA_ANNUAL_ALLOWANCE) * 100}%`,
-                    backgroundColor: ISA_INFO.innovative_finance.color
-                  }]} />
-                </View>
-              </View>
-            )}
-
-            {/* Show message if no ISAs */}
-            {totalSaved === 0 && (
-              <View style={{ paddingVertical: 20, alignItems: 'center' }}>
-                <Text style={styles.sub}>No ISA contributions yet</Text>
-              </View>
-            )}
-          </GlassCard>
-
-          <Text style={styles.section}>Historical Performance</Text>
-
-          <GlassCard style={styles.card} intensity="medium">
-            {historicalPerformance.length > 0 ? (
-              historicalPerformance.map((yearData, index) => (
+      {/* ─── Saving rhythm ─── */}
+      <SectionHeader title="Saving rhythm" actionLabel="How it works" onAction={() => setShowScoreInfo(true)} />
+      <Card>
+        <View style={styles.heatmap}>
+          {consistency.heatmap.map((hit, i) => {
+            const isFuture = i > monthIndexNow;
+            return (
+              <View key={i} style={styles.monthCol}>
                 <View
-                  key={yearData.year}
                   style={[
-                    styles.histrow,
-                    index === historicalPerformance.length - 1 && { borderBottomWidth: 0 }
+                    styles.monthCell,
+                    hit && styles.monthHit,
+                    isFuture && !hit && styles.monthFuture,
+                    i === monthIndexNow && styles.monthNow,
                   ]}
-                >
-                  <Text style={styles.histyear}>{yearData.year}</Text>
-                  <Text style={styles.histval}>{formatCurrency(yearData.amount)}</Text>
-                </View>
-              ))
-            ) : (
-              <View style={{ paddingVertical: 20, alignItems: 'center' }}>
-                <Text style={styles.sub}>No historical data available</Text>
+                />
+                <Text style={[styles.monthLabel, i === monthIndexNow && { color: Colors.text }]}>{MONTHS[i]}</Text>
               </View>
-            )}
-          </GlassCard>
-
-          <View style={{ height: 100 }} />
-        </ScrollView>
-      </SafeAreaView>
-
-      {/* Info Modal */}
-      <Modal
-        visible={showInfoModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowInfoModal(false)}
-      >
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setShowInfoModal(false)}
-        >
-          <Pressable onPress={(e) => e.stopPropagation()}>
-            <GlassCard style={styles.modalContent} intensity="dark">
-              <View style={styles.modalHeader}>
-                <Ionicons name="analytics" size={24} color={Colors.gold} />
-                <Text style={styles.modalTitle}>Consistency Score</Text>
+            );
+          })}
+        </View>
+        <Text style={styles.rhythmCaption}>
+          You've paid in during <Text style={styles.strong}>{consistency.monthsCovered} of 12 months</Text> this tax
+          year.
+        </Text>
+        {consistency.bonuses.length > 0 && (
+          <View style={styles.bonusRow}>
+            {consistency.bonuses.map((b) => (
+              <View key={b.name} style={[styles.bonus, b.earned && styles.bonusEarned]}>
+                <Ionicons
+                  name={b.earned ? 'checkmark-circle' : 'ellipse-outline'}
+                  size={14}
+                  color={b.earned ? Colors.positive : Colors.textTertiary}
+                />
+                <Text style={[styles.bonusText, b.earned && { color: Colors.text }]}>{b.name}</Text>
               </View>
+            ))}
+          </View>
+        )}
+      </Card>
 
-              <Text style={styles.modalText}>
-                Your score is based on how many different months you contribute in during the tax year.
-              </Text>
-
-              <View style={styles.modalBullets}>
-                <View style={styles.bulletRow}>
-                  <Text style={styles.bullet}>•</Text>
-                  <Text style={styles.bulletText}>Each unique month with a contribution counts</Text>
-                </View>
-                <View style={styles.bulletRow}>
-                  <Text style={styles.bullet}>•</Text>
-                  <Text style={styles.bulletText}>Multiple contributions in the same month = still counts as 1 month</Text>
-                </View>
-                <View style={styles.bulletRow}>
-                  <Text style={styles.bullet}>•</Text>
-                  <Text style={styles.bulletText}>To increase your score, contribute in different months</Text>
-                </View>
-              </View>
-
-              <View style={styles.exampleBox}>
-                <Text style={styles.exampleText}>
-                  Example: Contributing in 6 different months = 50% score
-                </Text>
-              </View>
-
-              <TouchableOpacity
-                style={styles.modalButton}
-                onPress={() => setShowInfoModal(false)}
+      {/* ─── Year by year ─── */}
+      <SectionHeader title="Year by year" />
+      <Card>
+        <View style={styles.chart}>
+          <View style={[styles.limitLine, { bottom: (ISA_ANNUAL_ALLOWANCE / chartMax) * CHART_HEIGHT + BAR_LABEL_ROW }]}>
+            <Text style={styles.limitLabel}>£20k limit</Text>
+          </View>
+          {chartYears.map((year) => {
+            const total = totalsByYear[year]?.total ?? 0;
+            const selected = year === activeYear;
+            const isCurrent = year === currentTaxYear.startYear;
+            return (
+              <Pressable
+                key={year}
+                style={styles.barCol}
+                onPress={() => {
+                  haptics.tap();
+                  setSelectedYear(year);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={`${getTaxYearBoundaries(year).label}: ${formatCurrency(total)}`}
+                accessibilityState={{ selected }}
               >
-                <LinearGradient
-                  colors={Colors.goldGradient}
-                  style={styles.buttonGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                >
-                  <Text style={styles.buttonText}>Got it</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            </GlassCard>
-          </Pressable>
-        </Pressable>
+                <View style={styles.barTrack}>
+                  <Text style={[styles.barValue, selected && { color: Colors.text }]}>
+                    {total > 0 ? formatCompactCurrency(total) : ''}
+                  </Text>
+                  <View
+                    style={[
+                      styles.bar,
+                      {
+                        height: Math.max(total > 0 ? 6 : 2, (total / chartMax) * CHART_HEIGHT),
+                        backgroundColor: selected ? Colors.accent : isCurrent ? '#2E4A72' : Colors.surfacePressed,
+                      },
+                    ]}
+                  />
+                </View>
+                <Text style={[styles.barLabel, selected && styles.barLabelSelected]}>
+                  {getTaxYearBoundaries(year).label.slice(2)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <View style={styles.yearDetail}>
+          <View style={styles.yearDetailHeader}>
+            <Text style={styles.yearDetailTitle}>{getTaxYearBoundaries(activeYear).label}</Text>
+            <Text style={styles.yearDetailTotal}>{formatCurrency(selectedTotals.total)}</Text>
+          </View>
+          {selectedTotals.total > 0 ? (
+            ISA_TYPE_ORDER.filter((t) => selectedTotals.byType[t]).map((t) => (
+              <View key={t} style={styles.yearDetailRow}>
+                <View style={[styles.dot, { backgroundColor: isaColor(t) }]} />
+                <Text style={styles.yearDetailLabel}>{ISA_LABELS[t]}</Text>
+                <Text style={styles.yearDetailValue}>{formatCurrency(selectedTotals.byType[t])}</Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.yearDetailEmpty}>No contributions logged for this tax year.</Text>
+          )}
+        </View>
+      </Card>
+
+      {/* ─── All time ─── */}
+      <SectionHeader title="All time" />
+      <Card style={styles.allTimeCard}>
+        <Text style={Type.overline}>Total saved</Text>
+        <Text style={styles.allTimeValue}>{formatCurrency(allTimeTotal)}</Text>
+        <ProgressBar
+          height={8}
+          style={{ marginTop: 14 }}
+          segments={allTimeByType.map((x) => ({
+            value: allTimeTotal > 0 ? x.amount / allTimeTotal : 0,
+            color: isaColor(x.type),
+          }))}
+        />
+      </Card>
+      <ListGroup style={{ marginTop: 12 }}>
+        {allTimeByType
+          .filter((x) => x.amount > 0)
+          .map((x) => (
+            <ListItem
+              key={x.type}
+              icon={ISA_ICONS[x.type]}
+              iconColor={isaColor(x.type)}
+              title={ISA_LABELS[x.type]}
+              subtitle={`${Math.round((x.amount / allTimeTotal) * 100)}% of your savings`}
+              value={formatCurrency(x.amount)}
+            />
+          ))}
+      </ListGroup>
+
+      {/* ─── Score explanation ─── */}
+      <Modal
+        visible={showScoreInfo}
+        onClose={() => setShowScoreInfo(false)}
+        title="Consistency score"
+        size="auto"
+        footer={<Button title="Got it" onPress={() => setShowScoreInfo(false)} />}
+      >
+        <Text style={styles.infoText}>
+          Paying in regularly is one of the best savings habits. Your score is the share of the tax year's 12 months
+          in which you contributed — several payments in one month still count once.
+        </Text>
+        <View style={styles.infoList}>
+          {[
+            ['calendar-outline', 'Each month with a contribution adds about 8%'],
+            ['flash-outline', 'Early start: +10% for contributing by June'],
+            ['trending-up-outline', '3-month streak: +10% for three months in a row'],
+            ['repeat-outline', 'Regular saver: +5% once you reach six months'],
+          ].map(([icon, text]) => (
+            <View key={text} style={styles.infoRow}>
+              <Ionicons name={icon as any} size={18} color={Colors.accent} />
+              <Text style={styles.infoRowText}>{text}</Text>
+            </View>
+          ))}
+        </View>
       </Modal>
-    </View>
+    </Screen>
   );
 }
 
-export default withErrorBoundary(AnalyticsScreen);
+function Stat({
+  label,
+  value,
+  detail,
+  valueColor,
+  onPress,
+}: {
+  label: string;
+  value: string;
+  detail?: string;
+  valueColor?: string;
+  onPress?: () => void;
+}) {
+  return (
+    <Card style={styles.stat} onPress={onPress} accessibilityLabel={`${label}: ${value}`}>
+      <View style={styles.statHeader}>
+        <Text style={styles.statLabel}>{label}</Text>
+        {onPress ? <Ionicons name="information-circle-outline" size={16} color={Colors.textTertiary} /> : null}
+      </View>
+      <Text style={[styles.statValue, valueColor ? { color: valueColor } : null]} numberOfLines={1} adjustsFontSizeToFit>
+        {value}
+      </Text>
+      {detail ? <Text style={styles.statDetail}>{detail}</Text> : null}
+    </Card>
+  );
+}
+
+export default withErrorBoundary(InsightsScreen);
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  safe: { flex: 1 },
-  scroll: { padding: Spacing.md },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.lg },
-  title: { fontSize: Typography.sizes.xxl, color: Colors.white, fontWeight: Typography.weights.bold },
-  logo: { width: 60, height: 60 },
-  section: { fontSize: Typography.sizes.lg, color: Colors.white, fontWeight: Typography.weights.bold, marginBottom: Spacing.md, marginTop: Spacing.md },
-  card: { marginBottom: Spacing.sm, padding: Spacing.md },
-  label: { fontSize: Typography.sizes.sm, color: Colors.lightGray, marginBottom: 8 },
-  big: { fontSize: Typography.sizes.xl, color: Colors.white, fontWeight: Typography.weights.bold, marginTop: 8 },
-  sub: { fontSize: Typography.sizes.xs, color: Colors.lightGray, marginTop: 4 },
-  name: { fontSize: Typography.sizes.md, color: Colors.white, fontWeight: Typography.weights.semibold },
-  breakdown: { marginBottom: 16 },
-  brow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  bname: { fontSize: Typography.sizes.md, color: Colors.white, fontWeight: Typography.weights.semibold },
-  bval: { fontSize: Typography.sizes.md, color: Colors.gold, fontWeight: Typography.weights.bold },
-  bbar: { height: 6, backgroundColor: Colors.glassLight, borderRadius: 3, overflow: 'hidden' },
-  bprog: { height: '100%', borderRadius: 3 },
-  histrow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: Colors.glassLight },
-  histyear: { flex: 1, fontSize: Typography.sizes.md, color: Colors.white },
-  histval: { fontSize: Typography.sizes.md, color: Colors.white, fontWeight: Typography.weights.semibold, marginRight: 12 },
-  badge: { backgroundColor: Colors.gold + '30', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
-  badgeText: { fontSize: Typography.sizes.xs, color: Colors.gold, fontWeight: Typography.weights.bold },
-  // Modal styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: Spacing.lg,
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
   },
-  modalContent: {
-    width: '100%',
-    maxWidth: 400,
-    padding: Spacing.lg,
+  stat: {
+    flexBasis: '47%',
+    flexGrow: 1,
+    padding: 16,
+    minHeight: 104,
   },
-  modalHeader: {
+  statHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: Spacing.md,
-    gap: Spacing.sm,
+    justifyContent: 'space-between',
   },
-  modalTitle: {
-    fontSize: Typography.sizes.xl,
-    color: Colors.white,
-    fontWeight: Typography.weights.bold,
+  statLabel: {
+    ...Type.caption,
   },
-  modalText: {
-    fontSize: Typography.sizes.md,
-    color: Colors.lightGray,
-    lineHeight: 22,
-    marginBottom: Spacing.md,
+  statValue: {
+    ...Type.title2,
+    ...Type.number,
+    marginTop: 8,
   },
-  modalBullets: {
-    marginBottom: Spacing.md,
+  statDetail: {
+    ...Type.caption,
+    color: Colors.accent,
+    marginTop: 2,
   },
-  bulletRow: {
+  heatmap: {
     flexDirection: 'row',
-    marginBottom: Spacing.sm,
+    justifyContent: 'space-between',
   },
-  bullet: {
-    color: Colors.gold,
-    fontSize: Typography.sizes.md,
-    marginRight: Spacing.sm,
-    fontWeight: Typography.weights.bold,
-  },
-  bulletText: {
+  monthCol: {
+    alignItems: 'center',
     flex: 1,
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    lineHeight: 20,
   },
-  exampleBox: {
-    backgroundColor: Colors.gold + '20',
-    padding: Spacing.md,
-    borderRadius: 12,
+  monthCell: {
+    width: '78%',
+    aspectRatio: 1,
+    maxWidth: 30,
+    borderRadius: 7,
+    backgroundColor: Colors.surfaceRaised,
+  },
+  monthHit: {
+    backgroundColor: Colors.accent,
+  },
+  monthFuture: {
+    backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: Colors.gold + '40',
-    marginBottom: Spacing.md,
+    borderColor: Colors.border,
   },
-  exampleText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.gold,
-    fontWeight: Typography.weights.semibold,
-    textAlign: 'center',
+  monthNow: {
+    borderWidth: 2,
+    borderColor: Colors.text,
   },
-  modalButton: {
-    borderRadius: 12,
-    overflow: 'hidden',
+  monthLabel: {
+    ...Type.caption,
+    fontSize: 11,
+    color: Colors.textTertiary,
+    marginTop: 6,
   },
-  buttonGradient: {
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.lg,
+  rhythmCaption: {
+    ...Type.callout,
+    marginTop: 16,
+  },
+  strong: {
+    color: Colors.text,
+    fontWeight: '600',
+  },
+  bonusRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 14,
+  },
+  bonus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  bonusEarned: {
+    borderColor: 'rgba(52, 211, 153, 0.35)',
+    backgroundColor: Colors.positiveMuted,
+  },
+  bonusText: {
+    ...Type.caption,
+    fontWeight: '600',
+    color: Colors.textTertiary,
+  },
+  chart: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    height: CHART_HEIGHT + BAR_LABEL_ROW + 20,
+  },
+  limitLine: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    borderTopWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: Colors.borderStrong,
+  },
+  limitLabel: {
+    ...Type.caption,
+    fontSize: 10,
+    color: Colors.textTertiary,
+    position: 'absolute',
+    right: 0,
+    top: -15,
+  },
+  barCol: {
+    flex: 1,
     alignItems: 'center',
   },
-  buttonText: {
-    fontSize: Typography.sizes.md,
-    color: Colors.deepNavy,
-    fontWeight: Typography.weights.bold,
+  barValue: {
+    ...Type.caption,
+    ...Type.number,
+    fontSize: 11,
+    fontWeight: '600',
+    color: Colors.textTertiary,
+    marginBottom: 6,
+  },
+  barTrack: {
+    height: CHART_HEIGHT,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  bar: {
+    width: 28,
+    borderRadius: 6,
+  },
+  barLabel: {
+    ...Type.caption,
+    fontSize: 12,
+    lineHeight: 16,
+    color: Colors.textTertiary,
+    height: BAR_LABEL_ROW,
+    paddingTop: 10,
+  },
+  barLabelSelected: {
+    color: Colors.text,
+    fontWeight: '600',
+  },
+  yearDetail: {
+    marginTop: 20,
+    paddingTop: 16,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: Colors.borderStrong,
+  },
+  yearDetailHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    marginBottom: 8,
+  },
+  yearDetailTitle: {
+    ...Type.bodyStrong,
+  },
+  yearDetailTotal: {
+    ...Type.bodyStrong,
+    ...Type.number,
+  },
+  yearDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 10,
+  },
+  yearDetailLabel: {
+    ...Type.callout,
+    flex: 1,
+  },
+  yearDetailValue: {
+    ...Type.callout,
+    ...Type.number,
+    color: Colors.text,
+  },
+  yearDetailEmpty: {
+    ...Type.caption,
+    color: Colors.textTertiary,
+  },
+  allTimeCard: {
+    padding: 20,
+  },
+  allTimeValue: {
+    ...Type.title1,
+    ...Type.number,
+    marginTop: 6,
+  },
+  infoText: {
+    ...Type.body,
+    color: Colors.textSecondary,
+  },
+  infoList: {
+    marginTop: Spacing.md,
+    gap: 14,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  infoRowText: {
+    ...Type.body,
+    flex: 1,
   },
 });

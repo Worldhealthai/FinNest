@@ -20,12 +20,16 @@ function RootLayoutNav() {
     // Wait a bit for the onboarding context to load
     const timeout = setTimeout(() => {
       const inOnboarding = segments[0] === '(onboarding)';
+      // Logged-out screens inside the onboarding group (as opposed to the setup steps)
+      const screen = (segments as string[])[1];
+      const onAuthScreen = inOnboarding && (screen === undefined || screen === 'login' || screen === 'welcome');
 
       if (!isAuthenticated && !inOnboarding) {
         // User not authenticated, redirect to login
         router.replace('/(onboarding)/login');
-      } else if (isAuthenticated && !isOnboardingCompleted && !inOnboarding) {
-        // User authenticated but hasn't completed onboarding, redirect to personal screen (we skip account screen now)
+      } else if (isAuthenticated && !isOnboardingCompleted && (!inOnboarding || onAuthScreen)) {
+        // Authenticated but setup unfinished (including someone who just logged
+        // in with an account that never completed it) → first setup step
         router.replace('/(onboarding)/personal');
       } else if (isAuthenticated && isOnboardingCompleted && inOnboarding) {
         // User authenticated and completed onboarding but is in onboarding flow, redirect to tabs

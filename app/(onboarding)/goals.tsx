@@ -1,551 +1,202 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  TextInput,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
-import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
+import OnboardingStep from '@/components/OnboardingStep';
+import { Button, Input } from '@/components/ui';
+import { Colors, Type, BorderRadius } from '@/constants/theme';
 import { useOnboarding } from '@/contexts/OnboardingContext';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { haptics } from '@/utils/haptics';
 
 type GoalType = 'first_home' | 'retirement' | 'emergency' | 'education' | 'general' | 'other';
 
-const GOAL_OPTIONS = [
-  {
-    value: 'first_home' as GoalType,
-    icon: 'home',
-    title: 'First Home',
-    description: 'Saving for my first property purchase',
-    color: Colors.success,
-  },
-  {
-    value: 'retirement' as GoalType,
-    icon: 'sunny',
-    title: 'Retirement',
-    description: 'Building a nest egg for the future',
-    color: Colors.gold,
-  },
-  {
-    value: 'emergency' as GoalType,
-    icon: 'shield-checkmark',
-    title: 'Emergency Fund',
-    description: 'Creating a financial safety net',
-    color: Colors.info,
-  },
-  {
-    value: 'education' as GoalType,
-    icon: 'school',
-    title: 'Education',
-    description: 'Funding education expenses',
-    color: '#9B59B6',
-  },
-  {
-    value: 'general' as GoalType,
-    icon: 'trending-up',
-    title: 'General Savings',
-    description: 'Growing my wealth over time',
-    color: '#3498DB',
-  },
-  {
-    value: 'other' as GoalType,
-    icon: 'ellipsis-horizontal',
-    title: 'Other',
-    description: 'Custom savings goal',
-    color: Colors.mediumGray,
-  },
+const GOAL_OPTIONS: { value: GoalType; icon: keyof typeof Ionicons.glyphMap; title: string }[] = [
+  { value: 'first_home', icon: 'home-outline', title: 'First home' },
+  { value: 'retirement', icon: 'sunny-outline', title: 'Retirement' },
+  { value: 'emergency', icon: 'shield-checkmark-outline', title: 'Emergency fund' },
+  { value: 'education', icon: 'school-outline', title: 'Education' },
+  { value: 'general', icon: 'trending-up-outline', title: 'Growing wealth' },
+  { value: 'other', icon: 'ellipsis-horizontal', title: 'Something else' },
 ];
+
+const formatAmount = (text: string) => {
+  const digits = text.replace(/[^0-9]/g, '');
+  return digits ? parseInt(digits, 10).toLocaleString('en-GB') : '';
+};
+
+// Stored as YYYY-MM-DD (same as the savings-goal sheet); the field shows DD/MM/YYYY
+const toDateKey = (dmy: string) => {
+  const [d, m, y] = dmy.split('/');
+  return dmy.length === 10 ? `${y}-${m}-${d}` : '';
+};
+
+const fromDateKey = (value: string) => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+  return match ? `${match[3]}/${match[2]}/${match[1]}` : value;
+};
+
+const formatDate = (text: string) => {
+  const digits = text.replace(/\D/g, '').slice(0, 8);
+  return [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4)].filter(Boolean).join('/');
+};
 
 export default function GoalsScreen() {
   const { userProfile, updateProfile } = useOnboarding();
-  const [savingsGoals, setSavingsGoals] = useState<GoalType[]>(
-    userProfile.savingsGoals || []
-  );
+  const [goals, setGoals] = useState<GoalType[]>((userProfile.savingsGoals as GoalType[]) || []);
   const [targetAmount, setTargetAmount] = useState(
-    userProfile.targetAmount?.toString() || ''
+    userProfile.targetAmount ? userProfile.targetAmount.toLocaleString('en-GB') : ''
   );
-  const [targetDate, setTargetDate] = useState(userProfile.targetDate || '');
+  const [targetDate, setTargetDate] = useState(fromDateKey(userProfile.targetDate || ''));
+  const [dateError, setDateError] = useState<string | null>(null);
 
-  const toggleGoal = (goal: GoalType) => {
-    setSavingsGoals(prev =>
-      prev.includes(goal)
-        ? prev.filter(g => g !== goal)
-        : [...prev, goal]
-    );
-  };
-
-  const contentOpacity = useSharedValue(0);
-  const contentY = useSharedValue(20);
-
-  useEffect(() => {
-    contentOpacity.value = withTiming(1, { duration: 600 });
-    contentY.value = withSpring(0, { damping: 12 });
-  }, []);
-
-  const contentAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: contentOpacity.value,
-    transform: [{ translateY: contentY.value }],
-  }));
-
-  const formatCurrency = (text: string) => {
-    const numbers = text.replace(/[^0-9]/g, '');
-    if (!numbers) return '';
-
-    const number = parseInt(numbers);
-    return number.toLocaleString('en-GB');
-  };
-
-  const formatDate = (text: string) => {
-    const cleaned = text.replace(/\D/g, '');
-    let formatted = '';
-    for (let i = 0; i < cleaned.length && i < 8; i++) {
-      if (i === 2 || i === 4) {
-        formatted += '/';
-      }
-      formatted += cleaned[i];
-    }
-    return formatted;
+  const toggle = (goal: GoalType) => {
+    haptics.tap();
+    setGoals((prev) => (prev.includes(goal) ? prev.filter((g) => g !== goal) : [...prev, goal]));
   };
 
   const handleContinue = () => {
-    if (savingsGoals.length > 0) {
-      updateProfile({
-        savingsGoals,
-        targetAmount: parseInt(targetAmount.replace(/,/g, '')) || 0,
-        targetDate: targetDate || '',
-      });
-      router.push('/(onboarding)/notifications');
+    if (targetDate && targetDate.length !== 10) {
+      setDateError('Please enter the date as DD/MM/YYYY, or leave it blank.');
+      return;
     }
-  };
-
-  const handleSkip = () => {
+    updateProfile({
+      savingsGoals: goals,
+      targetAmount: parseInt(targetAmount.replace(/,/g, ''), 10) || 0,
+      targetDate: toDateKey(targetDate),
+    });
     router.push('/(onboarding)/notifications');
   };
 
   return (
-    <View style={styles.container}>
-      {/* Gradient Background */}
-      <LinearGradient
-        colors={['#0A1929', Colors.deepNavy, Colors.mediumNavy]}
-        style={styles.gradient}
-      />
-
-      <SafeAreaView style={styles.safe} edges={['top']}>
-        <ScrollView
-          contentContainerStyle={styles.scroll}
-          showsVerticalScrollIndicator={false}
-        >
-          <Animated.View style={contentAnimatedStyle}>
-            {/* Header */}
-            <View style={styles.header}>
-              <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                <Ionicons name="arrow-back" size={24} color={Colors.white} />
-              </TouchableOpacity>
-              <View style={styles.progressContainer}>
-                <View style={styles.progressBar}>
-                  <LinearGradient
-                    colors={Colors.goldGradient}
-                    style={[styles.progress, { width: '60%' }]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                  />
+    <OnboardingStep
+      step={2}
+      totalSteps={3}
+      title="What are you saving for?"
+      subtitle="Pick as many as you like. It helps us tailor tips — you can change this later."
+      onBack={() => router.back()}
+      footer={
+        <>
+          <Button title="Continue" onPress={handleContinue} disabled={goals.length === 0} />
+          <Button
+            title="Skip for now"
+            variant="ghost"
+            onPress={() => router.push('/(onboarding)/notifications')}
+            style={styles.skip}
+          />
+        </>
+      }
+    >
+      <View style={styles.grid}>
+        {GOAL_OPTIONS.map((option) => {
+          const selected = goals.includes(option.value);
+          return (
+            <Pressable
+              key={option.value}
+              onPress={() => toggle(option.value)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: selected }}
+              accessibilityLabel={option.title}
+              style={({ pressed }) => [styles.tile, selected && styles.tileSelected, pressed && styles.tilePressed]}
+            >
+              <Ionicons name={option.icon} size={22} color={selected ? Colors.accent : Colors.textSecondary} />
+              <Text style={[styles.tileText, selected && { color: Colors.text }]}>{option.title}</Text>
+              {selected && (
+                <View style={styles.check}>
+                  <Ionicons name="checkmark" size={12} color={Colors.onAccent} />
                 </View>
-                <Text style={styles.progressText}>Step 3 of 5</Text>
-              </View>
-            </View>
+              )}
+            </Pressable>
+          );
+        })}
+      </View>
 
-            {/* Title Section */}
-            <View style={styles.titleSection}>
-              <View style={styles.iconContainer}>
-                <LinearGradient
-                  colors={['rgba(255, 215, 0, 0.2)', 'rgba(255, 215, 0, 0.05)']}
-                  style={styles.iconGradient}
-                >
-                  <Ionicons name="flag" size={32} color={Colors.gold} />
-                </LinearGradient>
-              </View>
-              <Text style={styles.title}>Set Your Goals</Text>
-              <Text style={styles.subtitle}>
-                Select one or more savings goals to personalise your experience
-              </Text>
-            </View>
-
-            {/* Goals Grid */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>What are you saving for?</Text>
-
-              <View style={styles.goalsGrid}>
-                {GOAL_OPTIONS.map((option) => {
-                  const isSelected = savingsGoals.includes(option.value);
-                  return (
-                    <TouchableOpacity
-                      key={option.value}
-                      style={[
-                        styles.goalCard,
-                        isSelected && styles.goalCardSelected,
-                      ]}
-                      onPress={() => toggleGoal(option.value)}
-                      activeOpacity={0.8}
-                    >
-                      <LinearGradient
-                        colors={
-                          isSelected
-                            ? ['rgba(255, 215, 0, 0.2)', 'rgba(255, 215, 0, 0.1)']
-                            : ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']
-                        }
-                        style={styles.goalGradient}
-                      >
-                        <View
-                          style={[
-                            styles.goalIcon,
-                            {
-                              backgroundColor:
-                                isSelected
-                                  ? option.color + '30'
-                                  : 'rgba(255, 255, 255, 0.1)',
-                            },
-                          ]}
-                        >
-                          <Ionicons
-                            name={option.icon as any}
-                            size={24}
-                            color={isSelected ? option.color : Colors.lightGray}
-                          />
-                        </View>
-                        <Text
-                          style={[
-                            styles.goalTitle,
-                            isSelected && { color: Colors.gold },
-                          ]}
-                        >
-                          {option.title}
-                        </Text>
-                        {isSelected && (
-                          <View style={styles.selectedBadge}>
-                            <Ionicons name="checkmark" size={16} color={Colors.deepNavy} />
-                          </View>
-                        )}
-                      </LinearGradient>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-
-            {/* Optional Details */}
-            {savingsGoals.length > 0 && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>
-                  Target Details <Text style={styles.optional}>(Optional)</Text>
-                </Text>
-
-                {/* Target Amount */}
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Target Amount (£)</Text>
-                  <View style={styles.inputWrapper}>
-                    <Ionicons name="cash-outline" size={20} color={Colors.gold} />
-                    <Text style={styles.currencySymbol}>£</Text>
-                    <TextInput
-                      style={styles.input}
-                      value={targetAmount}
-                      onChangeText={(text) => setTargetAmount(formatCurrency(text))}
-                      placeholder="0"
-                      placeholderTextColor={Colors.mediumGray}
-                      keyboardType="numeric"
-                    />
-                  </View>
-                </View>
-
-                {/* Target Date */}
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Target Date</Text>
-                  <View style={styles.inputWrapper}>
-                    <Ionicons name="calendar-outline" size={20} color={Colors.gold} />
-                    <TextInput
-                      style={styles.input}
-                      value={targetDate}
-                      onChangeText={(text) => setTargetDate(formatDate(text))}
-                      placeholder="DD/MM/YYYY"
-                      placeholderTextColor={Colors.mediumGray}
-                      keyboardType="numeric"
-                      maxLength={10}
-                    />
-                  </View>
-                </View>
-
-                <View style={styles.infoBox}>
-                  <Ionicons name="information-circle" size={20} color={Colors.info} />
-                  <Text style={styles.infoText}>
-                    Setting targets helps you stay motivated and track progress toward your
-                    goals.
-                  </Text>
-                </View>
-              </View>
-            )}
-
-            {/* Buttons */}
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={[styles.button, savingsGoals.length === 0 && styles.buttonDisabled]}
-                onPress={handleContinue}
-                activeOpacity={0.8}
-                disabled={savingsGoals.length === 0}
-              >
-                <LinearGradient
-                  colors={savingsGoals.length > 0 ? Colors.goldGradient : ['#666', '#555']}
-                  style={styles.buttonGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                >
-                  <Text style={styles.buttonText}>Continue</Text>
-                  <Ionicons name="arrow-forward" size={20} color={Colors.deepNavy} />
-                </LinearGradient>
-              </TouchableOpacity>
-
-              <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
-                <Text style={styles.skipText}>Skip for Now</Text>
-              </TouchableOpacity>
-            </View>
-          </Animated.View>
-        </ScrollView>
-      </SafeAreaView>
-    </View>
+      <Text style={styles.sectionLabel}>Set a target (optional)</Text>
+      <View style={styles.targetRow}>
+        <Input
+          label="Amount"
+          icon="flag-outline"
+          value={targetAmount ? `£${targetAmount}` : ''}
+          onChangeText={(t) => setTargetAmount(formatAmount(t))}
+          placeholder="£25,000"
+          keyboardType="number-pad"
+          containerStyle={styles.targetField}
+        />
+        <Input
+          label="By"
+          value={targetDate}
+          onChangeText={(t) => {
+            setTargetDate(formatDate(t));
+            setDateError(null);
+          }}
+          placeholder="DD/MM/YYYY"
+          keyboardType="number-pad"
+          maxLength={10}
+          containerStyle={styles.targetField}
+        />
+      </View>
+      {dateError && <Text style={styles.error}>{dateError}</Text>}
+    </OnboardingStep>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  gradient: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  safe: {
-    flex: 1,
-  },
-  scroll: {
-    padding: Spacing.lg,
-    paddingBottom: Spacing.xxl,
-  },
-  header: {
-    marginBottom: Spacing.xl,
-  },
-  backButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    marginBottom: Spacing.md,
-  },
-  progressContainer: {
-    gap: Spacing.sm,
-  },
-  progressBar: {
-    height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  progress: {
-    height: '100%',
-  },
-  progressText: {
-    fontSize: Typography.sizes.xs,
-    color: Colors.lightGray,
-    fontWeight: Typography.weights.semibold,
-  },
-  titleSection: {
-    alignItems: 'center',
-    marginBottom: Spacing.xl,
-  },
-  iconContainer: {
-    marginBottom: Spacing.md,
-  },
-  iconGradient: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: Colors.gold + '40',
-  },
-  title: {
-    fontSize: Typography.sizes.xxl + 4,
-    fontWeight: Typography.weights.extrabold,
-    color: Colors.white,
-    textAlign: 'center',
-    marginBottom: Spacing.sm,
-    textShadowColor: Colors.gold,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
-  },
-  subtitle: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    textAlign: 'center',
-    lineHeight: 20,
-    paddingHorizontal: Spacing.md,
-  },
-  section: {
-    marginBottom: Spacing.xl,
-  },
-  sectionTitle: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.bold,
-    color: Colors.white,
-    marginBottom: Spacing.md,
-  },
-  optional: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.mediumGray,
-    fontWeight: Typography.weights.medium,
-  },
-  goalsGrid: {
+  grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: Spacing.md,
+    gap: 12,
   },
-  goalCard: {
-    width: '48%',
-    borderRadius: BorderRadius.md,
-    overflow: 'hidden',
-  },
-  goalCardSelected: {
-    borderWidth: 2,
-    borderColor: Colors.gold,
-  },
-  goalGradient: {
-    padding: Spacing.lg,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    minHeight: 120,
-    justifyContent: 'center',
-  },
-  goalIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.sm,
-  },
-  goalTitle: {
-    fontSize: Typography.sizes.sm,
-    fontWeight: Typography.weights.bold,
-    color: Colors.white,
-    textAlign: 'center',
-  },
-  selectedBadge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: Colors.gold,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  inputGroup: {
-    gap: Spacing.sm,
-    marginBottom: Spacing.md,
-  },
-  label: {
-    fontSize: Typography.sizes.sm,
-    fontWeight: Typography.weights.semibold,
-    color: Colors.white,
-    marginLeft: 4,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 215, 0, 0.3)',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    gap: Spacing.sm,
-  },
-  currencySymbol: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.bold,
-    color: Colors.gold,
-  },
-  input: {
-    flex: 1,
-    fontSize: Typography.sizes.md,
-    color: Colors.white,
-    fontWeight: Typography.weights.medium,
-  },
-  infoBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: 'rgba(74, 144, 226, 0.1)',
-    padding: Spacing.md,
-    borderRadius: BorderRadius.sm,
-    gap: Spacing.sm,
-    borderWidth: 1,
-    borderColor: Colors.info + '30',
-  },
-  infoText: {
-    flex: 1,
-    fontSize: Typography.sizes.xs,
-    color: Colors.lightGray,
-    lineHeight: 18,
-  },
-  buttonContainer: {
-    gap: Spacing.md,
-  },
-  button: {
+  tile: {
+    flexBasis: '47%',
+    flexGrow: 1,
+    minHeight: 92,
+    padding: 16,
     borderRadius: BorderRadius.lg,
-    overflow: 'hidden',
-    shadowColor: Colors.gold,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: Colors.surface,
+    justifyContent: 'space-between',
   },
-  buttonDisabled: {
-    opacity: 0.5,
-    shadowOpacity: 0,
+  tileSelected: {
+    borderColor: Colors.accent,
+    backgroundColor: Colors.accentMuted,
   },
-  buttonGradient: {
-    flexDirection: 'row',
+  tilePressed: {
+    transform: [{ scale: 0.98 }],
+  },
+  tileText: {
+    ...Type.bodyStrong,
+    color: Colors.textSecondary,
+    marginTop: 12,
+  },
+  check: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: Colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: Spacing.lg,
-    gap: Spacing.sm,
   },
-  buttonText: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.extrabold,
-    color: Colors.deepNavy,
+  sectionLabel: {
+    ...Type.overline,
+    marginTop: 32,
+    marginBottom: 12,
   },
-  skipButton: {
-    alignItems: 'center',
-    padding: Spacing.sm,
+  targetRow: {
+    flexDirection: 'row',
+    gap: 12,
   },
-  skipText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.gold,
-    fontWeight: Typography.weights.semibold,
+  targetField: {
+    flex: 1,
+  },
+  error: {
+    ...Type.caption,
+    color: Colors.negative,
+    marginTop: 8,
+  },
+  skip: {
+    marginTop: 4,
   },
 });
