@@ -1,32 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  Alert,
-  Dimensions,
-  Pressable,
-  ScrollView,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, Text, StyleSheet, TextInput, Pressable, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Modal from './Modal';
-import GlassCard from './GlassCard';
-import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
+import { Button, Chip, IconTile, Input, ListItem, ListGroup } from '@/components/ui';
+import { Colors, Spacing, Type, BorderRadius } from '@/constants/theme';
 import {
   ISA_TYPES,
-  ISA_INFO,
+  ISA_TYPE_ORDER,
+  ISA_LABELS,
+  ISA_ICONS,
+  isaColor,
   ISA_ANNUAL_ALLOWANCE,
   LIFETIME_ISA_MAX,
+  LIFETIME_ISA_BONUS_RATE,
   formatCurrency,
 } from '@/constants/isaData';
 import { searchProviders, getPopularProviders, ISAProvider } from '@/constants/isaProviders';
-import { getAvailableTaxYears, getTaxYearLabel, getTaxYearFromDate, formatDateKey, type TaxYear } from '@/utils/taxYear';
+import {
+  getAvailableTaxYears,
+  getTaxYearLabel,
+  getTaxYearFromDate,
+  getCurrentTaxYear,
+  isDateInTaxYear,
+  formatDateKey,
+  type TaxYear,
+} from '@/utils/taxYear';
 import { getISASetting, setISASetting } from '@/utils/isaSettings';
-
-const { width } = Dimensions.get('window');
+import { haptics } from '@/utils/haptics';
 
 interface AddISAContributionModalProps {
   visible: boolean;
@@ -53,6 +53,281 @@ export interface ISAContribution {
   withdrawnDate?: string;
 }
 
+// ─── Shared amount helpers (also used by EditISAContributionModal) ───
+
+/** Per-contribution cap: £4,000 for a Lifetime ISA, otherwise the £20,000 allowance. */
+export const contributionCap = (isaType: string) =>
+  isaType === ISA_TYPES.LIFETIME ? LIFETIME_ISA_MAX : ISA_ANNUAL_ALLOWANCE;
+
+/** Strips the £ prefix, thousands separators and spaces so pasted values still parse. */
+export const cleanAmountInput = (text: string) => text.replace(/[£,\s]/g, '');
+
+/** £1,250 or £1,250.50 — keeps pence only when the amount has them. */
+export function formatAmount(value: number): string {
+  const hasPence = Math.round(value * 100) % 100 !== 0;
+  return new Intl.NumberFormat('en-GB', {
+    style: 'currency',
+    currency: 'GBP',
+    minimumFractionDigits: hasPence ? 2 : 0,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+const toAmountString = (value: number) => (Number.isInteger(value) ? String(value) : value.toFixed(2));
+
+/** Returns a user-facing message when the amount can't be saved, otherwise null. */
+export function getContributionAmountError(raw: string, isaType: string): string | null {
+  const value = raw.trim();
+  if (!value) return 'Enter an amount';
+  if (value.startsWith('-')) return 'Amount must be more than £0';
+  if (!/^(\d+\.?\d*|\.\d+)$/.test(value)) return 'Enter a number, like 250 or 250.50';
+  if (/\.\d{3,}$/.test(value)) return 'Use no more than 2 decimal places';
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || amount <= 0) return 'Amount must be more than £0';
+  if (isaType === ISA_TYPES.LIFETIME && amount > LIFETIME_ISA_MAX) {
+    return `Lifetime ISA contributions are capped at ${formatCurrency(LIFETIME_ISA_MAX)} per tax year`;
+  }
+  if (amount > ISA_ANNUAL_ALLOWANCE) {
+    return `That's over the ${formatCurrency(ISA_ANNUAL_ALLOWANCE)} annual ISA allowance`;
+  }
+  return null;
+}
+
+interface ContributionAmountFieldsProps {
+  amount: string;
+  onChangeAmount: (value: string) => void;
+  isaType: string;
+  /** Message to show under the amount (already gated on whether to show it). */
+  error: string | null;
+  /** Replaces the default "Up to £X per tax year" hint. */
+  hint?: string;
+  /** Allowance left for this ISA type in the selected tax year, when known. */
+  remaining?: number | null;
+  taxYears: TaxYear[];
+  selectedTaxYear: TaxYear;
+  onSelectTaxYear: (year: TaxYear) => void;
+  autoFocus?: boolean;
+}
+
+/** Large centred amount, quick-amount chips and tax-year chips. */
+export function ContributionAmountFields({
+  amount,
+  onChangeAmount,
+  isaType,
+  error,
+  hint,
+  remaining,
+  taxYears,
+  selectedTaxYear,
+  onSelectTaxYear,
+  autoFocus,
+}: ContributionAmountFieldsProps) {
+  const [focused, setFocused] = useState(false);
+  const cap = contributionCap(isaType);
+  const valid = !getContributionAmountError(amount, isaType);
+  const value = valid ? Number(amount) : 0;
+  const quickAmounts = [100, 500, 1000].filter((v) => v <= cap);
+  const showRemaining = remaining != null && remaining > 0;
+  const overRemaining = valid && remaining != null && value > remaining;
+  const bonus = isaType === ISA_TYPES.LIFETIME && valid ? value * LIFETIME_ISA_BONUS_RATE : 0;
+
+  return (
+    <View>
+      <View style={styles.amountBlock}>
+        <TextInput
+          value={amount ? `£${amount}` : ''}
+          onChangeText={(text) => onChangeAmount(cleanAmountInput(text))}
+          placeholder="£0"
+          placeholderTextColor={Colors.textTertiary}
+          selectionColor={Colors.accent}
+          keyboardType="decimal-pad"
+          inputMode="decimal"
+          returnKeyType="done"
+          maxLength={12}
+          autoFocus={autoFocus}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          style={styles.amountInput}
+          accessibilityLabel="Contribution amount in pounds"
+        />
+        <View
+          style={[styles.amountRule, focused && styles.amountRuleFocused, !!error && styles.amountRuleError]}
+        />
+        {error ? (
+          <View style={styles.messageRow} accessibilityLiveRegion="polite">
+            <Ionicons name="alert-circle" size={14} color={Colors.negative} />
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        ) : overRemaining ? (
+          <Text style={[styles.amountHint, styles.cautionText]}>
+            That's more than the {formatAmount(remaining!)} left in your allowance this tax year
+          </Text>
+        ) : (
+          <Text style={styles.amountHint}>{hint ?? `Up to ${formatCurrency(cap)} per tax year`}</Text>
+        )}
+        {bonus > 0 ? (
+          <View style={styles.bonusRow}>
+            <Ionicons name="gift-outline" size={14} color={Colors.positive} />
+            <Text style={styles.bonusText}>+{formatAmount(bonus)} government bonus (25%)</Text>
+          </View>
+        ) : null}
+      </View>
+
+      <View style={styles.quickRow}>
+        {quickAmounts.map((v) => (
+          <Chip
+            key={v}
+            label={formatCurrency(v)}
+            selected={valid && value === v}
+            onPress={() => onChangeAmount(String(v))}
+          />
+        ))}
+        {showRemaining ? (
+          <Chip
+            label={`Remaining ${formatAmount(remaining!)}`}
+            selected={valid && value === remaining}
+            onPress={() => onChangeAmount(toAmountString(remaining!))}
+          />
+        ) : null}
+      </View>
+
+      <Text style={styles.sectionLabel}>Tax year</Text>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.chipsScroll}
+        contentContainerStyle={styles.chips}
+        keyboardShouldPersistTaps="handled"
+      >
+        {taxYears.map((year) => (
+          <Chip
+            key={year.startYear}
+            label={getTaxYearLabel(year)}
+            selected={year.startYear === selectedTaxYear.startYear}
+            onPress={() => onSelectTaxYear(year)}
+          />
+        ))}
+      </ScrollView>
+    </View>
+  );
+}
+
+// ─── Add flow ───
+
+const TOTAL_STEPS = 3;
+const STEP_LABELS = ['Provider', 'ISA type', 'Amount'];
+
+const TYPE_SUMMARIES: Record<string, string> = {
+  [ISA_TYPES.CASH]: 'Savings with tax-free interest',
+  [ISA_TYPES.STOCKS_SHARES]: 'Investments with tax-free growth',
+  [ISA_TYPES.LIFETIME]: `First home or retirement · up to ${formatCurrency(LIFETIME_ISA_MAX)} a year`,
+  [ISA_TYPES.INNOVATIVE_FINANCE]: 'Peer-to-peer lending',
+};
+
+const CATEGORY_ICONS: Record<ISAProvider['category'], keyof typeof Ionicons.glyphMap> = {
+  bank: 'business-outline',
+  'investment-platform': 'trending-up-outline',
+  fintech: 'phone-portrait-outline',
+  'building-society': 'home-outline',
+};
+
+const SHORT_TYPE_NAMES: Record<string, string> = {
+  'Cash ISA': 'Cash',
+  'Stocks & Shares ISA': 'Stocks & Shares',
+  'Lifetime ISA': 'Lifetime',
+  'Innovative Finance ISA': 'Innovative Finance',
+};
+
+const providerSubtitle = (p: ISAProvider) =>
+  p.types
+    .filter((t) => SHORT_TYPE_NAMES[t])
+    .map((t) => SHORT_TYPE_NAMES[t])
+    .join(' · ');
+
+interface Availability {
+  available: boolean;
+  reason?: string;
+}
+
+function getTypeAvailability(
+  type: string,
+  providerName: string,
+  providerData: ISAProvider | null,
+  currentISAs: AddISAContributionModalProps['currentISAs']
+): Availability {
+  if (providerData && !providerData.types.includes(ISA_LABELS[type])) {
+    return { available: false, reason: `Not offered by ${providerData.name}` };
+  }
+  // Only one Lifetime ISA can be paid into per tax year
+  if (type === ISA_TYPES.LIFETIME && currentISAs) {
+    const existing = currentISAs.lifetime?.provider;
+    if (existing && existing !== 'None' && providerName && existing !== providerName) {
+      return { available: false, reason: `You already pay into a Lifetime ISA with ${existing} this tax year` };
+    }
+  }
+  return { available: true };
+}
+
+function StepIndicator({ step }: { step: number }) {
+  return (
+    <View style={styles.indicator}>
+      <View style={styles.segments}>
+        {Array.from({ length: TOTAL_STEPS }, (_, i) => (
+          <View key={i} style={[styles.segment, i < step && styles.segmentActive]} />
+        ))}
+      </View>
+      <Text style={styles.indicatorText}>
+        Step {step} of {TOTAL_STEPS} · {STEP_LABELS[step - 1]}
+      </Text>
+    </View>
+  );
+}
+
+interface OptionRowProps {
+  title: string;
+  subtitle?: string;
+  leading?: React.ReactNode;
+  selected: boolean;
+  disabled?: boolean;
+  onPress: () => void;
+}
+
+/** Single-choice row with a selected state (accent tint + check). */
+function OptionRow({ title, subtitle, leading, selected, disabled, onPress }: OptionRowProps) {
+  return (
+    <Pressable
+      onPress={() => {
+        haptics.tap();
+        onPress();
+      }}
+      disabled={disabled}
+      accessibilityRole="radio"
+      accessibilityLabel={subtitle ? `${title}. ${subtitle}` : title}
+      accessibilityState={{ selected, disabled }}
+      style={({ pressed }) => [
+        styles.option,
+        selected && styles.optionSelected,
+        pressed && !disabled && !selected && styles.optionPressed,
+      ]}
+    >
+      {leading ? <View style={disabled && styles.dimmed}>{leading}</View> : null}
+      <View style={[styles.optionBody, !!leading && styles.optionBodyIndented]}>
+        <Text style={[styles.optionTitle, disabled && styles.optionTitleDisabled]}>{title}</Text>
+        {subtitle ? <Text style={styles.optionSubtitle}>{subtitle}</Text> : null}
+      </View>
+      {selected ? (
+        <Ionicons name="checkmark-circle" size={22} color={Colors.accent} />
+      ) : disabled ? (
+        <Ionicons name="remove-circle-outline" size={20} color={Colors.textTertiary} />
+      ) : (
+        <View style={styles.radio} />
+      )}
+    </Pressable>
+  );
+}
+
+type FlexStatus = 'idle' | 'loading' | 'known' | 'missing';
+
 export default function AddISAContributionModal({
   visible,
   onClose,
@@ -63,1696 +338,594 @@ export default function AddISAContributionModal({
   const [step, setStep] = useState(1);
   const [provider, setProvider] = useState('');
   const [selectedProviderData, setSelectedProviderData] = useState<ISAProvider | null>(null);
-  const [selectedType, setSelectedType] = useState(ISA_TYPES.CASH);
+  const [selectedType, setSelectedType] = useState<string>(ISA_TYPES.CASH);
   const [amount, setAmount] = useState('');
+  const [amountTouched, setAmountTouched] = useState(false);
   const [notes, setNotes] = useState('');
   const [contributionDate, setContributionDate] = useState(new Date());
   const [providerSearch, setProviderSearch] = useState('');
-  const [filteredProviders, setFilteredProviders] = useState<ISAProvider[]>(getPopularProviders());
-  const [submittedContribution, setSubmittedContribution] = useState<ISAContribution | null>(null);
-  const [availableTaxYears] = useState<TaxYear[]>(getAvailableTaxYears(5, 1)); // 5 previous + 1 future year
-  const [selectedTaxYear, setSelectedTaxYear] = useState<TaxYear>(getTaxYearFromDate(new Date()));
-  const [showFlexibilityQuestion, setShowFlexibilityQuestion] = useState(false);
+  const [availableTaxYears] = useState<TaxYear[]>(() => getAvailableTaxYears(5, 1)); // 5 previous + 1 future year
+  const [selectedTaxYear, setSelectedTaxYear] = useState<TaxYear>(() => getTaxYearFromDate(new Date()));
+  const [flexStatus, setFlexStatus] = useState<FlexStatus>('idle');
   const [isFlexible, setIsFlexible] = useState<boolean | null>(null);
-  const [needsFlexibilityAnswer, setNeedsFlexibilityAnswer] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const TOTAL_STEPS = 4;
-
-  // Reset form when modal opens
+  // Reset form when modal opens (not on close, so the sheet doesn't flash
+  // back to step 1 while it slides away)
   useEffect(() => {
     if (visible) {
-      console.log('Modal opened, resetting form');
       setStep(1);
       setProvider('');
       setSelectedProviderData(null);
       setSelectedType(preSelectedType || ISA_TYPES.CASH);
       setAmount('');
+      setAmountTouched(false);
       setNotes('');
       setContributionDate(new Date());
       setSelectedTaxYear(getTaxYearFromDate(new Date()));
       setProviderSearch('');
-      setFilteredProviders(getPopularProviders());
-      setSubmittedContribution(null);
-      setShowFlexibilityQuestion(false);
+      setFlexStatus('idle');
       setIsFlexible(null);
-      setNeedsFlexibilityAnswer(false);
+      setSubmitting(false);
+      setSubmitError(null);
     }
   }, [visible, preSelectedType]);
 
-  const resetForm = () => {
-    setStep(1);
-    setProvider('');
-    setSelectedProviderData(null);
-    setSelectedType(ISA_TYPES.CASH);
-    setAmount('');
-    setNotes('');
-    setContributionDate(new Date());
-    setSelectedTaxYear(getTaxYearFromDate(new Date()));
-    setProviderSearch('');
-    setFilteredProviders(getPopularProviders());
-    setSubmittedContribution(null);
-    setShowFlexibilityQuestion(false);
-    setIsFlexible(null);
-    setNeedsFlexibilityAnswer(false);
-  };
+  // On the amount step, look up whether this provider+type already has a
+  // flexibility setting — the question is only asked the first time.
+  useEffect(() => {
+    if (!visible || step !== 3) return;
+    let cancelled = false;
+    setFlexStatus('loading');
+    getISASetting(provider.trim(), selectedType)
+      .then((setting) => {
+        if (!cancelled) setFlexStatus(setting ? 'known' : 'missing');
+      })
+      .catch(() => {
+        if (!cancelled) setFlexStatus('missing');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [visible, step, provider, selectedType]);
+
+  // ─── Provider search ───
+  const query = providerSearch.trim();
+  const searchResults = useMemo(() => (query ? searchProviders(query).slice(0, 8) : []), [query]);
+  const popularProviders = useMemo(() => getPopularProviders(), []);
+  const hasExactMatch = searchResults.some((p) => p.name.toLowerCase() === query.toLowerCase());
+  const listedProviders = query ? searchResults : popularProviders;
+  const customIsSelected = !!provider && !selectedProviderData;
 
   const handleProviderSearch = (text: string) => {
     setProviderSearch(text);
-    if (text.trim().length > 0) {
-      const results = searchProviders(text);
-      setFilteredProviders(results.slice(0, 10));
-    } else {
-      setFilteredProviders(getPopularProviders());
+    // Typing something different clears an earlier choice
+    if (text.trim() !== provider) {
+      setProvider('');
+      setSelectedProviderData(null);
     }
   };
 
-  const selectProvider = (providerData: ISAProvider) => {
-    setProvider(providerData.name);
-    setSelectedProviderData(providerData);
-    setProviderSearch(providerData.name);
-    // Auto-advance to next step
-    setTimeout(() => setStep(2), 300);
+  const chooseProvider = (name: string, data: ISAProvider | null) => {
+    setProvider(name);
+    setSelectedProviderData(data);
+    setProviderSearch(name);
+    // Keep the chosen type if this provider can take it, otherwise pick the first one it can
+    if (!getTypeAvailability(selectedType, name, data, currentISAs).available) {
+      const firstAvailable = ISA_TYPE_ORDER.find((t) => getTypeAvailability(t, name, data, currentISAs).available);
+      if (firstAvailable) setSelectedType(firstAvailable);
+    }
+    setStep(2);
   };
 
-  const handleNext = () => {
-    if (step === 1 && !provider.trim()) {
-      Alert.alert('Provider Required', 'Please select or enter an ISA provider');
-      return;
-    }
-    if (step === 2) {
-      // ISA type is always selected
-    }
-    if (step === 3) {
-      const contributionAmount = parseFloat(amount);
-      if (!contributionAmount || contributionAmount <= 0) {
-        Alert.alert('Amount Required', 'Please enter a valid contribution amount');
-        return;
-      }
-      if (contributionAmount > ISA_ANNUAL_ALLOWANCE) {
-        Alert.alert(
-          'Amount Too High',
-          `The amount exceeds the annual ISA allowance of ${formatCurrency(ISA_ANNUAL_ALLOWANCE)}`
-        );
-        return;
-      }
-    }
-
-    if (step < TOTAL_STEPS) {
-      setStep(step + 1);
-    }
+  const submitSearch = () => {
+    if (!query) return;
+    const exact = searchResults.find((p) => p.name.toLowerCase() === query.toLowerCase());
+    chooseProvider(exact ? exact.name : query, exact ?? null);
   };
+
+  // ─── Amount + allowance ───
+  const amountError = getContributionAmountError(amount, selectedType);
+  const visibleAmountError = amountTouched ? amountError : null;
+
+  const remaining = useMemo(() => {
+    // currentISAs describes the current tax year only
+    if (!currentISAs || selectedTaxYear.startYear !== getCurrentTaxYear().startYear) return null;
+    const used = Object.values(currentISAs).reduce((sum, isa) => sum + (isa?.contributed || 0), 0);
+    let left = ISA_ANNUAL_ALLOWANCE - used;
+    if (selectedType === ISA_TYPES.LIFETIME) {
+      left = Math.min(left, LIFETIME_ISA_MAX - (currentISAs.lifetime?.contributed || 0));
+    }
+    return Math.max(0, Math.round(left * 100) / 100);
+  }, [currentISAs, selectedTaxYear.startYear, selectedType]);
+
+  const selectTaxYear = (year: TaxYear) => {
+    setSelectedTaxYear(year);
+    // Keep the contribution date inside the selected tax year: today if it
+    // falls in that year, otherwise the year's first day.
+    const today = new Date();
+    setContributionDate(isDateInTaxYear(today, year) ? today : year.startDate);
+  };
+
+  const needsFlexibilityAnswer = selectedType !== ISA_TYPES.LIFETIME && flexStatus === 'missing';
+
+  // ─── Navigation ───
+  const typeAvailability = getTypeAvailability(selectedType, provider.trim(), selectedProviderData, currentISAs);
+  const canProceed =
+    step === 1
+      ? !!provider.trim()
+      : step === 2
+        ? typeAvailability.available
+        : !amountError && flexStatus !== 'loading' && flexStatus !== 'idle' && (!needsFlexibilityAnswer || isFlexible !== null);
 
   const handleBack = () => {
-    if (step > 1) {
-      setStep(step - 1);
-    }
+    if (step > 1) setStep(step - 1);
   };
 
   const handleSubmit = async () => {
-    console.log('=== handleSubmit called ===');
+    if (!canProceed || submitting) return;
+    setSubmitting(true);
+    setSubmitError(null);
+    const providerName = provider.trim();
 
-    // Check if we need to ask about flexibility
-    const setting = await getISASetting(provider.trim(), selectedType);
+    try {
+      const setting = await getISASetting(providerName, selectedType);
+      if (!setting) {
+        if (selectedType === ISA_TYPES.LIFETIME) {
+          // Lifetime ISAs are never flexible
+          await setISASetting(providerName, selectedType, false);
+        } else if (isFlexible === null) {
+          // Setting disappeared since the step loaded — ask before saving
+          setFlexStatus('missing');
+          return;
+        } else {
+          await setISASetting(providerName, selectedType, isFlexible);
+        }
+      }
 
-    // Lifetime ISAs are NEVER flexible - automatically set as non-flexible
-    if (selectedType === ISA_TYPES.LIFETIME && !setting) {
-      console.log('Lifetime ISA detected - automatically setting as non-flexible');
-      await setISASetting(provider.trim(), selectedType, false);
-      console.log(`✅ Saved flexibility setting for Lifetime ISA: false`);
-
-      // Close modal directly for Lifetime ISA
-      const contributionAmount = parseFloat(amount);
       const contribution: ISAContribution = {
         id: Date.now().toString(),
-        provider: provider.trim(),
+        provider: providerName,
         isaType: selectedType,
-        amount: contributionAmount,
+        amount: Number(amount),
         date: formatDateKey(contributionDate),
         notes: notes.trim() || undefined,
       };
 
-      console.log('Created contribution:', contribution);
-
-      if (onAdd) {
-        console.log('Calling parent onAdd');
-        onAdd(contribution);
-      }
-
-      // Close modal directly
-      handleDone();
-      return;
-    } else if (!setting && !needsFlexibilityAnswer) {
-      // First time adding to this provider+type combo (non-Lifetime ISA)
-      // Show flexibility question
-      console.log('First time for this provider+type - showing flexibility question');
-      setShowFlexibilityQuestion(true);
-      setNeedsFlexibilityAnswer(true);
-      return; // Don't submit yet
+      // The parent saves it, plays the success haptic and shows the new entry
+      onAdd?.(contribution);
+      onClose();
+    } catch (error) {
+      console.error('Error saving ISA contribution:', error);
+      setSubmitError("Couldn't save this contribution. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
-
-    // If we need an answer but haven't set it yet, don't proceed
-    if (needsFlexibilityAnswer && isFlexible === null) {
-      Alert.alert('Please Answer', 'Please indicate if your ISA is flexible before continuing.');
-      return;
-    }
-
-    // Save the flexibility setting if this is the first time
-    if (needsFlexibilityAnswer && isFlexible !== null) {
-      await setISASetting(provider.trim(), selectedType, isFlexible);
-      console.log(`✅ Saved flexibility setting: ${isFlexible}`);
-    }
-
-    const contributionAmount = parseFloat(amount);
-
-    const contribution: ISAContribution = {
-      id: Date.now().toString(),
-      provider: provider.trim(),
-      isaType: selectedType,
-      amount: contributionAmount,
-      date: formatDateKey(contributionDate),
-      notes: notes.trim() || undefined,
-    };
-
-    console.log('Created contribution:', contribution);
-
-    // Call parent's onAdd
-    if (onAdd) {
-      console.log('Calling parent onAdd');
-      onAdd(contribution);
-    }
-
-    // Close modal directly instead of going to confirmation screen
-    handleDone();
   };
 
-  const handleDone = () => {
-    resetForm();
-    onClose();
-  };
-
-  const handleFlexibilityDone = async () => {
-    // Save the flexibility setting
-    if (needsFlexibilityAnswer && isFlexible !== null) {
-      await setISASetting(provider.trim(), selectedType, isFlexible);
-      console.log(`✅ Saved flexibility setting: ${isFlexible}`);
+  const handlePrimary = () => {
+    if (step < TOTAL_STEPS) {
+      if (canProceed) setStep(step + 1);
+    } else {
+      handleSubmit();
     }
-
-    const contributionAmount = parseFloat(amount);
-
-    const contribution: ISAContribution = {
-      id: Date.now().toString(),
-      provider: provider.trim(),
-      isaType: selectedType,
-      amount: contributionAmount,
-      date: formatDateKey(contributionDate),
-      notes: notes.trim() || undefined,
-    };
-
-    console.log('Created contribution:', contribution);
-
-    // Call parent's onAdd
-    if (onAdd) {
-      console.log('Calling parent onAdd');
-      onAdd(contribution);
-    }
-
-    // Close modal directly instead of going to confirmation screen
-    handleDone();
   };
 
-  const getISAIcon = (type: string): keyof typeof Ionicons.glyphMap => {
-    const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
-      [ISA_TYPES.CASH]: 'cash',
-      [ISA_TYPES.STOCKS_SHARES]: 'trending-up',
-      [ISA_TYPES.LIFETIME]: 'home',
-      [ISA_TYPES.INNOVATIVE_FINANCE]: 'flash',
-    };
-    return iconMap[type] || 'wallet';
-  };
-
-  const getCategoryIcon = (category: string): keyof typeof Ionicons.glyphMap => {
-    const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
-      'bank': 'business',
-      'investment-platform': 'trending-up',
-      'fintech': 'phone-portrait',
-      'building-society': 'home',
-    };
-    return iconMap[category] || 'business';
-  };
-
-  const getCategoryColor = (category: string): string => {
-    const colorMap: Record<string, string> = {
-      'bank': Colors.info,
-      'investment-platform': Colors.success,
-      'fintech': Colors.gold,
-      'building-society': Colors.warning,
-    };
-    return colorMap[category] || Colors.info;
-  };
-
-  // Helper function to check if selected provider offers a specific ISA type
-  const isISATypeAvailable = (isaType: string): boolean => {
-    if (!selectedProviderData) return true; // If no provider selected, show all types
-
-    // Check if provider offers this ISA type
-    const typeMap: Record<string, string> = {
-      [ISA_TYPES.CASH]: 'Cash ISA',
-      [ISA_TYPES.STOCKS_SHARES]: 'Stocks & Shares ISA',
-      [ISA_TYPES.LIFETIME]: 'Lifetime ISA',
-      [ISA_TYPES.INNOVATIVE_FINANCE]: 'Innovative Finance ISA',
-    };
-
-    const mappedType = typeMap[isaType];
-    const providerOffersType = selectedProviderData.types.includes(mappedType);
-
-    // Additional check for Lifetime ISA - only one provider allowed
-    if (isaType === ISA_TYPES.LIFETIME && currentISAs) {
-      const currentLifetimeISA = currentISAs.lifetime;
-      if (currentLifetimeISA && currentLifetimeISA.provider &&
-          currentLifetimeISA.provider !== 'None' &&
-          currentLifetimeISA.provider !== selectedProviderData.name) {
-        return false; // Different provider already exists for Lifetime ISA
-      }
-    }
-
-    return providerOffersType;
-  };
-
-  const maxContribution =
-    selectedType === ISA_TYPES.LIFETIME ? LIFETIME_ISA_MAX : ISA_ANNUAL_ALLOWANCE;
-
-  const renderStepIndicator = () => (
-    <View style={styles.stepIndicator}>
-      {[1, 2, 3, 4].map((s) => (
-        <View key={s} style={styles.stepContainer}>
-          <View style={[styles.stepDot, step >= s && styles.stepDotActive]}>
-            {step > s ? (
-              <Ionicons name="checkmark" size={14} color={Colors.deepNavy} />
-            ) : (
-              <Text style={[styles.stepNumber, step >= s && styles.stepNumberActive]}>{s}</Text>
-            )}
-          </View>
-          {s < TOTAL_STEPS && (
-            <View style={[styles.stepLine, step > s && styles.stepLineActive]} />
-          )}
-        </View>
-      ))}
-    </View>
-  );
-
-  const renderStep1 = () => (
-    <View style={styles.stepContent}>
-      <View style={styles.stepHeader}>
-        <Ionicons name="business" size={32} color={Colors.gold} />
-        <Text style={styles.stepTitle}>Choose Your Provider</Text>
-        <Text style={styles.stepSubtitle}>
-          Select from popular providers or search for your ISA provider
-        </Text>
-      </View>
-
-      {/* Search Bar */}
-      <View style={styles.searchCard}>
-        <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color={Colors.gold} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search providers..."
-            placeholderTextColor={Colors.mediumGray}
-            value={providerSearch}
-            onChangeText={handleProviderSearch}
-            autoCapitalize="words"
-          />
-          {providerSearch.length > 0 && (
+  // ─── Steps ───
+  const renderProviderStep = () => (
+    <View>
+      <Text style={styles.question}>Who is your ISA with?</Text>
+      <Input
+        icon="search"
+        placeholder="Search providers"
+        value={providerSearch}
+        onChangeText={handleProviderSearch}
+        onSubmitEditing={submitSearch}
+        autoCapitalize="words"
+        autoCorrect={false}
+        returnKeyType="done"
+        accessibilityLabel="Search providers"
+        containerStyle={styles.search}
+        right={
+          providerSearch.length > 0 ? (
             <Pressable
-              onPress={() => {
-                setProviderSearch('');
-                setFilteredProviders(getPopularProviders());
-              }}
-              style={({ pressed }) => [{ opacity: pressed ? 0.5 : 1 }]}
+              onPress={() => handleProviderSearch('')}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel="Clear search"
             >
-              <Ionicons name="close-circle" size={20} color={Colors.lightGray} />
+              <Ionicons name="close-circle" size={18} color={Colors.textTertiary} />
             </Pressable>
-          )}
-        </View>
-      </View>
+          ) : null
+        }
+      />
 
-      {/* Provider List */}
-      <Text style={styles.listTitle}>
-        {providerSearch.trim().length > 0 ? `Results (${filteredProviders.length})` : 'Popular Providers'}
-      </Text>
-      {filteredProviders.map((providerData, index) => (
-        <Pressable
-          key={index}
-          onPress={() => selectProvider(providerData)}
-          style={({ pressed }) => [
-            { opacity: pressed ? 0.8 : 1 }
-          ]}
-        >
-          <View style={styles.providerCard}>
-            <View style={styles.providerCardContent}>
-              <View style={[
-                styles.providerBadge,
-                { backgroundColor: getCategoryColor(providerData.category) + '20' }
-              ]}>
-                <Ionicons
-                  name={getCategoryIcon(providerData.category)}
-                  size={24}
-                  color={getCategoryColor(providerData.category)}
-                />
-              </View>
-              <View style={styles.providerInfo}>
-                <Text style={styles.providerName}>{providerData.name}</Text>
-                <Text style={styles.providerTypes}>
-                  {providerData.types.join(' • ')}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={24} color={Colors.lightGray} />
-            </View>
-          </View>
-        </Pressable>
-      ))}
-    </View>
-  );
-
-  const renderStep2 = () => (
-    <View style={styles.stepContent}>
-      <View style={styles.stepHeader}>
-        <Ionicons name="wallet" size={32} color={Colors.gold} />
-        <Text style={styles.stepTitle}>Select ISA Type</Text>
-        <Text style={styles.stepSubtitle}>
-          Choose the type of ISA you're contributing to
-        </Text>
-      </View>
-
-      {/* Selected Provider Display */}
-      <View style={styles.selectedProviderCard}>
-        <Text style={styles.selectedProviderLabel}>Selected Provider</Text>
-        <Text style={styles.selectedProviderName}>{provider}</Text>
-        {selectedProviderData && (
-          <View style={styles.providerTypesList}>
-            <Text style={styles.providerTypesLabel}>Available ISA Types</Text>
-            <View style={styles.providerTypesChips}>
-              {selectedProviderData.types.map((type, idx) => (
-                <View key={idx} style={styles.providerTypeChip}>
-                  <Text style={styles.providerTypeChipText}>{type}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-      </View>
-
-      {/* ISA Type Grid */}
-      <View style={styles.isaTypeGrid}>
-        {Object.values(ISA_TYPES).map((type) => {
-          const info = ISA_INFO[type];
-          const isSelected = selectedType === type;
-          const isAvailable = isISATypeAvailable(type);
-
-          // Check if Lifetime ISA is unavailable due to different provider
-          const isLifetimeWithDifferentProvider =
-            type === ISA_TYPES.LIFETIME &&
-            currentISAs?.lifetime?.provider &&
-            currentISAs.lifetime.provider !== 'None' &&
-            selectedProviderData &&
-            currentISAs.lifetime.provider !== selectedProviderData.name;
-
-          const handleISATypePress = () => {
-            if (isAvailable) {
-              setSelectedType(type);
-            } else if (isLifetimeWithDifferentProvider) {
-              Alert.alert(
-                'Lifetime ISA Rule',
-                `You can only have one Lifetime ISA provider at a time.\n\nYou currently have a Lifetime ISA with ${currentISAs?.lifetime?.provider}.\n\nTo add contributions from ${selectedProviderData?.name}, you would need to transfer your Lifetime ISA to them first.`,
-                [{ text: 'OK' }]
-              );
-            }
-          };
-
+      <Text style={styles.sectionLabel}>{query ? 'Results' : 'Popular providers'}</Text>
+      {query && searchResults.length === 0 ? (
+        <Text style={styles.emptyText}>No providers in our list match "{query}".</Text>
+      ) : null}
+      <ListGroup>
+        {listedProviders.map((p) => {
+          const isSelected = selectedProviderData?.name === p.name;
           return (
-            <Pressable
+            <ListItem
+              key={p.name}
+              title={p.name}
+              subtitle={providerSubtitle(p)}
+              leading={<IconTile name={CATEGORY_ICONS[p.category] ?? 'business-outline'} color={Colors.textSecondary} size={36} />}
+              onPress={() => chooseProvider(p.name, p)}
+              right={isSelected ? <Ionicons name="checkmark-circle" size={22} color={Colors.accent} /> : undefined}
+            />
+          );
+        })}
+        {query && !hasExactMatch ? (
+          <ListItem
+            title={`Use "${query}"`}
+            subtitle="Add a provider that isn't in our list"
+            leading={<IconTile name="add" color={Colors.textSecondary} size={36} />}
+            onPress={() => chooseProvider(query, null)}
+            right={customIsSelected ? <Ionicons name="checkmark-circle" size={22} color={Colors.accent} /> : undefined}
+          />
+        ) : null}
+      </ListGroup>
+    </View>
+  );
+
+  const renderTypeStep = () => (
+    <View>
+      <Text style={styles.question}>Which type of ISA?</Text>
+      <Text style={styles.questionCaption}>With {provider}</Text>
+      <View style={styles.options}>
+        {ISA_TYPE_ORDER.map((type) => {
+          const { available, reason } = getTypeAvailability(type, provider.trim(), selectedProviderData, currentISAs);
+          return (
+            <OptionRow
               key={type}
-              onPress={handleISATypePress}
-              disabled={!isAvailable && !isLifetimeWithDifferentProvider}
-              style={({ pressed }) => [
-                styles.isaTypeButton,
-                { opacity: pressed && isAvailable ? 0.8 : 1 }
-              ]}
-            >
-              <View
-                style={[
-                  styles.isaTypeCard,
-                  isSelected && styles.isaTypeCardSelected,
-                  !isAvailable && styles.isaTypeCardDisabled,
-                ]}
-              >
-                {isSelected && isAvailable && (
-                  <View style={styles.selectedBadgeCorner}>
-                    <Ionicons name="checkmark-circle" size={24} color={Colors.gold} />
-                  </View>
-                )}
-                {!isAvailable && (
-                  <View style={styles.unavailableBadge}>
-                    <Ionicons name="close-circle" size={20} color={Colors.error} />
-                  </View>
-                )}
-                <View style={[
-                  styles.isaTypeIcon,
-                  { backgroundColor: (isAvailable ? info.color : Colors.mediumGray) + '20' }
-                ]}>
-                  <Ionicons
-                    name={getISAIcon(type)}
-                    size={32}
-                    color={isAvailable ? info.color : Colors.mediumGray}
-                  />
-                </View>
-                <Text style={[
-                  styles.isaTypeName,
-                  !isAvailable && styles.isaTypeNameDisabled
-                ]}>
-                  {info.shortName}
-                </Text>
-                <Text style={[
-                  styles.isaTypeDescription,
-                  !isAvailable && styles.isaTypeDescriptionDisabled
-                ]}>
-                  {isAvailable ? `${info.riskLevel} Risk` : 'Not Available'}
-                </Text>
-              </View>
-            </Pressable>
+              title={ISA_LABELS[type]}
+              subtitle={available ? TYPE_SUMMARIES[type] : reason}
+              leading={<IconTile name={ISA_ICONS[type]} color={isaColor(type)} size={36} />}
+              selected={available && selectedType === type}
+              disabled={!available}
+              onPress={() => setSelectedType(type)}
+            />
           );
         })}
       </View>
     </View>
   );
 
-  const renderStep3 = () => (
-    <View style={styles.stepContent}>
-      <View style={styles.stepHeader}>
-        <Ionicons name="calculator" size={32} color={Colors.gold} />
-        <Text style={styles.stepTitle}>Enter Amount</Text>
-        <Text style={styles.stepSubtitle}>
-          How much are you contributing?
+  const renderAmountStep = () => (
+    <View>
+      <View style={styles.context}>
+        <IconTile name={ISA_ICONS[selectedType]} color={isaColor(selectedType)} size={28} />
+        <Text style={styles.contextText} numberOfLines={1}>
+          {provider} · {ISA_LABELS[selectedType]}
         </Text>
       </View>
 
-      {/* Provider & Type Summary */}
-      <View style={styles.summaryCard}>
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Provider</Text>
-          <Text style={styles.summaryValue}>{provider}</Text>
-        </View>
-        <View style={styles.summaryDivider} />
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>ISA Type</Text>
-          <Text style={styles.summaryValue}>{ISA_INFO[selectedType].shortName}</Text>
-        </View>
-      </View>
+      <ContributionAmountFields
+        amount={amount}
+        onChangeAmount={(value) => {
+          setAmount(value);
+          setAmountTouched(true);
+        }}
+        isaType={selectedType}
+        error={visibleAmountError}
+        remaining={remaining}
+        taxYears={availableTaxYears}
+        selectedTaxYear={selectedTaxYear}
+        onSelectTaxYear={selectTaxYear}
+        autoFocus
+      />
 
-      {/* Amount Input */}
-      <View style={styles.amountSection}>
-        <Text style={styles.amountLabel}>CONTRIBUTION AMOUNT</Text>
-        <View style={styles.amountInputBox}>
-          <Text style={styles.currencySymbol}>£</Text>
-          <TextInput
-            style={styles.amountInput}
-            placeholder="0"
-            placeholderTextColor={Colors.mediumGray}
-            value={amount}
-            onChangeText={setAmount}
-            keyboardType="decimal-pad"
-            autoFocus
-            textAlign="left"
-          />
-        </View>
-        <View style={styles.amountHint}>
-          <Ionicons name="information-circle-outline" size={16} color={Colors.info} />
-          <Text style={styles.amountHintText}>
-            Max: {formatCurrency(maxContribution)} per tax year
+      {needsFlexibilityAnswer ? (
+        <View style={styles.flexSection}>
+          <Text style={styles.flexTitle}>Is this ISA flexible?</Text>
+          <Text style={styles.flexBody}>
+            A flexible ISA lets you take money out and put it back in the same tax year without using up more of
+            your allowance.
           </Text>
-        </View>
-      </View>
-
-      {/* LISA Bonus */}
-      {selectedType === ISA_TYPES.LIFETIME && parseFloat(amount) > 0 && (
-        <View style={styles.bonusCard}>
-          <LinearGradient
-            colors={['rgba(40, 167, 69, 0.25)', 'rgba(40, 167, 69, 0.15)']}
-            style={styles.bonusGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <Ionicons name="gift" size={28} color={Colors.success} />
-            <Text style={styles.bonusTitle}>Government Bonus</Text>
-            <Text style={styles.bonusAmount}>
-              +{formatCurrency(parseFloat(amount) * 0.25)}
-            </Text>
-            <Text style={styles.bonusDescription}>
-              You'll receive a 25% bonus on this contribution!
-            </Text>
-          </LinearGradient>
-        </View>
-      )}
-
-      {/* Tax Year Selection */}
-      <View style={styles.taxYearSection}>
-        <Text style={styles.inputLabel}>Tax Year</Text>
-        <Text style={styles.taxYearHint}>Select when this contribution was made</Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8, paddingVertical: 4 }}
-        >
-          {availableTaxYears.map((year) => {
-            const isSelected = year.startYear === selectedTaxYear.startYear;
-            return (
-              <Pressable
-                key={year.startYear}
-                onPress={() => {
-                  setSelectedTaxYear(year);
-                  // Set contribution date to be within the selected tax year
-                  setContributionDate(year.startDate);
-                }}
-                style={({ pressed }) => [
-                  styles.taxYearButton,
-                  isSelected && styles.taxYearButtonActive,
-                  { opacity: pressed ? 0.7 : 1 }
-                ]}
-              >
-                <Text style={[
-                  styles.taxYearButtonText,
-                  isSelected && styles.taxYearButtonTextActive
-                ]}>
-                  {getTaxYearLabel(year)}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-      </View>
-
-      {/* Optional Details */}
-      <View style={styles.optionalSection}>
-        <Text style={styles.optionalTitle}>Optional Details</Text>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Notes</Text>
-          <View style={styles.inputCard}>
-            <TextInput
-              style={[styles.input, styles.notesInput]}
-              placeholder="Add any notes..."
-              placeholderTextColor={Colors.mediumGray}
-              value={notes}
-              onChangeText={setNotes}
-              multiline
-              numberOfLines={3}
-              textAlignVertical="top"
+          <View style={styles.options}>
+            <OptionRow
+              title="Flexible"
+              subtitle="Withdrawals can be replaced this tax year"
+              selected={isFlexible === true}
+              onPress={() => setIsFlexible(true)}
+            />
+            <OptionRow
+              title="Not flexible"
+              subtitle="Withdrawals still count towards your allowance"
+              selected={isFlexible === false}
+              onPress={() => setIsFlexible(false)}
             />
           </View>
+          <Text style={styles.flexHint}>Not sure? Choose not flexible — it's the safer assumption.</Text>
         </View>
+      ) : null}
+
+      <Input
+        label="Notes (optional)"
+        placeholder="e.g. Monthly transfer"
+        value={notes}
+        onChangeText={setNotes}
+        maxLength={200}
+        returnKeyType="done"
+        containerStyle={styles.notes}
+      />
+    </View>
+  );
+
+  const footerNote =
+    submitError ??
+    (step === 3 && !amountError && needsFlexibilityAnswer && isFlexible === null
+      ? 'Choose whether this ISA is flexible to continue'
+      : null);
+
+  const footer = (
+    <View>
+      {footerNote ? (
+        <Text style={[styles.footerNote, submitError ? styles.footerNoteError : null]}>{footerNote}</Text>
+      ) : null}
+      <View style={styles.footerRow}>
+        {step > 1 ? (
+          <Button
+            title="Back"
+            variant="secondary"
+            icon="chevron-back"
+            fullWidth={false}
+            onPress={handleBack}
+            style={styles.backButton}
+          />
+        ) : null}
+        <Button
+          title={step < TOTAL_STEPS ? 'Continue' : 'Add contribution'}
+          onPress={handlePrimary}
+          disabled={!canProceed}
+          loading={submitting}
+          style={styles.primaryButton}
+        />
       </View>
     </View>
   );
 
-  const renderFlexibilityQuestion = () => {
-    if (!showFlexibilityQuestion) return null;
-
-    const isaInfo = ISA_INFO[selectedType];
-
-    return (
-      <View style={styles.flexibilityOverlay}>
-        <View style={styles.flexibilityCard}>
-          <View style={styles.flexibilityHeader}>
-            <Ionicons name="help-circle" size={48} color={Colors.gold} />
-            <Text style={styles.flexibilityTitle}>
-              Is Your {provider} {isaInfo.shortName} ISA Flexible?
-            </Text>
-          </View>
-
-          <View style={styles.flexibilityInfo}>
-            <View style={styles.infoBox}>
-              <Ionicons name="information-circle" size={24} color={Colors.info} />
-              <View style={{ flex: 1, marginLeft: Spacing.md }}>
-                <Text style={styles.infoBoxTitle}>What's a Flexible ISA?</Text>
-                <Text style={styles.infoBoxText}>
-                  Flexible ISAs let you withdraw money and put it back in the same tax year without losing your allowance.
-                </Text>
-                <Text style={[styles.infoBoxText, { marginTop: Spacing.sm }]}>
-                  Check your {provider} account details or contact them if you're unsure.
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.flexibilityOptions}>
-            <Pressable
-              onPress={() => setIsFlexible(true)}
-              style={({ pressed }) => [
-                styles.flexibilityOption,
-                isFlexible === true && styles.flexibilityOptionSelected,
-                { opacity: pressed ? 0.8 : 1 }
-              ]}
-            >
-              <View style={styles.flexibilityOptionContent}>
-                <View style={[
-                  styles.radioCircle,
-                  isFlexible === true && styles.radioCircleSelected
-                ]}>
-                  {isFlexible === true && (
-                    <View style={styles.radioInner} />
-                  )}
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.flexibilityOptionTitle}>Yes, it's flexible</Text>
-                  <Text style={styles.flexibilityOptionDesc}>
-                    I can withdraw and replace money without losing allowance
-                  </Text>
-                </View>
-                <Ionicons name="checkmark-circle" size={24} color={isFlexible === true ? Colors.gold : Colors.mediumGray} />
-              </View>
-            </Pressable>
-
-            <Pressable
-              onPress={() => setIsFlexible(false)}
-              style={({ pressed }) => [
-                styles.flexibilityOption,
-                isFlexible === false && styles.flexibilityOptionSelected,
-                { opacity: pressed ? 0.8 : 1 }
-              ]}
-            >
-              <View style={styles.flexibilityOptionContent}>
-                <View style={[
-                  styles.radioCircle,
-                  isFlexible === false && styles.radioCircleSelected
-                ]}>
-                  {isFlexible === false && (
-                    <View style={styles.radioInner} />
-                  )}
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.flexibilityOptionTitle}>No, it's not flexible</Text>
-                  <Text style={styles.flexibilityOptionDesc}>
-                    Withdrawals reduce my allowance permanently
-                  </Text>
-                </View>
-                <Ionicons name="close-circle" size={24} color={isFlexible === false ? Colors.error : Colors.mediumGray} />
-              </View>
-            </Pressable>
-          </View>
-
-          <View style={styles.flexibilityActions}>
-            <Pressable
-              onPress={() => {
-                setShowFlexibilityQuestion(false);
-                setIsFlexible(null);
-                setNeedsFlexibilityAnswer(false);
-              }}
-              style={({ pressed }) => [
-                styles.flexibilityCancelButton,
-                { opacity: pressed ? 0.7 : 1 }
-              ]}
-            >
-              <Text style={styles.flexibilityCancelText}>Cancel</Text>
-            </Pressable>
-
-            {isFlexible !== null && (
-              <Pressable
-                onPress={handleFlexibilityDone}
-                style={({ pressed }) => [
-                  styles.flexibilityConfirmButton,
-                  { opacity: pressed ? 0.9 : 1 }
-                ]}
-              >
-                <LinearGradient
-                  colors={Colors.goldGradient}
-                  style={styles.flexibilityConfirmGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                >
-                  <Ionicons name="checkmark-circle" size={24} color={Colors.deepNavy} />
-                  <Text style={styles.flexibilityConfirmText}>Done</Text>
-                </LinearGradient>
-              </Pressable>
-            )}
-          </View>
-        </View>
-      </View>
-    );
-  };
-
-  const renderStep4 = () => {
-    console.log('=== renderStep4 called ===');
-    console.log('submittedContribution:', submittedContribution);
-    console.log('current step:', step);
-
-    if (!submittedContribution) {
-      console.log('No submitted contribution, returning null');
-      return null;
-    }
-
-    const isaInfo = ISA_INFO[submittedContribution.isaType];
-    const lisaBonus = submittedContribution.isaType === ISA_TYPES.LIFETIME
-      ? submittedContribution.amount * 0.25
-      : 0;
-
-    console.log('Rendering confirmation screen for:', isaInfo.name);
-
-    return (
-      <View style={styles.stepContent}>
-        {/* Success Icon */}
-        <View style={styles.confirmationHeader}>
-          <LinearGradient
-            colors={[Colors.success + 'DD', Colors.success + '88']}
-            style={styles.successIconWrapper}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <Ionicons name="checkmark-circle" size={64} color={Colors.white} />
-          </LinearGradient>
-          <Text style={styles.confirmationTitle}>✓ Confirmed</Text>
-          <Text style={styles.confirmationSubtitle}>
-            Your contribution has been added successfully
-          </Text>
-        </View>
-
-        {/* Contribution Details Card */}
-        <View style={styles.confirmationCard}>
-          <View style={styles.confirmationRow}>
-            <View style={[styles.isaIconCircle, { backgroundColor: isaInfo.color + '20' }]}>
-              <Ionicons name={getISAIcon(submittedContribution.isaType)} size={28} color={isaInfo.color} />
-            </View>
-            <View style={{ flex: 1, marginLeft: Spacing.md }}>
-              <Text style={styles.confirmationISAType}>{isaInfo.name}</Text>
-              <Text style={styles.confirmationProvider}>{submittedContribution.provider}</Text>
-            </View>
-          </View>
-
-          <View style={styles.confirmationDivider} />
-
-          <View style={styles.confirmationDetail}>
-            <Text style={styles.confirmationDetailLabel}>Amount Added</Text>
-            <Text style={styles.confirmationDetailValue}>
-              {formatCurrency(submittedContribution.amount)}
-            </Text>
-          </View>
-
-          {lisaBonus > 0 && (
-            <View style={styles.confirmationDetail}>
-              <Text style={styles.confirmationDetailLabel}>Government Bonus</Text>
-              <Text style={[styles.confirmationDetailValue, { color: isaInfo.color }]}>
-                +{formatCurrency(lisaBonus)}
-              </Text>
-            </View>
-          )}
-
-          {submittedContribution.notes && (
-            <>
-              <View style={styles.confirmationDivider} />
-              <View style={styles.confirmationDetail}>
-                <Text style={styles.confirmationDetailLabel}>Notes</Text>
-                <Text style={styles.confirmationNotes}>{submittedContribution.notes}</Text>
-              </View>
-            </>
-          )}
-        </View>
-
-        {/* Done Button */}
-        <Pressable
-          onPress={handleDone}
-          style={({ pressed }) => [
-            styles.doneButton,
-            { opacity: pressed ? 0.9 : 1 }
-          ]}
-        >
-          <LinearGradient
-            colors={Colors.goldGradient}
-            style={styles.doneButtonGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-          >
-            <Text style={styles.doneButtonText}>Done</Text>
-          </LinearGradient>
-        </Pressable>
-      </View>
-    );
-  };
-
   return (
-    <Modal
-      visible={visible}
-      onClose={() => {
-        resetForm();
-        onClose();
-      }}
-      title="Add ISA Contribution"
-      icon="add-circle"
-    >
-      <>
-        {/* Step Indicator */}
-        {renderStepIndicator()}
-
-        {/* Step Content */}
-        {step === 1 && renderStep1()}
-        {step === 2 && renderStep2()}
-        {step === 3 && renderStep3()}
-        {step === 4 && renderStep4()}
-
-        {/* Flexibility Question Overlay */}
-        {renderFlexibilityQuestion()}
-
-        {/* Navigation Buttons */}
-        {step < 4 && (
-        <View style={styles.navigationButtons}>
-          {step > 1 && (
-            <Pressable
-              onPress={handleBack}
-              style={({ pressed }) => [
-                styles.backButton,
-                { opacity: pressed ? 0.7 : 1 }
-              ]}
-            >
-              <View style={styles.backButtonCard}>
-                <Ionicons name="arrow-back" size={24} color={Colors.white} />
-                <Text style={styles.backButtonText}>Back</Text>
-              </View>
-            </Pressable>
-          )}
-
-          {step < 3 ? (
-            <Pressable
-              onPress={handleNext}
-              style={({ pressed }) => [
-                styles.nextButton,
-                step === 1 && styles.nextButtonFull,
-                { opacity: pressed ? 0.9 : 1 }
-              ]}
-            >
-              <LinearGradient
-                colors={Colors.goldGradient}
-                style={styles.nextButtonGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-              >
-                <Text style={styles.nextButtonText}>Next</Text>
-                <Ionicons name="arrow-forward" size={24} color={Colors.deepNavy} />
-              </LinearGradient>
-            </Pressable>
-          ) : (
-            <Pressable
-              onPress={handleSubmit}
-              style={({ pressed }) => [
-                styles.submitButton,
-                { opacity: pressed ? 0.9 : 1 }
-              ]}
-            >
-              <LinearGradient
-                colors={Colors.goldGradient}
-                style={styles.submitButtonGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-              >
-                <Ionicons name="checkmark-circle" size={24} color={Colors.deepNavy} />
-                <Text style={styles.submitButtonText}>Add Contribution</Text>
-              </LinearGradient>
-            </Pressable>
-          )}
-        </View>
-        )}
-      </>
+    <Modal visible={visible} onClose={onClose} title="Add contribution" footer={footer}>
+      <StepIndicator step={step} />
+      {step === 1 && renderProviderStep()}
+      {step === 2 && renderTypeStep()}
+      {step === 3 && renderAmountStep()}
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  stepIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.lg,
-    paddingHorizontal: Spacing.lg,
-  },
-  stepContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  stepDot: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: Colors.glassLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stepDotActive: {
-    backgroundColor: Colors.gold,
-  },
-  stepNumber: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    fontWeight: Typography.weights.bold,
-  },
-  stepNumberActive: {
-    color: Colors.deepNavy,
-  },
-  stepLine: {
-    width: 40,
-    height: 2,
-    backgroundColor: Colors.glassLight,
-    marginHorizontal: 4,
-  },
-  stepLineActive: {
-    backgroundColor: Colors.gold,
-  },
-  stepContent: {
-    // Removed flex: 1 to allow proper scrolling
-  },
-  stepHeader: {
-    alignItems: 'center',
+  // Step indicator
+  indicator: {
     marginBottom: Spacing.lg,
   },
-  stepTitle: {
-    fontSize: Typography.sizes.xxl,
-    color: Colors.white,
-    fontWeight: Typography.weights.bold,
-    marginTop: Spacing.md,
-    marginBottom: Spacing.sm,
+  segments: {
+    flexDirection: 'row',
+    gap: 6,
   },
-  stepSubtitle: {
-    fontSize: Typography.sizes.md,
-    color: Colors.lightGray,
-    textAlign: 'center',
-    lineHeight: 22,
+  segment: {
+    flex: 1,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: Colors.surfaceRaised,
+  },
+  segmentActive: {
+    backgroundColor: Colors.accent,
+  },
+  indicatorText: {
+    ...Type.caption,
+    marginTop: 10,
   },
 
-  // Step 1: Provider Selection
-  searchCard: {
-    padding: Spacing.md,
-    marginBottom: Spacing.lg,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: Typography.sizes.md,
-    color: Colors.white,
-    fontWeight: Typography.weights.medium,
-  },
-  listTitle: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.gold,
-    fontWeight: Typography.weights.bold,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+  // Shared headings
+  question: {
+    ...Type.headline,
     marginBottom: Spacing.md,
   },
-  providerCard: {
-    padding: Spacing.lg,
-    marginBottom: Spacing.sm,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+  questionCaption: {
+    ...Type.callout,
+    marginTop: -12,
+    marginBottom: Spacing.md,
   },
-  providerCardContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  providerBadge: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: Spacing.md,
-  },
-  providerInfo: {
-    flex: 1,
-  },
-  providerName: {
-    fontSize: Typography.sizes.md,
-    color: Colors.white,
-    fontWeight: Typography.weights.bold,
-    marginBottom: 4,
-  },
-  providerTypes: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-  },
-
-  // Step 2: ISA Type Selection
-  selectedProviderCard: {
-    padding: Spacing.xl,
-    marginBottom: Spacing.xl,
-    alignItems: 'center',
-    borderRadius: BorderRadius.xl,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  selectedProviderLabel: {
-    fontSize: Typography.sizes.xs,
-    color: Colors.lightGray,
-    marginBottom: Spacing.sm,
-    fontWeight: Typography.weights.semibold,
-    textTransform: 'uppercase',
-    letterSpacing: 1.5,
-  },
-  selectedProviderName: {
-    fontSize: Typography.sizes.xxxl,
-    color: Colors.gold,
-    fontWeight: Typography.weights.extrabold,
-    textAlign: 'center',
-  },
-  providerTypesList: {
+  sectionLabel: {
+    ...Type.overline,
     marginTop: Spacing.lg,
-    alignItems: 'center',
-    width: '100%',
-  },
-  providerTypesLabel: {
-    fontSize: Typography.sizes.xs,
-    color: Colors.lightGray,
-    marginBottom: Spacing.md,
-    fontWeight: Typography.weights.semibold,
-    textTransform: 'uppercase',
-    letterSpacing: 1.5,
-  },
-  providerTypesChips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-  },
-  providerTypeChip: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    backgroundColor: 'rgba(255, 215, 0, 0.15)',
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 215, 0, 0.3)',
-  },
-  providerTypeChipText: {
-    fontSize: Typography.sizes.xs,
-    color: Colors.gold,
-    fontWeight: Typography.weights.semibold,
-  },
-  isaTypeGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: Spacing.lg,
-    marginBottom: Spacing.xl,
-    paddingHorizontal: Spacing.sm,
-  },
-  isaTypeButton: {
-    width: (width - Spacing.lg * 4) / 2,
-    maxWidth: 180,
-  },
-  isaTypeCard: {
-    padding: Spacing.lg,
-    paddingVertical: Spacing.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    minHeight: 170,
-    aspectRatio: 1,
-    borderRadius: BorderRadius.xl,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  isaTypeCardSelected: {
-    borderWidth: 2.5,
-    borderColor: Colors.gold,
-    backgroundColor: 'rgba(255, 215, 0, 0.12)',
-    shadowColor: Colors.gold,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  isaTypeCardDisabled: {
-    opacity: 0.4,
-    backgroundColor: 'rgba(255, 255, 255, 0.02)',
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-  },
-  selectedBadgeCorner: {
-    position: 'absolute',
-    top: Spacing.sm,
-    right: Spacing.sm,
-  },
-  unavailableBadge: {
-    position: 'absolute',
-    top: Spacing.sm,
-    right: Spacing.sm,
-    backgroundColor: 'rgba(220, 53, 69, 0.2)',
-    borderRadius: 20,
-    padding: 6,
-  },
-  isaTypeIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.md,
-  },
-  isaTypeName: {
-    fontSize: Typography.sizes.md,
-    color: Colors.white,
-    fontWeight: Typography.weights.bold,
-    textAlign: 'center',
-    marginBottom: Spacing.xs,
-    lineHeight: 20,
-  },
-  isaTypeNameDisabled: {
-    color: Colors.mediumGray,
-  },
-  isaTypeDescription: {
-    fontSize: Typography.sizes.xs,
-    color: Colors.lightGray,
-    textAlign: 'center',
-    fontWeight: Typography.weights.semibold,
-  },
-  isaTypeDescriptionDisabled: {
-    color: Colors.mediumGray,
-  },
-  isaInfoCard: {
-    padding: Spacing.xl,
-    borderRadius: BorderRadius.xl,
-  },
-  isaInfoTitle: {
-    fontSize: Typography.sizes.xl,
-    color: Colors.gold,
-    fontWeight: Typography.weights.bold,
-    marginBottom: Spacing.md,
-    textAlign: 'center',
-  },
-  isaInfoDescription: {
-    fontSize: Typography.sizes.md,
-    color: Colors.white,
-    lineHeight: 22,
-    marginBottom: Spacing.lg,
-    textAlign: 'center',
-  },
-  isaInfoStats: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    backgroundColor: Colors.deepNavy + '80',
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-  },
-  isaInfoStat: {
-    alignItems: 'center',
-    gap: Spacing.xs,
-  },
-  isaInfoStatLabel: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    fontWeight: Typography.weights.medium,
-  },
-  isaInfoStatValue: {
-    fontSize: Typography.sizes.xl,
-    color: Colors.gold,
-    fontWeight: Typography.weights.extrabold,
+    marginBottom: 10,
   },
 
-  // Step 3: Amount Entry
-  summaryCard: {
-    padding: Spacing.lg,
-    marginBottom: Spacing.lg,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+  // Provider step
+  search: {
+    marginBottom: Spacing.xs,
   },
-  summaryRow: {
+  emptyText: {
+    ...Type.callout,
+    marginBottom: 12,
+  },
+
+  // Option rows (ISA type, flexibility)
+  options: {
+    gap: 8,
+  },
+  option: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: Spacing.sm,
+    minHeight: 64,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: Colors.surface,
   },
-  summaryDivider: {
-    height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    marginVertical: Spacing.sm,
+  optionSelected: {
+    backgroundColor: Colors.accentMuted,
+    borderColor: Colors.accentBorder,
   },
-  summaryLabel: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    fontWeight: Typography.weights.semibold,
+  optionPressed: {
+    backgroundColor: Colors.surfaceRaised,
   },
-  summaryValue: {
-    fontSize: Typography.sizes.md,
-    color: Colors.gold,
-    fontWeight: Typography.weights.bold,
+  dimmed: {
+    opacity: 0.4,
   },
-  amountSection: {
-    marginBottom: Spacing.lg,
+  optionBody: {
+    flex: 1,
+    marginRight: 12,
   },
-  amountLabel: {
-    fontSize: Typography.sizes.xs,
-    color: Colors.gold,
-    fontWeight: Typography.weights.bold,
-    letterSpacing: 1.5,
-    marginBottom: Spacing.md,
-    textAlign: 'center',
+  optionBodyIndented: {
+    marginLeft: 14,
   },
-  amountInputBox: {
+  optionTitle: {
+    ...Type.bodyStrong,
+  },
+  optionTitleDisabled: {
+    color: Colors.textTertiary,
+  },
+  optionSubtitle: {
+    ...Type.caption,
+    marginTop: 2,
+  },
+  radio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: Colors.borderStrong,
+  },
+
+  // Amount step
+  context: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: BorderRadius.xl,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 215, 0, 0.3)',
-    paddingVertical: Spacing.xl,
-    paddingHorizontal: Spacing.xxl,
-    marginBottom: Spacing.md,
+    gap: 10,
   },
-  currencySymbol: {
-    fontSize: Typography.sizes.xxxl,
-    color: Colors.gold,
-    fontWeight: Typography.weights.extrabold,
-    marginRight: Spacing.xs,
+  contextText: {
+    ...Type.callout,
+    color: Colors.text,
+    flexShrink: 1,
+  },
+  amountBlock: {
+    alignItems: 'center',
+    paddingTop: Spacing.lg,
+    paddingBottom: Spacing.sm,
   },
   amountInput: {
-    fontSize: Typography.sizes.xxxl,
-    color: Colors.gold,
-    fontWeight: Typography.weights.extrabold,
-    minWidth: 100,
-    maxWidth: 200,
+    ...Type.display,
+    ...Type.number,
+    fontSize: 44,
+    lineHeight: 52,
+    alignSelf: 'stretch',
+    textAlign: 'center',
+    paddingVertical: 4,
+    color: Colors.text,
+    // Remove the browser focus ring on web; the rule below shows focus instead
+    outlineStyle: 'none',
+  } as any,
+  amountRule: {
+    width: 160,
+    height: 1,
+    marginTop: 4,
+    backgroundColor: Colors.borderStrong,
+  },
+  amountRuleFocused: {
+    backgroundColor: Colors.accentBorder,
+  },
+  amountRuleError: {
+    backgroundColor: Colors.negative,
   },
   amountHint: {
+    ...Type.caption,
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  cautionText: {
+    color: Colors.caution,
+  },
+  messageRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.xs,
+    gap: 6,
+    marginTop: 10,
   },
-  amountHintText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
+  errorText: {
+    ...Type.caption,
+    color: Colors.negative,
+    flexShrink: 1,
   },
-  bonusCard: {
-    padding: 0,
-    overflow: 'hidden',
-    marginBottom: Spacing.md,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1.5,
-    borderColor: 'rgba(40, 167, 69, 0.3)',
-  },
-  bonusGradient: {
-    padding: Spacing.xl,
-    alignItems: 'center',
-    borderRadius: BorderRadius.xl,
-  },
-  bonusTitle: {
-    fontSize: Typography.sizes.md,
-    color: Colors.success,
-    fontWeight: Typography.weights.bold,
-    marginTop: Spacing.sm,
-    marginBottom: Spacing.xs,
-  },
-  bonusAmount: {
-    fontSize: Typography.sizes.xxxl,
-    color: Colors.success,
-    fontWeight: Typography.weights.extrabold,
-    marginBottom: Spacing.xs,
-  },
-  bonusDescription: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.white,
-    opacity: 0.9,
-  },
-  taxYearSection: {
-    marginBottom: Spacing.lg,
-  },
-  taxYearHint: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    marginBottom: Spacing.md,
-    marginTop: 4,
-  },
-  taxYearButtons: {
+  bonusRow: {
     flexDirection: 'row',
-    gap: Spacing.md,
-  },
-  taxYearButton: {
-    flex: 1,
-    padding: Spacing.md,
-    backgroundColor: Colors.glassLight,
-    borderRadius: BorderRadius.md,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
+    gap: 6,
+    marginTop: 6,
   },
-  taxYearButtonActive: {
-    backgroundColor: Colors.gold + '20',
-    borderColor: Colors.gold,
+  bonusText: {
+    ...Type.caption,
+    ...Type.number,
+    color: Colors.positive,
+    fontWeight: '600',
   },
-  taxYearButtonText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.white,
-    fontWeight: Typography.weights.semibold,
-  },
-  taxYearButtonTextActive: {
-    color: Colors.gold,
-  },
-  optionalSection: {
+  quickRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 8,
     marginTop: Spacing.md,
   },
-  optionalTitle: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    fontWeight: Typography.weights.semibold,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: Spacing.md,
+  chipsScroll: {
+    marginHorizontal: -20,
   },
-  inputGroup: {
-    marginBottom: Spacing.md,
-  },
-  inputLabel: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.white,
-    fontWeight: Typography.weights.medium,
-    marginBottom: Spacing.sm,
-  },
-  inputCard: {
-    padding: Spacing.md,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  input: {
-    fontSize: Typography.sizes.md,
-    color: Colors.white,
-    fontWeight: Typography.weights.medium,
-  },
-  notesInput: {
-    minHeight: 60,
+  chips: {
+    gap: 8,
+    paddingHorizontal: 20,
   },
 
-  // Navigation
-  navigationButtons: {
+  // Flexibility question
+  flexSection: {
+    marginTop: Spacing.lg,
+    paddingTop: Spacing.lg,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: Colors.borderStrong,
+  },
+  flexTitle: {
+    ...Type.headline,
+  },
+  flexBody: {
+    ...Type.callout,
+    marginTop: 4,
+    marginBottom: 12,
+  },
+  flexHint: {
+    ...Type.caption,
+    color: Colors.textTertiary,
+    marginTop: 8,
+  },
+
+  notes: {
+    marginTop: Spacing.lg,
+  },
+
+  // Footer
+  footerNote: {
+    ...Type.caption,
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  footerNoteError: {
+    color: Colors.negative,
+  },
+  footerRow: {
     flexDirection: 'row',
-    gap: Spacing.md,
-    marginTop: Spacing.xl,
-    paddingBottom: Spacing.xl,
+    gap: 12,
   },
   backButton: {
+    paddingHorizontal: 18,
+  },
+  primaryButton: {
     flex: 1,
-  },
-  backButtonCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.lg,
-    gap: Spacing.sm,
-    borderRadius: BorderRadius.lg,
-    backgroundColor: Colors.glassDark,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  backButtonText: {
-    fontSize: Typography.sizes.md,
-    color: Colors.white,
-    fontWeight: Typography.weights.bold,
-  },
-  nextButton: {
-    flex: 1,
-  },
-  nextButtonFull: {
-    flex: 1,
-  },
-  nextButtonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    gap: Spacing.sm,
-  },
-  nextButtonText: {
-    fontSize: Typography.sizes.md,
-    color: Colors.deepNavy,
-    fontWeight: Typography.weights.bold,
-  },
-  submitButton: {
-    flex: 1,
-  },
-  submitButtonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    gap: Spacing.sm,
-  },
-  submitButtonText: {
-    fontSize: Typography.sizes.md,
-    color: Colors.deepNavy,
-    fontWeight: Typography.weights.bold,
-  },
-  // Confirmation Screen Styles
-  confirmationHeader: {
-    alignItems: 'center',
-    marginBottom: Spacing.xl,
-  },
-  successIconWrapper: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.lg,
-  },
-  confirmationTitle: {
-    fontSize: Typography.sizes.xl,
-    color: Colors.white,
-    fontWeight: Typography.weights.extrabold,
-    marginBottom: Spacing.xs,
-  },
-  confirmationSubtitle: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    textAlign: 'center',
-  },
-  confirmationCard: {
-    backgroundColor: Colors.glassDark,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
-    marginBottom: Spacing.xl,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  confirmationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  isaIconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  confirmationISAType: {
-    fontSize: Typography.sizes.lg,
-    color: Colors.white,
-    fontWeight: Typography.weights.bold,
-  },
-  confirmationProvider: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    marginTop: 4,
-  },
-  confirmationDivider: {
-    height: 1,
-    backgroundColor: Colors.glassLight,
-    marginVertical: Spacing.md,
-  },
-  confirmationDetail: {
-    marginBottom: Spacing.md,
-  },
-  confirmationDetailLabel: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    marginBottom: 4,
-  },
-  confirmationDetailValue: {
-    fontSize: Typography.sizes.xxl,
-    color: Colors.white,
-    fontWeight: Typography.weights.extrabold,
-  },
-  confirmationNotes: {
-    fontSize: Typography.sizes.md,
-    color: Colors.white,
-    lineHeight: 22,
-    marginTop: 4,
-  },
-  doneButton: {
-    width: '100%',
-  },
-  doneButtonGradient: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-  },
-  doneButtonText: {
-    fontSize: Typography.sizes.md,
-    color: Colors.deepNavy,
-    fontWeight: Typography.weights.extrabold,
-  },
-
-  // Flexibility Question Overlay
-  flexibilityOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: Spacing.xl,
-    zIndex: 1000,
-  },
-  flexibilityCard: {
-    width: '100%',
-    maxWidth: 500,
-    backgroundColor: Colors.mediumNavy,
-    borderRadius: BorderRadius.xl,
-    padding: Spacing.xl,
-    borderWidth: 2,
-    borderColor: Colors.gold + '40',
-  },
-  flexibilityHeader: {
-    alignItems: 'center',
-    marginBottom: Spacing.xl,
-  },
-  flexibilityTitle: {
-    fontSize: Typography.sizes.xl,
-    color: Colors.white,
-    fontWeight: Typography.weights.bold,
-    textAlign: 'center',
-    marginTop: Spacing.md,
-    lineHeight: 28,
-  },
-  flexibilityInfo: {
-    marginBottom: Spacing.xl,
-  },
-  infoBox: {
-    flexDirection: 'row',
-    backgroundColor: Colors.info + '15',
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    borderColor: Colors.info + '30',
-  },
-  infoBoxTitle: {
-    fontSize: Typography.sizes.md,
-    color: Colors.white,
-    fontWeight: Typography.weights.bold,
-    marginBottom: Spacing.xs,
-  },
-  infoBoxText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    lineHeight: 20,
-  },
-  flexibilityOptions: {
-    gap: Spacing.md,
-    marginBottom: Spacing.xl,
-  },
-  flexibilityOption: {
-    backgroundColor: Colors.glassDark,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  flexibilityOptionSelected: {
-    borderColor: Colors.gold,
-    backgroundColor: Colors.gold + '15',
-  },
-  flexibilityOptionContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-  },
-  radioCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: Colors.lightGray,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioCircleSelected: {
-    borderColor: Colors.gold,
-  },
-  radioInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: Colors.gold,
-  },
-  flexibilityOptionTitle: {
-    fontSize: Typography.sizes.md,
-    color: Colors.white,
-    fontWeight: Typography.weights.bold,
-    marginBottom: 4,
-  },
-  flexibilityOptionDesc: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    lineHeight: 18,
-  },
-  flexibilityActions: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-  },
-  flexibilityCancelButton: {
-    flex: 1,
-    padding: Spacing.lg,
-    backgroundColor: Colors.glassDark,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  flexibilityCancelText: {
-    fontSize: Typography.sizes.md,
-    color: Colors.white,
-    fontWeight: Typography.weights.bold,
-  },
-  flexibilityConfirmButton: {
-    flex: 2,
-  },
-  flexibilityConfirmGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    gap: Spacing.sm,
-  },
-  flexibilityConfirmText: {
-    fontSize: Typography.sizes.md,
-    color: Colors.deepNavy,
-    fontWeight: Typography.weights.bold,
   },
 });

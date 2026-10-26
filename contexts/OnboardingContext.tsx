@@ -6,6 +6,11 @@ import type { User, Session } from '@supabase/supabase-js';
 
 const GUEST_MODE_KEY = '@finnest_guest_mode';
 
+// 'needs_confirmation': the account exists but Supabase requires the user to
+// confirm their email before a session is issued, so they can't continue into
+// onboarding yet and must log in after confirming.
+export type SignupResult = 'signed_in' | 'needs_confirmation' | 'error';
+
 export interface UserProfile {
   // Account Info
   fullName: string;
@@ -38,7 +43,7 @@ interface OnboardingContextType {
   completeOnboarding: () => Promise<void>;
   resetOnboarding: () => Promise<void>;
   login: (email: string, password: string) => Promise<boolean>;
-  signup: (email: string, password: string, fullName: string) => Promise<boolean>;
+  signup: (email: string, password: string, fullName: string) => Promise<SignupResult>;
   logout: () => Promise<void>;
   continueAsGuest: () => Promise<void>;
   deleteAccount: () => Promise<boolean>;
@@ -259,8 +264,11 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       if (data.session) {
         setSession(data.session);
         setUser(data.user);
-        setIsAuthenticated(true);
+        // Load the profile (which sets onboarding status) before flagging the
+        // user as authenticated, so the root layout never sees "authenticated
+        // but onboarding incomplete" for a returning user mid-load.
         await loadUserProfile(data.user.id);
+        setIsAuthenticated(true);
         return true;
       }
 
@@ -271,10 +279,10 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   };
 
-  const signup = async (email: string, password: string, fullName: string): Promise<boolean> => {
+  const signup = async (email: string, password: string, fullName: string): Promise<SignupResult> => {
     if (!hasSupabaseCredentials) {
       console.warn('Cannot signup: Supabase credentials not configured');
-      return false;
+      return 'error';
     }
 
     try {
@@ -296,7 +304,7 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
       if (error) {
         console.error('Signup error:', error.message);
-        return false;
+        return 'error';
       }
 
       if (data.session) {
@@ -304,20 +312,17 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setUser(data.user!);
         setIsAuthenticated(true);
         setUserProfile({ email: emailLower, fullName });
-        return true;
+        return 'signed_in';
       }
 
-      // Email confirmation might be required
-      if (data.user && !data.session) {
-        console.log('Email confirmation required');
-        // For development, you can auto-confirm in Supabase settings
-        return true;
+      if (data.user) {
+        return 'needs_confirmation';
       }
 
-      return false;
+      return 'error';
     } catch (error) {
       console.error('Error signing up:', error);
-      return false;
+      return 'error';
     }
   };
 

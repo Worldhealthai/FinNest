@@ -1,22 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import { View, StyleSheet } from 'react-native';
 import Modal from './Modal';
-import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
+import { Input, Button, ActionSheet } from '@/components/ui';
+import { Colors, Spacing, Type } from '@/constants/theme';
 import { useOnboarding } from '@/contexts/OnboardingContext';
-import { formatCurrency } from '@/constants/isaData';
+import { haptics } from '@/utils/haptics';
 
 interface TargetGoalModalProps {
   visible: boolean;
   onClose: () => void;
+}
+
+const pad = (n: number) => String(n).padStart(2, '0');
+
+/**
+ * Stored goal dates come in three shapes: DD/MM/YYYY (onboarding), a full ISO
+ * timestamp (older versions of this sheet) and YYYY-MM-DD (this sheet now).
+ * Normalise any of them to the DD/MM/YYYY the input expects.
+ */
+function toInputDate(value?: string): string {
+  if (!value) return '';
+  const v = value.trim();
+  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(v)) {
+    const [d, m, y] = v.split('/');
+    return `${pad(Number(d))}/${pad(Number(m))}/${y}`;
+  }
+  const ymd = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
+  if (ymd) return `${ymd[3]}/${ymd[2]}/${ymd[1]}`;
+  const date = new Date(v);
+  if (Number.isNaN(date.getTime())) return '';
+  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
+}
+
+// Display the raw amount with thousands separators: "25000.5" → "25,000.5"
+function formatAmountInput(raw: string): string {
+  if (!raw) return '';
+  const [int, dec] = raw.split('.');
+  const grouped = (int || '0').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return dec !== undefined ? `${grouped}.${dec}` : grouped;
 }
 
 export default function TargetGoalModal({ visible, onClose }: TargetGoalModalProps) {
@@ -24,14 +45,17 @@ export default function TargetGoalModal({ visible, onClose }: TargetGoalModalPro
   const [targetAmount, setTargetAmount] = useState('');
   const [targetDate, setTargetDate] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [confirmRemove, setConfirmRemove] = useState(false);
+
+  const hasGoal = !!userProfile.targetAmount && userProfile.targetAmount > 0;
 
   useEffect(() => {
     if (visible) {
-      setTargetAmount(userProfile.targetAmount?.toString() || '');
-      setTargetDate(userProfile.targetDate || '');
+      setTargetAmount(hasGoal ? String(userProfile.targetAmount) : '');
+      setTargetDate(toInputDate(userProfile.targetDate));
       setErrors({});
     }
-  }, [visible, userProfile]);
+  }, [visible, userProfile, hasGoal]);
 
   const formatDateInput = (text: string) => {
     // Remove any non-numeric characters
@@ -47,6 +71,19 @@ export default function TargetGoalModal({ visible, onClose }: TargetGoalModalPro
     return formatted;
   };
 
+  const handleAmountChange = (text: string) => {
+    // Keep digits and a single decimal point; commas are display-only
+    const cleaned = text.replace(/[^0-9.]/g, '');
+    const [int, ...rest] = cleaned.split('.');
+    setTargetAmount(rest.length ? `${int}.${rest.join('')}` : int);
+    if (errors.targetAmount) setErrors((e) => ({ ...e, targetAmount: '' }));
+  };
+
+  const handleDateChange = (text: string) => {
+    setTargetDate(formatDateInput(text));
+    if (errors.targetDate) setErrors((e) => ({ ...e, targetDate: '' }));
+  };
+
   const parseDate = (dateString: string): Date | null => {
     const parts = dateString.split('/');
     if (parts.length !== 3) return null;
@@ -55,7 +92,10 @@ export default function TargetGoalModal({ visible, onClose }: TargetGoalModalPro
     const month = parseInt(parts[1]);
     const year = parseInt(parts[2]);
 
-    return new Date(year, month - 1, day);
+    const date = new Date(year, month - 1, day);
+    // Reject dates that roll over, e.g. 31/02 → 3 March
+    if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+    return date;
   };
 
   const validateForm = () => {
@@ -71,13 +111,11 @@ export default function TargetGoalModal({ visible, onClose }: TargetGoalModalPro
     }
 
     if (targetDate.trim()) {
-      if (targetDate.length !== 10) {
+      const date = targetDate.length === 10 ? parseDate(targetDate) : null;
+      if (!date) {
         newErrors.targetDate = 'Please enter a valid date (DD/MM/YYYY)';
-      } else {
-        const date = parseDate(targetDate);
-        if (!date || date < new Date()) {
-          newErrors.targetDate = 'Target date must be in the future';
-        }
+      } else if (date < new Date()) {
+        newErrors.targetDate = 'Target date must be in the future';
       }
     }
 
@@ -86,124 +124,86 @@ export default function TargetGoalModal({ visible, onClose }: TargetGoalModalPro
   };
 
   const handleSave = async () => {
-    if (validateForm()) {
-      const amount = parseFloat(targetAmount);
-      const date = targetDate ? parseDate(targetDate)?.toISOString() : '';
-
-      await updateProfile({
-        targetAmount: amount,
-        targetDate: date,
-      });
-
-      Alert.alert('Success', 'Your target goal has been updated!');
-      onClose();
+    if (!validateForm()) {
+      haptics.warning();
+      return;
     }
+    const amount = parseFloat(targetAmount);
+    // Saved as a date-only ISO string (YYYY-MM-DD) built from local parts, so
+    // it reads correctly with new Date(), suits a Postgres date column and
+    // can't shift a day through timezone conversion.
+    const parsed = targetDate ? parseDate(targetDate) : null;
+    const date = parsed ? `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(parsed.getDate())}` : '';
+
+    await updateProfile({
+      targetAmount: amount,
+      targetDate: date,
+    });
+
+    haptics.success();
+    onClose();
   };
 
-  const handleRemove = () => {
-    Alert.alert(
-      'Remove Target Goal',
-      'Are you sure you want to remove your target goal?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: async () => {
-            await updateProfile({
-              targetAmount: 0,
-              targetDate: '',
-            });
-            onClose();
-          },
-        },
-      ]
-    );
+  const handleRemove = async () => {
+    await updateProfile({
+      targetAmount: 0,
+      targetDate: '',
+    });
+    onClose();
   };
 
   return (
-    <Modal visible={visible} onClose={onClose} title="Edit Target Goal" icon="flag">
+    <Modal
+      visible={visible}
+      onClose={onClose}
+      title={hasGoal ? 'Edit savings goal' : 'Set a savings goal'}
+      subtitle="Track your progress towards a target amount."
+      size="auto"
+      footer={<Button title="Save goal" onPress={handleSave} />}
+    >
       <View style={styles.content}>
-        {/* Target Amount */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>
-            Target Amount <Text style={styles.required}>*</Text>
-          </Text>
-          <View style={[styles.inputWrapper, errors.targetAmount && styles.inputError]}>
-            <Text style={styles.currencySymbol}>£</Text>
-            <TextInput
-              style={styles.input}
-              value={targetAmount}
-              onChangeText={setTargetAmount}
-              placeholder="25000"
-              placeholderTextColor={Colors.mediumGray}
-              keyboardType="numeric"
-            />
-          </View>
-          {errors.targetAmount && (
-            <Text style={styles.errorText}>{errors.targetAmount}</Text>
-          )}
-          <Text style={styles.hint}>Your total savings goal amount</Text>
-        </View>
+        <Input
+          label="Target amount"
+          value={targetAmount ? `£${formatAmountInput(targetAmount)}` : ''}
+          onChangeText={handleAmountChange}
+          placeholder="£25,000"
+          keyboardType="decimal-pad"
+          error={errors.targetAmount || null}
+          hint="Your total savings goal"
+          style={styles.amountText}
+          accessibilityLabel="Target amount in pounds"
+        />
 
-        {/* Target Date */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>
-            Target Date <Text style={styles.optional}>(Optional)</Text>
-          </Text>
-          <View style={[styles.inputWrapper, errors.targetDate && styles.inputError]}>
-            <Ionicons name="calendar-outline" size={20} color={Colors.gold} />
-            <TextInput
-              style={styles.input}
-              value={targetDate}
-              onChangeText={(text) => setTargetDate(formatDateInput(text))}
-              placeholder="DD/MM/YYYY"
-              placeholderTextColor={Colors.mediumGray}
-              keyboardType="numeric"
-              maxLength={10}
-            />
-          </View>
-          {errors.targetDate && (
-            <Text style={styles.errorText}>{errors.targetDate}</Text>
-          )}
-          <Text style={styles.hint}>When do you want to reach this goal?</Text>
-        </View>
+        <Input
+          label="Target date (optional)"
+          icon="calendar-outline"
+          value={targetDate}
+          onChangeText={handleDateChange}
+          placeholder="DD/MM/YYYY"
+          keyboardType="number-pad"
+          maxLength={10}
+          error={errors.targetDate || null}
+          hint="When do you want to reach this goal?"
+        />
 
-        {/* Info Box */}
-        <View style={styles.infoBox}>
-          <Ionicons name="information-circle" size={20} color={Colors.info} />
-          <Text style={styles.infoText}>
-            Your target goal helps you track progress and stay motivated on your savings journey.
-          </Text>
-        </View>
-
-        {/* Buttons */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.removeButton}
-            onPress={handleRemove}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.removeButtonText}>Remove Goal</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.saveButton}
-            onPress={handleSave}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={Colors.goldGradient}
-              style={styles.saveButtonGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-            >
-              <Ionicons name="checkmark-circle" size={20} color={Colors.deepNavy} />
-              <Text style={styles.saveButtonText}>Save Changes</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
+        {hasGoal && (
+          <Button
+            title="Remove goal"
+            variant="danger"
+            size="md"
+            icon="trash-outline"
+            onPress={() => setConfirmRemove(true)}
+          />
+        )}
       </View>
+
+      <ActionSheet
+        visible={confirmRemove}
+        onClose={() => setConfirmRemove(false)}
+        title="Remove savings goal?"
+        message="Your contributions stay as they are — only the target is cleared."
+        actions={[{ label: 'Remove goal', icon: 'trash-outline', destructive: true, onPress: handleRemove }]}
+      />
     </Modal>
   );
 }
@@ -212,108 +212,14 @@ const styles = StyleSheet.create({
   content: {
     gap: Spacing.lg,
   },
-  inputGroup: {
-    gap: Spacing.sm,
-  },
-  label: {
-    fontSize: Typography.sizes.md,
-    color: Colors.white,
-    fontWeight: Typography.weights.semibold,
-  },
-  required: {
-    color: Colors.error,
-  },
-  optional: {
-    color: Colors.lightGray,
-    fontSize: Typography.sizes.sm,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: BorderRadius.xl,
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.xl,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 215, 0, 0.3)',
-    gap: Spacing.xs,
-  },
-  inputError: {
-    borderColor: Colors.error,
-  },
-  currencySymbol: {
-    fontSize: Typography.sizes.xxxl,
-    color: Colors.gold,
-    fontWeight: Typography.weights.extrabold,
-  },
-  input: {
-    fontSize: Typography.sizes.xxxl,
-    color: Colors.gold,
-    fontWeight: Typography.weights.extrabold,
-    minWidth: 100,
-    maxWidth: 200,
-  },
-  errorText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.error,
-  },
-  hint: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-  },
-  infoBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: 'rgba(52, 152, 219, 0.15)',
-    padding: Spacing.md,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(52, 152, 219, 0.3)',
-    gap: Spacing.sm,
-  },
-  infoText: {
+  // Replaces Input's text style to give the amount a large figure
+  amountText: {
     flex: 1,
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    lineHeight: 20,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-    marginTop: Spacing.md,
-  },
-  removeButton: {
-    flex: 1,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1.5,
-    borderColor: Colors.error,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  removeButtonText: {
-    fontSize: Typography.sizes.md,
-    color: Colors.error,
-    fontWeight: Typography.weights.bold,
-  },
-  saveButton: {
-    flex: 2,
-    borderRadius: BorderRadius.md,
-    overflow: 'hidden',
-  },
-  saveButtonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.sm,
-  },
-  saveButtonText: {
-    fontSize: Typography.sizes.md,
-    color: Colors.deepNavy,
-    fontWeight: Typography.weights.extrabold,
-  },
+    height: '100%',
+    ...Type.title2,
+    ...Type.number,
+    lineHeight: undefined,
+    color: Colors.text,
+    outlineStyle: 'none',
+  } as any,
 });

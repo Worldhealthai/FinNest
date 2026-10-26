@@ -4,96 +4,87 @@ import {
   Text,
   StyleSheet,
   Modal as RNModal,
-  TouchableOpacity,
+  Pressable,
   ScrollView,
-  Dimensions,
   Platform,
   KeyboardAvoidingView,
+  useWindowDimensions,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
-import { Colors, Spacing, Typography, BorderRadius } from '@/constants/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Colors, Spacing, Type, BorderRadius } from '@/constants/theme';
 
 interface ModalProps {
   visible: boolean;
   onClose: () => void;
   title: string;
+  subtitle?: string;
   children: React.ReactNode;
-  icon?: keyof typeof Ionicons.glyphMap;
+  icon?: string;
   showCloseButton?: boolean;
+  /** 'full' (default) is a tall sheet; 'auto' sizes to its content. */
+  size?: 'full' | 'auto';
+  /** Pinned below the scroll area — use for the sheet's primary action. */
+  footer?: React.ReactNode;
 }
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const MODAL_HEIGHT = SCREEN_HEIGHT * 0.88;
-
+/** Bottom sheet used by every app modal. */
 export default function Modal({
   visible,
   onClose,
   title,
+  subtitle,
   children,
-  icon,
   showCloseButton = true,
+  size = 'full',
+  footer,
 }: ModalProps) {
-  const useBlur = Platform.OS === 'ios';
+  const { height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const maxHeight = height * 0.9;
 
   return (
-    <RNModal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-      statusBarTranslucent
-    >
-      {/* KeyboardAvoidingView lifts the sheet above the iOS keyboard so
-          inputs near the bottom stay visible while typing */}
-      <KeyboardAvoidingView
-        style={styles.overlay}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        {useBlur ? (
-          <BlurView intensity={50} style={StyleSheet.absoluteFill} tint="dark" />
-        ) : (
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.7)' }]} />
-        )}
+    <RNModal visible={visible} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent>
+      {/* KeyboardAvoidingView lifts the sheet above the iOS keyboard so inputs
+          near the bottom stay visible while typing */}
+      <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Close" />
 
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            {/* Fixed Header */}
-            <LinearGradient
-              colors={[Colors.deepNavy + 'DD', Colors.mediumNavy + 'AA']}
-              style={styles.header}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <View style={styles.headerContent}>
-                {icon && (
-                  <View style={styles.iconContainer}>
-                    <Ionicons name={icon} size={24} color={Colors.gold} />
-                  </View>
-                )}
-                <Text style={styles.title} numberOfLines={1}>{title}</Text>
-              </View>
-              {showCloseButton && (
-                <TouchableOpacity onPress={onClose} style={styles.closeButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                  <Ionicons name="close" size={28} color={Colors.lightGray} />
-                </TouchableOpacity>
-              )}
-            </LinearGradient>
-
-            {/* Scrollable Content */}
-            <ScrollView
-              style={styles.scrollView}
-              contentContainerStyle={styles.scrollContent}
-              showsVerticalScrollIndicator={true}
-              bounces={true}
-              scrollEnabled={true}
-              nestedScrollEnabled={true}
-              keyboardShouldPersistTaps="handled"
-            >
-              {children}
-            </ScrollView>
+        <View style={[styles.sheet, size === 'full' ? { height: maxHeight } : { maxHeight }]}>
+          <View style={styles.grabber} />
+          <View style={styles.header}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.title} numberOfLines={1} accessibilityRole="header">
+                {title}
+              </Text>
+              {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+            </View>
+            {showCloseButton && (
+              <Pressable
+                onPress={onClose}
+                hitSlop={12}
+                accessibilityRole="button"
+                accessibilityLabel="Close"
+                style={({ pressed }) => [styles.closeButton, pressed && { opacity: 0.6 }]}
+              >
+                <Ionicons name="close" size={20} color={Colors.textSecondary} />
+              </Pressable>
+            )}
           </View>
+
+          <ScrollView
+            style={size === 'full' ? styles.scrollFull : undefined}
+            contentContainerStyle={[styles.scrollContent, !footer && { paddingBottom: insets.bottom + Spacing.xl }]}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            nestedScrollEnabled
+          >
+            {children}
+          </ScrollView>
+
+          {footer ? (
+            <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, Spacing.md) }]}>{footer}</View>
+          ) : null}
         </View>
       </KeyboardAvoidingView>
     </RNModal>
@@ -104,59 +95,64 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: Colors.overlay,
   },
-  modalContainer: {
-    height: MODAL_HEIGHT,
+  sheet: {
+    width: '100%',
+    maxWidth: 560,
+    alignSelf: 'center',
+    backgroundColor: Colors.background,
     borderTopLeftRadius: BorderRadius.xl,
     borderTopRightRadius: BorderRadius.xl,
+    borderWidth: 1,
+    borderBottomWidth: 0,
+    borderColor: Colors.border,
     overflow: 'hidden',
   },
-  modalContent: {
-    flex: 1,
-    backgroundColor: Colors.deepNavy + 'F0',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 215, 0, 0.3)',
+  grabber: {
+    alignSelf: 'center',
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: Colors.borderStrong,
+    marginTop: 10,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.glassLight,
-    height: 70,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    marginRight: Spacing.md,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.gold + '30',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: Spacing.md,
+    paddingHorizontal: 20,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.sm,
   },
   title: {
-    fontSize: Typography.sizes.xl,
-    color: Colors.white,
-    fontWeight: Typography.weights.bold,
-    flex: 1,
+    ...Type.title2,
+  },
+  subtitle: {
+    ...Type.callout,
+    marginTop: 4,
   },
   closeButton: {
-    padding: Spacing.xs,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.surfaceRaised,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: Spacing.md,
   },
-  scrollView: {
+  scrollFull: {
     flex: 1,
   },
   scrollContent: {
-    padding: Spacing.lg,
-    paddingBottom: 250,
+    paddingHorizontal: 20,
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.lg,
+  },
+  footer: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: Colors.borderStrong,
+    backgroundColor: Colors.background,
   },
 });

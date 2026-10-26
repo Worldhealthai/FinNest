@@ -1,84 +1,78 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  Dimensions,
-  TouchableOpacity,
-  TextInput,
+  Pressable,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   Image,
   useWindowDimensions,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  withRepeat,
-  withSequence,
-  Easing,
-} from 'react-native-reanimated';
-import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
+import { router, useLocalSearchParams } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Colors, Type, Spacing, BorderRadius } from '@/constants/theme';
+import { Button, Input, ProgressBar } from '@/components/ui';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import TermsModal from '@/components/TermsModal';
 import PrivacyPolicyModal from '@/components/PrivacyPolicyModal';
+import { haptics } from '@/utils/haptics';
 
-const { width, height } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
 
 // Marketing copy for the web landing page
-const HERO_FEATURES = [
+const FEATURES: { icon: keyof typeof Ionicons.glyphMap; title: string; text: string }[] = [
   {
-    icon: 'pie-chart' as const,
-    title: 'Allowance Tracking',
-    text: 'See exactly how much of your £20,000 annual allowance you\'ve used — across every ISA you hold.',
+    icon: 'pie-chart-outline',
+    title: 'Allowance at a glance',
+    text: "See exactly how much of your £20,000 annual allowance you've used — across every ISA you hold.",
   },
   {
-    icon: 'layers' as const,
-    title: 'All 4 ISA Types',
-    text: 'Cash, Stocks & Shares, Lifetime and Innovative Finance ISAs — tracked together in one place.',
+    icon: 'layers-outline',
+    title: 'All four ISA types',
+    text: 'Cash, Stocks & Shares, Lifetime and Innovative Finance ISAs, tracked together in one place.',
   },
   {
-    icon: 'notifications' as const,
-    title: 'Tax Year Reminders',
-    text: 'Never lose unused allowance again. Smart reminders before the 5 April deadline.',
+    icon: 'notifications-outline',
+    title: 'Deadline reminders',
+    text: 'Never lose unused allowance again. Gentle reminders before the 5 April deadline.',
   },
   {
-    icon: 'school' as const,
-    title: 'Learn & Level Up',
-    text: 'Bite-size ISA guides plus a savings streak system that rewards consistent contributions.',
+    icon: 'book-outline',
+    title: 'Learn as you go',
+    text: 'Short, clear guides plus a saving-rhythm score that rewards regular contributions.',
   },
 ];
 
-const HOW_IT_WORKS = [
-  { step: '1', title: 'Create your free account', text: 'Sign up in under a minute — or explore first as a guest.' },
-  { step: '2', title: 'Log your ISA contributions', text: 'Pick from 440+ UK providers and record contributions as you make them.' },
-  { step: '3', title: 'Stay inside your allowance', text: 'Watch your remaining allowance update live and get reminded before deadlines.' },
+const STEPS = [
+  { title: 'Create your free account', text: 'Sign up in under a minute — or explore first as a guest.' },
+  { title: 'Log your contributions', text: 'Pick from 440+ UK providers and record payments as you make them.' },
+  { title: 'Stay inside your allowance', text: 'Watch what you have left update instantly, with reminders before deadlines.' },
+];
+
+const MOCK_SEGMENTS = [
+  { value: 0.31, color: '#38BDF8', label: 'Cash ISA', amount: '£6,200' },
+  { value: 0.21, color: '#A78BFA', label: 'Stocks & Shares', amount: '£4,250' },
+  { value: 0.15, color: '#34D399', label: 'Lifetime ISA', amount: '£3,000' },
 ];
 
 export default function LoginScreen() {
-  const [isLogin, setIsLogin] = useState(true);
+  const params = useLocalSearchParams<{ mode?: string }>();
+  const [isLogin, setIsLogin] = useState(params.mode !== 'signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
-  const [termsError, setTermsError] = useState(false);
-  const [loginError, setLoginError] = useState(false);
-  // Inline form error — Alert.alert is a silent no-op on web, so validation
-  // messages must render in the page to be seen at all.
+  // Inline messages — Alert.alert is a silent no-op on web
   const [formError, setFormError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const { login, signup, continueAsGuest } = useOnboarding();
 
@@ -88,11 +82,10 @@ export default function LoginScreen() {
   const formRef = useRef<any>(null);
   const formY = useRef(0);
 
-  // Switch login/signup mode and clear any error from the previous mode
-  const selectMode = (login: boolean) => {
-    setIsLogin(login);
+  const selectMode = (loginMode: boolean) => {
+    setIsLogin(loginMode);
     setFormError(null);
-    setLoginError(false);
+    setNotice(null);
   };
 
   const scrollToForm = (mode: 'login' | 'signup') => {
@@ -104,10 +97,7 @@ export default function LoginScreen() {
     const scrollEl = scrollNode?.getScrollableNode?.();
     const formNode: any = formRef.current;
     if (isWeb && formNode?.getBoundingClientRect && scrollEl?.getBoundingClientRect) {
-      const y =
-        scrollEl.scrollTop +
-        formNode.getBoundingClientRect().top -
-        scrollEl.getBoundingClientRect().top;
+      const y = scrollEl.scrollTop + formNode.getBoundingClientRect().top - scrollEl.getBoundingClientRect().top;
       scrollNode.scrollTo({ y: Math.max(0, y - 24), animated: true });
     } else {
       scrollNode?.scrollTo({ y: Math.max(0, formY.current - 24), animated: true });
@@ -117,886 +107,548 @@ export default function LoginScreen() {
   const startAsGuest = async () => {
     try {
       await continueAsGuest();
-      setTimeout(() => {
-        router.replace('/(tabs)');
-      }, 150);
+      setTimeout(() => router.replace('/(tabs)'), 150);
     } catch (error) {
       console.error('Guest mode error:', error);
     }
   };
 
-  // Animations
-  const logoScale = useSharedValue(0);
-  const logoOpacity = useSharedValue(0);
-  const formOpacity = useSharedValue(0);
-  const glowScale = useSharedValue(1);
-  const ringRotate = useSharedValue(0);
-
-  useEffect(() => {
-    // Logo animation
-    logoScale.value = withSpring(1, { damping: 10, stiffness: 80 });
-    logoOpacity.value = withTiming(1, { duration: 800 });
-
-    // Form animation
-    setTimeout(() => {
-      formOpacity.value = withTiming(1, { duration: 600 });
-    }, 400);
-
-    // Glow pulse
-    glowScale.value = withRepeat(
-      withSequence(
-        withTiming(1.3, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
-        withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) })
-      ),
-      -1,
-      true
-    );
-
-    // Ring rotation
-    ringRotate.value = withRepeat(
-      withTiming(360, { duration: 20000, easing: Easing.linear }),
-      -1,
-      false
-    );
-  }, []);
-
-  const logoAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: logoScale.value }],
-    opacity: logoOpacity.value,
-  }));
-
-  const formAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: formOpacity.value,
-  }));
-
-  const glowAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: glowScale.value }],
-  }));
-
-  const ringAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${ringRotate.value}deg` }],
-  }));
-
   const handleSubmit = async () => {
     setFormError(null);
+    setNotice(null);
 
+    if (!isLogin && !fullName.trim()) {
+      setFormError('Please enter your full name.');
+      return;
+    }
     if (!email || !password) {
       setFormError('Please enter your email and password.');
       return;
     }
-
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setFormError('Please enter a valid email address.');
       return;
     }
 
     if (isLogin) {
-      // Login
-      setLoginError(false);
       setIsLoading(true);
       const success = await login(email, password);
       setIsLoading(false);
-
       if (!success) {
-        setLoginError(true);
+        haptics.warning();
+        setFormError('That email and password don\'t match an account. Please try again.');
       }
+      // On success the root layout routes to the app (or to setup if unfinished)
+      return;
+    }
+
+    if (password.length < 6) {
+      setFormError('Password must be at least 6 characters.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setFormError("Passwords don't match.");
+      return;
+    }
+    if (!agreedToTerms) {
+      setFormError('Please accept the Terms and Privacy Policy to continue.');
+      return;
+    }
+
+    setIsLoading(true);
+    const result = await signup(email, password, fullName.trim());
+    setIsLoading(false);
+
+    if (result === 'signed_in') {
+      haptics.success();
+      router.replace('/(onboarding)/personal');
+    } else if (result === 'needs_confirmation') {
+      setIsLogin(true);
+      setPassword('');
+      setConfirmPassword('');
+      setNotice(`We've sent a confirmation link to ${email}. Confirm your email, then log in here.`);
     } else {
-      // Signup
-      if (!fullName) {
-        setFormError('Please enter your full name.');
-        return;
-      }
-
-      if (!agreedToTerms) {
-        setTermsError(true);
-        return;
-      }
-
-      if (password.length < 6) {
-        setFormError('Password must be at least 6 characters long.');
-        return;
-      }
-
-      if (password !== confirmPassword) {
-        setFormError('Passwords do not match.');
-        return;
-      }
-
-      setIsLoading(true);
-      const success = await signup(email, password, fullName);
-      setIsLoading(false);
-
-      if (success) {
-        // Skip account screen since we already collected this info
-        // Navigate directly to personal information screen
-        router.replace('/(onboarding)/personal');
-      } else {
-        setFormError('We couldn\'t create your account. An account with this email may already exist.');
-      }
+      setFormError("We couldn't create your account. An account with this email may already exist.");
     }
   };
 
-  const toggleMode = () => {
-    setIsLogin(!isLogin);
-    setEmail('');
-    setPassword('');
-    setConfirmPassword('');
-    setFullName('');
-    setShowPassword(false);
-    setShowConfirmPassword(false);
-    setAgreedToTerms(false);
-    setFormError(null);
-    setLoginError(false);
-  };
-
-  return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+  // ─── The auth form (shared by native and web) ───
+  const form = (
+    <View
+      ref={formRef}
+      onLayout={(e) => {
+        formY.current = e.nativeEvent.layout.y;
+      }}
+      style={[styles.form, isWeb && (winWidth >= 600 ? styles.formWeb : styles.formWebNarrow)]}
     >
-      {/* Gradient Background */}
-      <LinearGradient
-        colors={['#0A1929', Colors.deepNavy, '#1A2F4A', Colors.mediumNavy]}
-        style={styles.gradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      />
+      <Text style={styles.formTitle}>{isLogin ? 'Welcome back' : 'Create your account'}</Text>
+      <Text style={styles.formSubtitle}>
+        {isLogin ? 'Log in to see your ISAs.' : 'Free, and it takes less than a minute.'}
+      </Text>
 
-      {/* Animated rings (native only — web uses the hero layout) */}
-      {!isWeb && (
-        <>
-          <Animated.View style={[styles.ring, styles.ring1, ringAnimatedStyle]} />
-          <Animated.View style={[styles.ring, styles.ring2, ringAnimatedStyle]} />
-          <Animated.View style={[styles.glow, glowAnimatedStyle]} />
-        </>
+      <View style={styles.segmented} accessibilityRole="tablist">
+        {[
+          { label: 'Log in', login: true },
+          { label: 'Sign up', login: false },
+        ].map((opt) => {
+          const active = isLogin === opt.login;
+          return (
+            <Pressable
+              key={opt.label}
+              onPress={() => selectMode(opt.login)}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: active }}
+              style={[styles.segment, active && styles.segmentActive]}
+            >
+              <Text style={[styles.segmentText, active && styles.segmentTextActive]}>{opt.label}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {notice && (
+        <View style={styles.notice}>
+          <Ionicons name="mail-outline" size={18} color={Colors.positive} />
+          <Text style={styles.noticeText}>{notice}</Text>
+        </View>
       )}
 
-      <ScrollView
-        ref={scrollRef}
-        style={styles.scrollView}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        bounces={false}
-        overScrollMode="never"
-        alwaysBounceVertical={false}
-      >
-        {/* ─── Web landing: nav bar ─── */}
-        {isWeb && (
-          <View style={styles.webNav}>
-            <View style={styles.webNavBrand}>
-              <Image source={require('@/assets/logo.png')} style={styles.webNavLogo} resizeMode="contain" />
-              <Text style={styles.webNavTitle}>FinNest</Text>
+      <View style={styles.fields}>
+        {!isLogin && (
+          <Input
+            label="Full name"
+            icon="person-outline"
+            value={fullName}
+            onChangeText={setFullName}
+            placeholder="Alex Morgan"
+            autoCapitalize="words"
+            autoComplete="name"
+            editable={!isLoading}
+          />
+        )}
+        <Input
+          label="Email"
+          icon="mail-outline"
+          value={email}
+          onChangeText={setEmail}
+          placeholder="you@example.com"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+          autoComplete="email"
+          editable={!isLoading}
+        />
+        <Input
+          label="Password"
+          icon="lock-closed-outline"
+          value={password}
+          onChangeText={setPassword}
+          placeholder={isLogin ? 'Your password' : 'At least 6 characters'}
+          secureTextEntry={!showPassword}
+          autoCapitalize="none"
+          autoCorrect={false}
+          autoComplete={isLogin ? 'current-password' : 'new-password'}
+          editable={!isLoading}
+          onSubmitEditing={isLogin ? handleSubmit : undefined}
+          right={
+            <Pressable
+              onPress={() => setShowPassword(!showPassword)}
+              hitSlop={10}
+              accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+            >
+              <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={Colors.textTertiary} />
+            </Pressable>
+          }
+        />
+        {!isLogin && (
+          <Input
+            label="Confirm password"
+            icon="lock-closed-outline"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            placeholder="Repeat your password"
+            secureTextEntry={!showPassword}
+            autoCapitalize="none"
+            autoCorrect={false}
+            editable={!isLoading}
+          />
+        )}
+      </View>
+
+      {!isLogin && (
+        <Pressable
+          style={styles.terms}
+          onPress={() => setAgreedToTerms(!agreedToTerms)}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: agreedToTerms }}
+          disabled={isLoading}
+        >
+          <View style={[styles.checkbox, agreedToTerms && styles.checkboxChecked]}>
+            {agreedToTerms && <Ionicons name="checkmark" size={14} color={Colors.onAccent} />}
+          </View>
+          <Text style={styles.termsText}>
+            I agree to the{' '}
+            <Text style={styles.link} onPress={() => setShowTermsModal(true)}>
+              Terms
+            </Text>{' '}
+            and{' '}
+            <Text style={styles.link} onPress={() => setShowPrivacyModal(true)}>
+              Privacy Policy
+            </Text>
+          </Text>
+        </Pressable>
+      )}
+
+      {formError && (
+        <View style={styles.errorRow}>
+          <Ionicons name="alert-circle" size={16} color={Colors.negative} />
+          <Text style={styles.errorText}>{formError}</Text>
+        </View>
+      )}
+
+      <Button
+        title={isLogin ? 'Log in' : 'Create account'}
+        onPress={handleSubmit}
+        loading={isLoading}
+        style={styles.submit}
+      />
+
+      <View style={styles.divider}>
+        <View style={styles.dividerLine} />
+        <Text style={styles.dividerText}>or</Text>
+        <View style={styles.dividerLine} />
+      </View>
+
+      <Button title="Continue as guest" variant="secondary" icon="eye-outline" onPress={startAsGuest} disabled={isLoading} />
+      <Text style={styles.guestHint}>Try FinNest without signing up. Guest data stays on this device.</Text>
+    </View>
+  );
+
+  // ─── Native: focused auth screen ───
+  if (!isWeb) {
+    return (
+      <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <ScrollView
+            contentContainerStyle={styles.nativeContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.nativeHeader}>
+              {router.canGoBack() ? (
+                <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Back" style={styles.backButton}>
+                  <Ionicons name="chevron-back" size={22} color={Colors.text} />
+                </Pressable>
+              ) : (
+                <View style={styles.backButton} />
+              )}
+              <Image source={require('@/assets/logo.png')} style={styles.headerLogo} resizeMode="contain" />
+              <View style={styles.backButton} />
             </View>
-            <View style={styles.webNavActions}>
-              <TouchableOpacity onPress={() => scrollToForm('login')} style={styles.webNavLink}>
-                <Text style={styles.webNavLinkText}>Log In</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => scrollToForm('signup')} activeOpacity={0.85}>
-                <LinearGradient
-                  colors={Colors.goldGradient}
-                  style={styles.webNavCta}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                >
-                  <Text style={styles.webNavCtaText}>Get Started</Text>
-                </LinearGradient>
-              </TouchableOpacity>
+            {form}
+          </ScrollView>
+        </KeyboardAvoidingView>
+        <TermsModal visible={showTermsModal} onClose={() => setShowTermsModal(false)} />
+        <PrivacyPolicyModal visible={showPrivacyModal} onClose={() => setShowPrivacyModal(false)} />
+      </SafeAreaView>
+    );
+  }
+
+  // ─── Web: landing page with the auth form ───
+  return (
+    <View style={styles.root}>
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.webContent} keyboardShouldPersistTaps="handled">
+        {/* Nav */}
+        <View style={[styles.section, styles.nav]}>
+          <View style={styles.brand}>
+            <Image source={require('@/assets/logo.png')} style={styles.brandLogo} resizeMode="contain" />
+            <Text style={styles.brandName}>FinNest</Text>
+          </View>
+          <View style={styles.navActions}>
+            <Button title="Log in" variant="ghost" size="md" fullWidth={false} onPress={() => scrollToForm('login')} />
+            <Button title="Get started" size="md" fullWidth={false} onPress={() => scrollToForm('signup')} />
+          </View>
+        </View>
+
+        {/* Hero */}
+        <View style={[styles.section, styles.hero, isWide && styles.heroWide]}>
+          <View style={[styles.heroCopy, isWide && { flex: 1.1, paddingRight: Spacing.xxl }]}>
+            <View style={styles.eyebrow}>
+              <Ionicons name="shield-checkmark-outline" size={14} color={Colors.accent} />
+              <Text style={styles.eyebrowText}>The UK ISA tracker</Text>
+            </View>
+            <Text style={[styles.headline, isWide && styles.headlineWide]}>
+              Every ISA.{'\n'}
+              <Text style={{ color: Colors.accent }}>One nest.</Text>
+            </Text>
+            <Text style={styles.subhead}>
+              Track your £20,000 allowance across Cash, Stocks & Shares, Lifetime and Innovative Finance ISAs — and
+              never miss the tax-year deadline.
+            </Text>
+            <View style={styles.heroCtas}>
+              <Button
+                title="Start free"
+                iconRight="arrow-forward"
+                fullWidth={false}
+                onPress={() => scrollToForm('signup')}
+                style={{ paddingHorizontal: 28 }}
+              />
+              <Button
+                title="Try the demo"
+                variant="secondary"
+                fullWidth={false}
+                onPress={startAsGuest}
+                disabled={isLoading}
+                style={{ paddingHorizontal: 28 }}
+              />
+            </View>
+            <View style={styles.trustRow}>
+              {['No bank login needed', '440+ UK providers', 'Free'].map((t) => (
+                <View key={t} style={styles.trustItem}>
+                  <Ionicons name="checkmark" size={16} color={Colors.positive} />
+                  <Text style={styles.trustText}>{t}</Text>
+                </View>
+              ))}
             </View>
           </View>
-        )}
 
-        {/* ─── Web landing: hero ─── */}
-        {isWeb && (
-          <View style={[styles.webHero, isWide && styles.webHeroWide]}>
-            <View style={[styles.webHeroCopy, isWide && styles.webHeroCopyWide]}>
-              <View style={styles.webEyebrow}>
-                <Ionicons name="shield-checkmark" size={14} color={Colors.gold} />
-                <Text style={styles.webEyebrowText}>THE UK ISA TRACKER</Text>
+          {/* Product preview mirroring the real Home screen */}
+          <View style={[styles.mockWrap, isWide && { flex: 0.9 }]}>
+            <View style={styles.mock}>
+              <Text style={Type.overline}>Allowance remaining</Text>
+              <Text style={styles.mockValue}>£6,550</Text>
+              <Text style={Type.callout}>of your £20,000 allowance</Text>
+              <ProgressBar height={10} style={{ marginTop: 20 }} segments={MOCK_SEGMENTS} />
+              <View style={styles.mockMeta}>
+                <Text style={Type.caption}>
+                  <Text style={{ color: Colors.text, fontWeight: '600' }}>£13,450</Text> used · 67%
+                </Text>
+                <Text style={Type.caption}>164 days left</Text>
               </View>
-              <Text style={[styles.webHeadline, isWide && styles.webHeadlineWide]}>
-                Every ISA.{'\n'}
-                <Text style={styles.webHeadlineAccent}>One nest.</Text>
-              </Text>
-              <Text style={styles.webSubhead}>
-                Track your £20,000 allowance across Cash, Stocks & Shares, Lifetime and
-                Innovative Finance ISAs — with smart reminders before the tax year ends.
-              </Text>
-              <View style={styles.webHeroCtas}>
-                <TouchableOpacity onPress={() => scrollToForm('signup')} activeOpacity={0.85}>
-                  <LinearGradient
-                    colors={Colors.goldGradient}
-                    style={styles.webPrimaryCta}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                  >
-                    <Text style={styles.webPrimaryCtaText}>Start Free</Text>
-                    <Ionicons name="arrow-forward" size={20} color={Colors.deepNavy} />
-                  </LinearGradient>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={startAsGuest} style={styles.webSecondaryCta} activeOpacity={0.7} disabled={isLoading}>
-                  <Ionicons name="eye-outline" size={18} color={Colors.white} />
-                  <Text style={styles.webSecondaryCtaText}>Try the demo</Text>
-                </TouchableOpacity>
+              <View style={styles.mockRows}>
+                {MOCK_SEGMENTS.map((s) => (
+                  <View key={s.label} style={styles.mockRow}>
+                    <View style={[styles.mockDot, { backgroundColor: s.color }]} />
+                    <Text style={styles.mockRowLabel}>{s.label}</Text>
+                    <Text style={styles.mockRowValue}>{s.amount}</Text>
+                  </View>
+                ))}
               </View>
-              <View style={styles.webTrustRow}>
-                <View style={styles.webTrustItem}>
-                  <Ionicons name="lock-closed" size={14} color={Colors.lightGray} />
-                  <Text style={styles.webTrustText}>Secure by design</Text>
-                </View>
-                <View style={styles.webTrustItem}>
-                  <Ionicons name="business" size={14} color={Colors.lightGray} />
-                  <Text style={styles.webTrustText}>440+ UK providers</Text>
-                </View>
-                <View style={styles.webTrustItem}>
-                  <Ionicons name="heart" size={14} color={Colors.lightGray} />
-                  <Text style={styles.webTrustText}>Free forever</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Product mock-up card */}
-            <View style={[styles.webMockWrap, isWide && styles.webMockWrapWide]}>
-              <View style={styles.webMockCard}>
-                <View style={styles.webMockHeader}>
-                  <Text style={styles.webMockTitle}>2025/26 Tax Year</Text>
-                  <View style={styles.webMockBadge}>
-                    <Text style={styles.webMockBadgeText}>ON TRACK</Text>
-                  </View>
-                </View>
-                <Text style={styles.webMockAmount}>£13,450</Text>
-                <Text style={styles.webMockAmountSub}>of £20,000 allowance used</Text>
-                <View style={styles.webMockBarTrack}>
-                  <LinearGradient
-                    colors={Colors.goldGradient}
-                    style={[styles.webMockBarFill, { width: '67%' }]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                  />
-                </View>
-                <View style={styles.webMockRows}>
-                  <View style={styles.webMockRow}>
-                    <View style={[styles.webMockDot, { backgroundColor: '#4A90E2' }]} />
-                    <Text style={styles.webMockRowLabel}>Cash ISA</Text>
-                    <Text style={styles.webMockRowValue}>£6,200</Text>
-                  </View>
-                  <View style={styles.webMockRow}>
-                    <View style={[styles.webMockDot, { backgroundColor: '#5B9BD5' }]} />
-                    <Text style={styles.webMockRowLabel}>Stocks & Shares</Text>
-                    <Text style={styles.webMockRowValue}>£4,250</Text>
-                  </View>
-                  <View style={styles.webMockRow}>
-                    <View style={[styles.webMockDot, { backgroundColor: Colors.gold }]} />
-                    <Text style={styles.webMockRowLabel}>Lifetime ISA</Text>
-                    <Text style={styles.webMockRowValue}>£3,000</Text>
-                  </View>
-                </View>
-                <View style={styles.webMockBonus}>
-                  <Ionicons name="gift" size={16} color={Colors.gold} />
-                  <Text style={styles.webMockBonusText}>+£750 government LISA bonus earned</Text>
-                </View>
+              <View style={styles.mockBonus}>
+                <Ionicons name="gift-outline" size={16} color={Colors.positive} />
+                <Text style={styles.mockBonusText}>+£750 Lifetime ISA bonus earned</Text>
               </View>
             </View>
           </View>
-        )}
+        </View>
 
-        {/* ─── Web landing: stats strip ─── */}
-        {isWeb && (
-          <View style={[styles.webStats, isWide && styles.webStatsWide]}>
-            {[
-              { value: '£20,000', label: 'allowance tracked' },
-              { value: '440+', label: 'UK ISA providers' },
-              { value: '4', label: 'ISA types supported' },
-              { value: '25%', label: 'LISA bonus monitored' },
-            ].map((stat) => (
-              <View key={stat.label} style={styles.webStatItem}>
-                <Text style={styles.webStatValue}>{stat.value}</Text>
-                <Text style={styles.webStatLabel}>{stat.label}</Text>
+        {/* Features */}
+        <View style={[styles.section, styles.block]}>
+          <Text style={styles.blockTitle}>Built for UK savers</Text>
+          <Text style={styles.blockSub}>Everything you need to make the most of your tax-free allowance.</Text>
+          <View style={[styles.grid, isWide && styles.gridWide]}>
+            {FEATURES.map((f) => (
+              <View key={f.title} style={[styles.featureCard, isWide && styles.featureCardWide]}>
+                <View style={styles.featureIcon}>
+                  <Ionicons name={f.icon} size={20} color={Colors.accent} />
+                </View>
+                <Text style={styles.featureTitle}>{f.title}</Text>
+                <Text style={styles.featureText}>{f.text}</Text>
               </View>
             ))}
           </View>
-        )}
+        </View>
 
-        {/* ─── Web landing: features ─── */}
-        {isWeb && (
-          <View style={styles.webSection}>
-            <Text style={styles.webSectionTitle}>Built for UK savers</Text>
-            <Text style={styles.webSectionSub}>
-              Everything you need to make the most of your tax-free allowance.
-            </Text>
-            <View style={[styles.webFeatureGrid, isWide && styles.webFeatureGridWide]}>
-              {HERO_FEATURES.map((feature) => (
-                <View key={feature.title} style={[styles.webFeatureCard, isWide && styles.webFeatureCardWide]}>
-                  <View style={styles.webFeatureIcon}>
-                    <Ionicons name={feature.icon} size={24} color={Colors.gold} />
-                  </View>
-                  <Text style={styles.webFeatureTitle}>{feature.title}</Text>
-                  <Text style={styles.webFeatureText}>{feature.text}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* ─── Web landing: how it works ─── */}
-        {isWeb && (
-          <View style={styles.webSection}>
-            <Text style={styles.webSectionTitle}>Up and running in minutes</Text>
-            <View style={[styles.webStepsRow, isWide && styles.webStepsRowWide]}>
-              {HOW_IT_WORKS.map((item) => (
-                <View key={item.step} style={[styles.webStepCard, isWide && styles.webStepCardWide]}>
-                  <View style={styles.webStepNumber}>
-                    <Text style={styles.webStepNumberText}>{item.step}</Text>
-                  </View>
-                  <Text style={styles.webStepTitle}>{item.title}</Text>
-                  <Text style={styles.webStepText}>{item.text}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* Logo Section (native only — web has the hero above) */}
-        {!isWeb && (
-          <Animated.View style={[styles.logoSection, logoAnimatedStyle]}>
-            <View style={styles.logoContainer}>
-              <View style={styles.hexagon1} />
-              <View style={styles.hexagon2} />
-              <Image
-                source={require('@/assets/logo.png')}
-                style={styles.logoImage}
-                resizeMode="contain"
-              />
-            </View>
-            <Text style={styles.title}>FinNest</Text>
-            <LinearGradient
-              colors={Colors.goldGradient}
-              style={styles.underline}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-            />
-            <Text style={styles.subtitle}>
-              {isLogin ? 'Welcome Back' : 'Create Your Account'}
-            </Text>
-          </Animated.View>
-        )}
-
-        {/* Form Section */}
-        <Animated.View
-          ref={formRef}
-          onLayout={(e) => {
-            formY.current = e.nativeEvent.layout.y;
-          }}
-          style={[styles.formSection, formAnimatedStyle, isWeb && styles.formSectionWeb]}
-        >
-          {isWeb && (
-            <Text style={styles.webFormTitle}>
-              {isLogin ? 'Welcome back' : 'Create your free account'}
-            </Text>
-          )}
-          {/* Toggle Login/Signup */}
-          <View style={styles.toggleContainer}>
-            <TouchableOpacity
-              style={[styles.toggleButton, isLogin && styles.toggleButtonActive]}
-              onPress={() => selectMode(true)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.toggleText, isLogin && styles.toggleTextActive]}>
-                Login
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.toggleButton, !isLogin && styles.toggleButtonActive]}
-              onPress={() => selectMode(false)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.toggleText, !isLogin && styles.toggleTextActive]}>
-                Sign Up
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Full Name Input (Signup only) */}
-          {!isLogin && (
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Full Name</Text>
-              <View style={styles.inputWrapper}>
-                <Ionicons name="person-outline" size={20} color={Colors.lightGray} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="John Doe"
-                  placeholderTextColor={Colors.mediumGray}
-                  value={fullName}
-                  onChangeText={setFullName}
-                  autoCapitalize="words"
-                  editable={!isLoading}
-                />
+        {/* How it works */}
+        <View style={[styles.section, styles.block]}>
+          <Text style={styles.blockTitle}>Up and running in minutes</Text>
+          <View style={[styles.grid, isWide && styles.stepsWide]}>
+            {STEPS.map((s, i) => (
+              <View key={s.title} style={[styles.stepCard, isWide && { flex: 1 }]}>
+                <Text style={styles.stepNumber}>{String(i + 1).padStart(2, '0')}</Text>
+                <Text style={styles.featureTitle}>{s.title}</Text>
+                <Text style={styles.featureText}>{s.text}</Text>
               </View>
-            </View>
-          )}
-
-          {/* Email Input */}
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Email Address</Text>
-            <View style={styles.inputWrapper}>
-              <Ionicons name="mail-outline" size={20} color={Colors.lightGray} style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="you@example.com"
-                placeholderTextColor={Colors.mediumGray}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                editable={!isLoading}
-              />
-            </View>
+            ))}
           </View>
+        </View>
 
-          {/* Password Input */}
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Password</Text>
-            <View style={[styles.inputWrapper, loginError && isLogin && styles.inputError]}>
-              <Ionicons name="lock-closed-outline" size={20} color={Colors.lightGray} style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your password"
-                placeholderTextColor={Colors.mediumGray}
-                value={password}
-                onChangeText={(text) => {
-                  setPassword(text);
-                  setLoginError(false);
-                }}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-                autoCorrect={false}
-                editable={!isLoading}
-              />
-              <TouchableOpacity
-                onPress={() => setShowPassword(!showPassword)}
-                style={styles.eyeIcon}
-                disabled={isLoading}
-              >
-                <Ionicons
-                  name={showPassword ? 'eye-outline' : 'eye-off-outline'}
-                  size={20}
-                  color={Colors.lightGray}
-                />
-              </TouchableOpacity>
-            </View>
-            {loginError && isLogin && (
-              <View style={styles.errorContainer}>
-                <Ionicons name="alert-circle" size={16} color={Colors.error} />
-                <Text style={styles.errorText}>
-                  Invalid email or password. Please try again.
-                </Text>
-              </View>
-            )}
+        {/* Auth */}
+        <View style={[styles.section, styles.block]}>{form}</View>
+
+        {/* Footer */}
+        <View style={[styles.section, styles.footer]}>
+          <View style={styles.brand}>
+            <Image source={require('@/assets/logo.png')} style={styles.footerLogo} resizeMode="contain" />
+            <Text style={styles.footerName}>FinNest</Text>
           </View>
-
-          {/* Confirm Password Input (Signup only) */}
-          {!isLogin && (
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Confirm Password</Text>
-              <View style={styles.inputWrapper}>
-                <Ionicons name="lock-closed-outline" size={20} color={Colors.lightGray} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Confirm your password"
-                  placeholderTextColor={Colors.mediumGray}
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  secureTextEntry={!showConfirmPassword}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  editable={!isLoading}
-                />
-                <TouchableOpacity
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                  style={styles.eyeIcon}
-                  disabled={isLoading}
-                >
-                  <Ionicons
-                    name={showConfirmPassword ? 'eye-outline' : 'eye-off-outline'}
-                    size={20}
-                    color={Colors.lightGray}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-
-          {/* Terms & Conditions Checkbox (Signup only) */}
-          {!isLogin && (
-            <View>
-              <TouchableOpacity
-                style={styles.checkboxContainer}
-                onPress={() => {
-                  setAgreedToTerms(!agreedToTerms);
-                  setTermsError(false);
-                }}
-                activeOpacity={0.7}
-                disabled={isLoading}
-              >
-                <View style={[
-                  styles.checkbox,
-                  agreedToTerms && styles.checkboxChecked,
-                  termsError && styles.checkboxError
-                ]}>
-                  {agreedToTerms && (
-                    <Ionicons name="checkmark" size={18} color={Colors.deepNavy} />
-                  )}
-                </View>
-                <Text style={styles.checkboxText}>
-                  I agree to the{' '}
-                  <Text
-                    style={styles.checkboxLink}
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      setShowTermsModal(true);
-                    }}
-                  >
-                    Terms & Conditions
-                  </Text>
-                  {' '}and{' '}
-                  <Text
-                    style={styles.checkboxLink}
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      setShowPrivacyModal(true);
-                    }}
-                  >
-                    Privacy Policy
-                  </Text>
-                </Text>
-              </TouchableOpacity>
-              {termsError && (
-                <View style={styles.errorContainer}>
-                  <Ionicons name="alert-circle" size={16} color={Colors.error} />
-                  <Text style={styles.errorText}>
-                    Please agree to the Terms & Conditions and Privacy Policy to continue
-                  </Text>
-                </View>
-              )}
-            </View>
-          )}
-
-          {/* Inline form error (Alert.alert doesn't render on web) */}
-          {formError && (
-            <View style={styles.errorContainer}>
-              <Ionicons name="alert-circle" size={16} color={Colors.error} />
-              <Text style={styles.errorText}>{formError}</Text>
-            </View>
-          )}
-
-          {/* Submit Button */}
-          <TouchableOpacity
-            style={[styles.button, isLoading && styles.buttonDisabled]}
-            onPress={handleSubmit}
-            activeOpacity={0.8}
-            disabled={isLoading}
-          >
-            <LinearGradient
-              colors={Colors.goldGradient}
-              style={styles.buttonGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-            >
-              {isLoading ? (
-                <Text style={styles.buttonText}>Please wait...</Text>
-              ) : (
-                <>
-                  <Text style={styles.buttonText}>
-                    {isLogin ? 'Login' : 'Create Account'}
-                  </Text>
-                  <Ionicons name="arrow-forward" size={24} color={Colors.deepNavy} />
-                </>
-              )}
-            </LinearGradient>
-          </TouchableOpacity>
-
-          {/* Toggle Link */}
-          <TouchableOpacity
-            style={styles.toggleLink}
-            onPress={toggleMode}
-            disabled={isLoading}
-          >
-            <Text style={styles.toggleLinkText}>
-              {isLogin ? "Don't have an account? " : 'Already have an account? '}
-              <Text style={styles.toggleLinkBold}>
-                {isLogin ? 'Sign Up' : 'Login'}
-              </Text>
-            </Text>
-          </TouchableOpacity>
-
-          {/* Divider */}
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>OR</Text>
-            <View style={styles.dividerLine} />
+          <View style={styles.footerLinks}>
+            <Pressable onPress={() => setShowTermsModal(true)}>
+              <Text style={styles.footerLink}>Terms</Text>
+            </Pressable>
+            <Pressable onPress={() => setShowPrivacyModal(true)}>
+              <Text style={styles.footerLink}>Privacy</Text>
+            </Pressable>
           </View>
-
-          {/* Guest Mode Button */}
-          <TouchableOpacity
-            style={styles.guestButton}
-            onPress={startAsGuest}
-            activeOpacity={0.7}
-            disabled={isLoading}
-          >
-            <View style={styles.guestButtonContent}>
-              <Ionicons name="eye-outline" size={20} color={Colors.info} />
-              <Text style={styles.guestButtonText}>Continue as Guest</Text>
-            </View>
-            <Text style={styles.guestButtonSubtext}>Try the app without signing up</Text>
-          </TouchableOpacity>
-        </Animated.View>
-
-        {/* ─── Web landing: footer ─── */}
-        {isWeb && (
-          <View style={styles.webFooter}>
-            <View style={styles.webFooterBrand}>
-              <Image source={require('@/assets/logo.png')} style={styles.webFooterLogo} resizeMode="contain" />
-              <Text style={styles.webFooterName}>FinNest</Text>
-            </View>
-            <Text style={styles.webFooterTagline}>Track every ISA. Keep every pound tax-free.</Text>
-            <View style={styles.webFooterLinks}>
-              <TouchableOpacity onPress={() => setShowTermsModal(true)}>
-                <Text style={styles.webFooterLink}>Terms & Conditions</Text>
-              </TouchableOpacity>
-              <Text style={styles.webFooterDivider}>•</Text>
-              <TouchableOpacity onPress={() => setShowPrivacyModal(true)}>
-                <Text style={styles.webFooterLink}>Privacy Policy</Text>
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.webFooterNote}>
-              FinNest is a tracking tool, not a financial adviser. Capital at risk with investment ISAs.
-            </Text>
-            <Text style={styles.webFooterCopyright}>© {new Date().getFullYear()} FinNest. All rights reserved.</Text>
-          </View>
-        )}
+          <Text style={styles.footerNote}>
+            FinNest is a tracking tool, not a financial adviser. With investment ISAs your capital is at risk.
+          </Text>
+          <Text style={styles.footerNote}>© {new Date().getFullYear()} FinNest</Text>
+        </View>
       </ScrollView>
 
-      {/* Terms & Conditions Modal */}
-      <TermsModal
-        visible={showTermsModal}
-        onClose={() => setShowTermsModal(false)}
-      />
-
-      {/* Privacy Policy Modal */}
-      <PrivacyPolicyModal
-        visible={showPrivacyModal}
-        onClose={() => setShowPrivacyModal(false)}
-      />
-    </KeyboardAvoidingView>
+      <TermsModal visible={showTermsModal} onClose={() => setShowTermsModal(false)} />
+      <PrivacyPolicyModal visible={showPrivacyModal} onClose={() => setShowPrivacyModal(false)} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    backgroundColor: Colors.deepNavy,
+    backgroundColor: Colors.background,
   },
-  gradient: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  ring: {
-    position: 'absolute',
-    borderWidth: 1.5,
-    borderRadius: 9999,
-    opacity: 0.1,
+
+  // ─── Native ───
+  nativeContent: {
+    paddingHorizontal: 24,
+    paddingBottom: Spacing.xl,
+    width: '100%',
+    maxWidth: 520,
     alignSelf: 'center',
-    top: height * 0.05,
   },
-  ring1: {
-    width: width * 1.2,
-    height: width * 1.2,
-    borderColor: Colors.gold,
-    borderStyle: 'dashed',
-  },
-  ring2: {
-    width: width * 0.8,
-    height: width * 0.8,
-    borderColor: Colors.info,
-  },
-  glow: {
-    position: 'absolute',
-    width: 250,
-    height: 250,
-    borderRadius: 125,
-    backgroundColor: Colors.gold,
-    opacity: 0.08,
-    alignSelf: 'center',
-    top: height * 0.08,
-    shadowColor: Colors.gold,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 60,
-  },
-  scrollView: {
-    flex: 1,
-    backgroundColor: Colors.deepNavy,
-  },
-  content: {
-    paddingHorizontal: Spacing.xl,
-    paddingTop: Spacing.xxl,
-    paddingBottom: Spacing.md,
-  },
-  logoSection: {
+  nativeHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: height * 0.05,
-    marginBottom: Spacing.xxl,
+    justifyContent: 'space-between',
+    height: 56,
+    marginBottom: Spacing.md,
   },
-  logoContainer: {
+  backButton: {
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Spacing.xxl,
+    marginLeft: -10,
   },
-  hexagon1: {
-    position: 'absolute',
-    width: 140,
-    height: 140,
-    borderWidth: 2,
-    borderColor: Colors.gold + '60',
-    borderRadius: 20,
-    transform: [{ rotate: '45deg' }],
+  headerLogo: {
+    width: 32,
+    height: 32,
+    tintColor: Colors.accent,
   },
-  hexagon2: {
-    position: 'absolute',
-    width: 120,
-    height: 120,
-    borderWidth: 1.5,
-    borderColor: Colors.info + '40',
-    borderRadius: 18,
-    transform: [{ rotate: '45deg' }],
+
+  // ─── Form ───
+  form: {
+    width: '100%',
   },
-  logoImage: {
-    width: 100,
-    height: 100,
-    tintColor: Colors.gold,
+  formWebNarrow: {
+    maxWidth: 460,
+    alignSelf: 'center',
   },
-  title: {
-    fontSize: Typography.sizes.xxxl,
-    fontWeight: Typography.weights.extrabold,
-    color: Colors.white,
-    textAlign: 'center',
-    letterSpacing: 1,
-  },
-  underline: {
-    width: 60,
-    height: 3,
-    marginTop: Spacing.sm,
-    marginBottom: Spacing.md,
-    borderRadius: 2,
-  },
-  subtitle: {
-    fontSize: Typography.sizes.lg,
-    color: Colors.lightGray,
-    textAlign: 'center',
-    fontWeight: Typography.weights.medium,
-  },
-  formSection: {
-    gap: Spacing.lg,
-    paddingBottom: Spacing.xxl,
-  },
-  toggleContainer: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: BorderRadius.lg,
-    padding: 4,
-    marginBottom: Spacing.md,
-  },
-  toggleButton: {
-    flex: 1,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
-    alignItems: 'center',
-  },
-  toggleButtonActive: {
-    backgroundColor: Colors.gold,
-  },
-  toggleText: {
-    fontSize: Typography.sizes.md,
-    fontWeight: Typography.weights.bold,
-    color: Colors.lightGray,
-  },
-  toggleTextActive: {
-    color: Colors.deepNavy,
-  },
-  inputContainer: {
-    gap: Spacing.sm,
-  },
-  inputLabel: {
-    fontSize: Typography.sizes.sm,
-    fontWeight: Typography.weights.bold,
-    color: Colors.white,
-    marginLeft: 4,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  formWeb: {
+    maxWidth: 460,
+    alignSelf: 'center',
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.xl,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: Colors.border,
+    padding: Spacing.xl,
+  },
+  formTitle: {
+    ...Type.title1,
+  },
+  formSubtitle: {
+    ...Type.body,
+    color: Colors.textSecondary,
+    marginTop: 6,
+  },
+  segmented: {
+    flexDirection: 'row',
+    backgroundColor: Colors.surfaceRaised,
     borderRadius: BorderRadius.md,
-    paddingHorizontal: Spacing.md,
+    padding: 4,
+    marginTop: Spacing.lg,
   },
-  inputError: {
-    borderColor: Colors.error,
-    borderWidth: 2,
-  },
-  inputIcon: {
-    marginRight: Spacing.sm,
-  },
-  input: {
+  segment: {
     flex: 1,
-    fontSize: Typography.sizes.md,
-    color: Colors.white,
-    paddingVertical: Spacing.md,
+    height: 38,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  eyeIcon: {
-    padding: Spacing.xs,
+  segmentActive: {
+    backgroundColor: Colors.background,
+    borderWidth: 1,
+    borderColor: Colors.borderStrong,
   },
-  button: {
-    borderRadius: BorderRadius.lg,
-    overflow: 'hidden',
-    shadowColor: Colors.gold,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 8,
+  segmentText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.textTertiary,
+  },
+  segmentTextActive: {
+    color: Colors.text,
+  },
+  notice: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'flex-start',
+    marginTop: Spacing.md,
+    padding: 14,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.positiveMuted,
+    borderWidth: 1,
+    borderColor: 'rgba(52, 211, 153, 0.3)',
+  },
+  noticeText: {
+    ...Type.callout,
+    color: Colors.text,
+    flex: 1,
+  },
+  fields: {
+    gap: 16,
+    marginTop: Spacing.lg,
+  },
+  terms: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
     marginTop: Spacing.md,
   },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonGradient: {
-    flexDirection: 'row',
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: Colors.borderStrong,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: Spacing.lg,
-    paddingHorizontal: Spacing.xl,
-    gap: Spacing.sm,
   },
-  buttonText: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.extrabold,
-    color: Colors.deepNavy,
-    letterSpacing: 0.5,
+  checkboxChecked: {
+    backgroundColor: Colors.accent,
+    borderColor: Colors.accent,
   },
-  toggleLink: {
+  termsText: {
+    ...Type.callout,
+    flex: 1,
+  },
+  link: {
+    color: Colors.accent,
+    fontWeight: '600',
+  },
+  errorRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: Spacing.md,
+    gap: 8,
+    marginTop: Spacing.md,
   },
-  toggleLinkText: {
-    fontSize: Typography.sizes.md,
-    color: Colors.lightGray,
+  errorText: {
+    ...Type.caption,
+    color: Colors.negative,
+    flex: 1,
   },
-  toggleLinkBold: {
-    fontWeight: Typography.weights.bold,
-    color: Colors.gold,
+  submit: {
+    marginTop: Spacing.lg,
   },
   divider: {
     flexDirection: 'row',
@@ -1005,569 +657,283 @@ const styles = StyleSheet.create({
   },
   dividerLine: {
     flex: 1,
-    height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: Colors.borderStrong,
   },
   dividerText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    marginHorizontal: Spacing.md,
-    fontWeight: Typography.weights.medium,
+    ...Type.caption,
+    color: Colors.textTertiary,
+    marginHorizontal: 12,
   },
-  guestButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
-    alignItems: 'center',
-  },
-  guestButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    marginBottom: 4,
-  },
-  guestButtonText: {
-    fontSize: Typography.sizes.md,
-    fontWeight: Typography.weights.bold,
-    color: Colors.white,
-  },
-  guestButtonSubtext: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-  },
-  checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: Spacing.sm,
-    paddingVertical: Spacing.sm,
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: Colors.lightGray,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 2,
-  },
-  checkboxChecked: {
-    backgroundColor: Colors.gold,
-    borderColor: Colors.gold,
-  },
-  checkboxText: {
-    flex: 1,
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    lineHeight: 20,
-  },
-  checkboxLink: {
-    color: Colors.gold,
-    fontWeight: Typography.weights.bold,
-    textDecorationLine: 'underline',
-  },
-  checkboxError: {
-    borderColor: Colors.error,
-    borderWidth: 2,
-  },
-  errorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 8,
-    marginLeft: 4,
-  },
-  errorText: {
-    flex: 1,
-    fontSize: Typography.sizes.xs,
-    color: Colors.error,
-    lineHeight: 16,
+  guestHint: {
+    ...Type.caption,
+    color: Colors.textTertiary,
+    textAlign: 'center',
+    marginTop: 10,
   },
 
-  // ─── Web landing styles ───
-  webNav: {
+  // ─── Web landing ───
+  webContent: {
+    paddingHorizontal: 24,
+  },
+  section: {
     width: '100%',
-    maxWidth: 1200,
+    maxWidth: 1120,
     alignSelf: 'center',
+  },
+  nav: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: Spacing.md,
-    marginBottom: Spacing.lg,
   },
-  webNavBrand: {
+  brand: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.sm,
+    gap: 10,
   },
-  webNavLogo: {
-    width: 36,
-    height: 36,
-    tintColor: Colors.gold,
+  brandLogo: {
+    width: 30,
+    height: 30,
+    tintColor: Colors.accent,
   },
-  webNavTitle: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.extrabold,
-    color: Colors.white,
-    letterSpacing: 0.5,
+  brandName: {
+    ...Type.headline,
+    fontSize: 19,
   },
-  webNavActions: {
+  navActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.md,
+    gap: 8,
   },
-  webNavLink: {
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
+  hero: {
+    paddingTop: Spacing.xxl,
+    paddingBottom: Spacing.xxl,
+    gap: Spacing.xxl,
   },
-  webNavLinkText: {
-    fontSize: Typography.sizes.md,
-    fontWeight: Typography.weights.semibold,
-    color: Colors.white,
-  },
-  webNavCta: {
-    paddingVertical: Spacing.sm + 2,
-    paddingHorizontal: Spacing.lg,
-    borderRadius: BorderRadius.full,
-  },
-  webNavCtaText: {
-    fontSize: Typography.sizes.md,
-    fontWeight: Typography.weights.bold,
-    color: Colors.deepNavy,
-  },
-  webHero: {
-    width: '100%',
-    maxWidth: 1200,
-    alignSelf: 'center',
-    marginBottom: Spacing.xxl,
-    gap: Spacing.xl,
-  },
-  webHeroWide: {
+  heroWide: {
     flexDirection: 'row',
     alignItems: 'center',
-    minHeight: 480,
+    minHeight: 560,
   },
-  webHeroCopy: {
+  heroCopy: {
     alignItems: 'flex-start',
   },
-  webHeroCopyWide: {
-    flex: 1.1,
-    paddingRight: Spacing.xl,
-  },
-  webEyebrow: {
+  eyebrow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: 'rgba(255, 215, 0, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 215, 0, 0.35)',
     paddingVertical: 6,
-    paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.full,
-    marginBottom: Spacing.lg,
-  },
-  webEyebrowText: {
-    fontSize: Typography.sizes.xs,
-    fontWeight: Typography.weights.bold,
-    color: Colors.gold,
-    letterSpacing: 1.5,
-  },
-  webHeadline: {
-    fontSize: 44,
-    lineHeight: 52,
-    fontWeight: Typography.weights.extrabold,
-    color: Colors.white,
-    marginBottom: Spacing.lg,
-  },
-  webHeadlineWide: {
-    fontSize: 64,
-    lineHeight: 72,
-  },
-  webHeadlineAccent: {
-    color: Colors.gold,
-  },
-  webSubhead: {
-    fontSize: Typography.sizes.lg,
-    lineHeight: 30,
-    color: Colors.lightGray,
-    marginBottom: Spacing.xl,
-    maxWidth: 560,
-  },
-  webHeroCtas: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: Spacing.md,
-    marginBottom: Spacing.xl,
-  },
-  webPrimaryCta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    paddingVertical: Spacing.md + 2,
-    paddingHorizontal: Spacing.xl,
-    borderRadius: BorderRadius.full,
-    shadowColor: Colors.gold,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.35,
-    shadowRadius: 20,
-  },
-  webPrimaryCtaText: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.extrabold,
-    color: Colors.deepNavy,
-  },
-  webSecondaryCta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    paddingVertical: Spacing.md + 2,
-    paddingHorizontal: Spacing.xl,
+    paddingHorizontal: 12,
     borderRadius: BorderRadius.full,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: Colors.accentBorder,
+    marginBottom: Spacing.lg,
   },
-  webSecondaryCtaText: {
-    fontSize: Typography.sizes.md,
-    fontWeight: Typography.weights.bold,
-    color: Colors.white,
+  eyebrowText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.accent,
   },
-  webTrustRow: {
+  headline: {
+    ...Type.display,
+    fontSize: 48,
+    lineHeight: 54,
+  },
+  headlineWide: {
+    fontSize: 68,
+    lineHeight: 74,
+    letterSpacing: -1.6,
+  },
+  subhead: {
+    ...Type.body,
+    fontSize: 19,
+    lineHeight: 30,
+    color: Colors.textSecondary,
+    marginTop: Spacing.lg,
+    maxWidth: 540,
+  },
+  heroCtas: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: Spacing.lg,
+    gap: 12,
+    marginTop: Spacing.xl,
   },
-  webTrustItem: {
+  trustRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 20,
+    marginTop: Spacing.lg,
+  },
+  trustItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
-  webTrustText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
+  trustText: {
+    ...Type.callout,
   },
-  webMockWrap: {
+  mockWrap: {
     width: '100%',
     alignItems: 'center',
   },
-  webMockWrapWide: {
-    flex: 0.9,
-  },
-  webMockCard: {
+  mock: {
     width: '100%',
     maxWidth: 420,
-    backgroundColor: 'rgba(255, 255, 255, 0.07)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 215, 0, 0.3)',
+    backgroundColor: Colors.surface,
     borderRadius: BorderRadius.xl,
-    padding: Spacing.xl,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 24 },
+    borderWidth: 1,
+    borderColor: Colors.borderStrong,
+    padding: 28,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 30 },
     shadowOpacity: 0.45,
-    shadowRadius: 48,
+    shadowRadius: 60,
   },
-  webMockHeader: {
+  mockValue: {
+    ...Type.display,
+    ...Type.number,
+    marginTop: 8,
+  },
+  mockMeta: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: Spacing.lg,
+    marginTop: 12,
   },
-  webMockTitle: {
-    fontSize: Typography.sizes.sm,
-    fontWeight: Typography.weights.semibold,
-    color: Colors.lightGray,
-    letterSpacing: 0.5,
+  mockRows: {
+    marginTop: 20,
+    paddingTop: 16,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: Colors.borderStrong,
+    gap: 12,
   },
-  webMockBadge: {
-    backgroundColor: 'rgba(91, 155, 213, 0.2)',
-    borderWidth: 1,
-    borderColor: 'rgba(91, 155, 213, 0.5)',
-    paddingVertical: 4,
-    paddingHorizontal: Spacing.sm,
-    borderRadius: BorderRadius.full,
-  },
-  webMockBadgeText: {
-    fontSize: 10,
-    fontWeight: Typography.weights.bold,
-    color: '#5B9BD5',
-    letterSpacing: 1,
-  },
-  webMockAmount: {
-    fontSize: 40,
-    fontWeight: Typography.weights.extrabold,
-    color: Colors.white,
-  },
-  webMockAmountSub: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    marginBottom: Spacing.md,
-  },
-  webMockBarTrack: {
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    overflow: 'hidden',
-    marginBottom: Spacing.lg,
-  },
-  webMockBarFill: {
-    height: '100%',
-    borderRadius: 5,
-  },
-  webMockRows: {
-    gap: Spacing.md,
-    marginBottom: Spacing.lg,
-  },
-  webMockRow: {
+  mockRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.sm,
   },
-  webMockDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+  mockDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 10,
   },
-  webMockRowLabel: {
-    flex: 1,
-    fontSize: Typography.sizes.md,
-    color: Colors.lightGray,
-  },
-  webMockRowValue: {
-    fontSize: Typography.sizes.md,
-    fontWeight: Typography.weights.bold,
-    color: Colors.white,
-  },
-  webMockBonus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    backgroundColor: 'rgba(255, 215, 0, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 215, 0, 0.3)',
-    padding: Spacing.md,
-    borderRadius: BorderRadius.md,
-  },
-  webMockBonusText: {
-    fontSize: Typography.sizes.sm,
-    fontWeight: Typography.weights.semibold,
-    color: Colors.gold,
-  },
-  webStats: {
-    width: '100%',
-    maxWidth: 1200,
-    alignSelf: 'center',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: Spacing.lg,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.xl,
-    marginBottom: Spacing.xxl,
-  },
-  webStatsWide: {
-    paddingHorizontal: Spacing.xxl,
-  },
-  webStatItem: {
-    alignItems: 'center',
-    minWidth: 130,
-    flexGrow: 1,
-  },
-  webStatValue: {
-    fontSize: Typography.sizes.xxl,
-    fontWeight: Typography.weights.extrabold,
-    color: Colors.gold,
-  },
-  webStatLabel: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    marginTop: 4,
-    textAlign: 'center',
-  },
-  webSection: {
-    width: '100%',
-    maxWidth: 1200,
-    alignSelf: 'center',
-    marginBottom: Spacing.xxl,
-    alignItems: 'center',
-  },
-  webSectionTitle: {
-    fontSize: Typography.sizes.xxl,
-    fontWeight: Typography.weights.extrabold,
-    color: Colors.white,
-    textAlign: 'center',
-    marginBottom: Spacing.sm,
-  },
-  webSectionSub: {
-    fontSize: Typography.sizes.md,
-    color: Colors.lightGray,
-    textAlign: 'center',
-    marginBottom: Spacing.xl,
-  },
-  webFeatureGrid: {
-    width: '100%',
-    gap: Spacing.md,
-    marginTop: Spacing.lg,
-  },
-  webFeatureGridWide: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-  },
-  webFeatureCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.xl,
-  },
-  webFeatureCardWide: {
-    flexBasis: '23%',
-    flexGrow: 1,
-    minWidth: 240,
-  },
-  webFeatureIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: BorderRadius.md,
-    backgroundColor: 'rgba(255, 215, 0, 0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.md,
-  },
-  webFeatureTitle: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: Typography.weights.bold,
-    color: Colors.white,
-    marginBottom: Spacing.sm,
-  },
-  webFeatureText: {
-    fontSize: Typography.sizes.sm,
-    lineHeight: 22,
-    color: Colors.lightGray,
-  },
-  webStepsRow: {
-    width: '100%',
-    gap: Spacing.md,
-    marginTop: Spacing.lg,
-  },
-  webStepsRowWide: {
-    flexDirection: 'row',
-  },
-  webStepCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.xl,
-    alignItems: 'flex-start',
-  },
-  webStepCardWide: {
+  mockRowLabel: {
+    ...Type.callout,
     flex: 1,
   },
-  webStepNumber: {
+  mockRowValue: {
+    ...Type.bodyStrong,
+    ...Type.number,
+  },
+  mockBonus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 20,
+    padding: 12,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.positiveMuted,
+  },
+  mockBonusText: {
+    ...Type.caption,
+    color: Colors.positive,
+    fontWeight: '600',
+  },
+  block: {
+    paddingVertical: Spacing.xxl,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: Colors.border,
+  },
+  blockTitle: {
+    ...Type.title1,
+    textAlign: 'center',
+  },
+  blockSub: {
+    ...Type.body,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  grid: {
+    gap: 16,
+    marginTop: Spacing.xl,
+  },
+  gridWide: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  stepsWide: {
+    flexDirection: 'row',
+  },
+  featureCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    padding: 24,
+  },
+  featureCardWide: {
+    flexBasis: '22%',
+    flexGrow: 1,
+    minWidth: 220,
+  },
+  featureIcon: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 215, 0, 0.15)',
-    borderWidth: 1,
-    borderColor: Colors.gold,
+    borderRadius: 12,
+    backgroundColor: Colors.accentMuted,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Spacing.md,
+    marginBottom: 16,
   },
-  webStepNumberText: {
-    fontSize: Typography.sizes.md,
-    fontWeight: Typography.weights.extrabold,
-    color: Colors.gold,
+  featureTitle: {
+    ...Type.headline,
+    marginBottom: 6,
   },
-  webStepTitle: {
-    fontSize: Typography.sizes.md,
-    fontWeight: Typography.weights.bold,
-    color: Colors.white,
-    marginBottom: Spacing.xs,
+  featureText: {
+    ...Type.callout,
+    lineHeight: 21,
   },
-  webStepText: {
-    fontSize: Typography.sizes.sm,
-    lineHeight: 22,
-    color: Colors.lightGray,
-  },
-  formSectionWeb: {
-    width: '100%',
-    maxWidth: 520,
-    alignSelf: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  stepCard: {
+    padding: 24,
+    borderRadius: BorderRadius.lg,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
-    borderRadius: BorderRadius.xl,
-    padding: Spacing.xl,
-    marginBottom: Spacing.xxl,
+    borderColor: Colors.border,
   },
-  webFormTitle: {
-    fontSize: Typography.sizes.xl,
-    fontWeight: Typography.weights.extrabold,
-    color: Colors.white,
-    textAlign: 'center',
-    marginBottom: Spacing.sm,
+  stepNumber: {
+    ...Type.number,
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.accent,
+    letterSpacing: 1,
+    marginBottom: 12,
   },
-  webFooter: {
-    width: '100%',
-    maxWidth: 1200,
-    alignSelf: 'center',
+  footer: {
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
-    paddingTop: Spacing.xl,
-    paddingBottom: Spacing.lg,
-    gap: Spacing.sm,
+    gap: 10,
+    paddingVertical: Spacing.xl,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: Colors.border,
   },
-  webFooterBrand: {
+  footerLogo: {
+    width: 22,
+    height: 22,
+    tintColor: Colors.accent,
+  },
+  footerName: {
+    ...Type.bodyStrong,
+  },
+  footerLinks: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
+    gap: 20,
   },
-  webFooterLogo: {
-    width: 28,
-    height: 28,
-    tintColor: Colors.gold,
+  footerLink: {
+    ...Type.callout,
+    color: Colors.text,
   },
-  webFooterName: {
-    fontSize: Typography.sizes.md,
-    fontWeight: Typography.weights.extrabold,
-    color: Colors.white,
-  },
-  webFooterTagline: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-  },
-  webFooterLinks: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-    marginTop: Spacing.sm,
-  },
-  webFooterLink: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.gold,
-    fontWeight: Typography.weights.semibold,
-  },
-  webFooterDivider: {
-    color: Colors.mediumGray,
-  },
-  webFooterNote: {
-    fontSize: Typography.sizes.xs,
-    color: Colors.mediumGray,
+  footerNote: {
+    ...Type.caption,
+    color: Colors.textTertiary,
     textAlign: 'center',
-    marginTop: Spacing.sm,
-  },
-  webFooterCopyright: {
-    fontSize: Typography.sizes.xs,
-    color: Colors.mediumGray,
   },
 });

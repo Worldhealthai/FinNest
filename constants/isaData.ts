@@ -63,7 +63,7 @@ export const ISA_INFO: Record<string, ISAType> = {
       'Risk-averse savers',
       'Those needing quick access to funds',
     ],
-    color: '#00C9FF',
+    color: '#38BDF8',
   },
   [ISA_TYPES.STOCKS_SHARES]: {
     id: ISA_TYPES.STOCKS_SHARES,
@@ -93,7 +93,7 @@ export const ISA_INFO: Record<string, ISAType> = {
       'Retirement savings',
       'Beating inflation',
     ],
-    color: '#FFD700',
+    color: '#A78BFA',
   },
   [ISA_TYPES.LIFETIME]: {
     id: ISA_TYPES.LIFETIME,
@@ -123,7 +123,7 @@ export const ISA_INFO: Record<string, ISAType> = {
       'Long-term savers',
       'Those wanting government bonus',
     ],
-    color: '#5B9BD5',
+    color: '#34D399',
   },
   [ISA_TYPES.INNOVATIVE_FINANCE]: {
     id: ISA_TYPES.INNOVATIVE_FINANCE,
@@ -153,7 +153,7 @@ export const ISA_INFO: Record<string, ISAType> = {
       'Diversifying ISA portfolio',
       'Understanding P2P lending',
     ],
-    color: '#FF6B9D',
+    color: '#FB923C',
   },
 };
 
@@ -368,4 +368,32 @@ export function calculateFlexibleISA(
     amountAllocatedToReplacement,
     amountAllocatedToUnused,
   };
+}
+
+// ─── Display helpers shared by the redesigned screens ───
+export const ISA_TYPE_ORDER = ['cash', 'stocks_shares', 'lifetime', 'innovative_finance'] as const;
+export type ISATypeKey = (typeof ISA_TYPE_ORDER)[number];
+
+export const ISA_LABELS: Record<string, string> = {
+  cash: 'Cash ISA',
+  stocks_shares: 'Stocks & Shares ISA',
+  lifetime: 'Lifetime ISA',
+  innovative_finance: 'Innovative Finance ISA',
+};
+
+export const ISA_ICONS: Record<string, 'cash-outline' | 'trending-up-outline' | 'home-outline' | 'flash-outline'> = {
+  cash: 'cash-outline',
+  stocks_shares: 'trending-up-outline',
+  lifetime: 'home-outline',
+  innovative_finance: 'flash-outline',
+};
+
+export const isaColor = (type: string) => ISA_INFO[type]?.color ?? '#9AA8BC';
+
+/** Compact currency for tight spaces: £950, £12.5k, £1.2m */
+export function formatCompactCurrency(amount: number): string {
+  const abs = Math.abs(amount);
+  if (abs >= 1_000_000) return `£${(amount / 1_000_000).toFixed(1).replace(/\.0$/, '')}m`;
+  if (abs >= 1_000) return `£${(amount / 1_000).toFixed(1).replace(/\.0$/, '')}k`;
+  return formatCurrency(amount);
 }

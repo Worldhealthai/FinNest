@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import Modal from './Modal';
-import { Colors, Spacing, Typography } from '@/constants/theme';
+import { Colors, Spacing, Type } from '@/constants/theme';
 
 interface PrivacyPolicyModalProps {
   visible: boolean;
@@ -14,268 +14,206 @@ export default function PrivacyPolicyModal({ visible, onClose }: PrivacyPolicyMo
       visible={visible}
       onClose={onClose}
       title="Privacy Policy"
-      icon="shield-checkmark"
     >
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={true}>
-        <View style={styles.content}>
-          {/* Header Section */}
-          <View style={styles.headerSection}>
-            <Text style={styles.lastUpdated}>Last Updated: January 2026</Text>
-            <Text style={styles.introText}>
-              This Privacy Policy explains how FinNest collects, uses, stores, and protects your personal information. We are committed to protecting your privacy and complying with UK GDPR.
-            </Text>
-          </View>
-
-          {/* Section 1 */}
-          <View style={styles.sectionContainer}>
-            <View style={styles.sectionBox}>
-              <Text style={styles.sectionTitle}>1. Information We Collect</Text>
-
-              <Text style={styles.subsectionTitle}>Financial Tracking Data (Stored Locally)</Text>
-              <Text style={styles.paragraph}>
-                When you use FinNest to track your ISA contributions, you may enter:
-              </Text>
-              <Text style={styles.bulletPoint}>• ISA contribution amounts</Text>
-              <Text style={styles.bulletPoint}>• Contribution dates</Text>
-              <Text style={styles.bulletPoint}>• ISA provider names</Text>
-              <Text style={styles.bulletPoint}>• ISA account types</Text>
-
-              <Text style={styles.paragraph}>
-                This data is stored locally on your device. Because it is stored only on your device, FinNest cannot access, retrieve, or delete this information on your behalf. You control this data directly within the app.
-              </Text>
-
-              <Text style={styles.subsectionTitle}>Device Information</Text>
-              <Text style={styles.paragraph}>
-                We may collect device type, operating system version, and app version for analytics purposes only.
-              </Text>
-
-              <Text style={styles.subsectionTitle}>Registered User Accounts</Text>
-              <Text style={styles.paragraph}>
-                If you create a FinNest account, we may collect:
-              </Text>
-              <Text style={styles.bulletPoint}>• Email address and login credentials</Text>
-              <Text style={styles.bulletPoint}>• Financial tracking data associated with your account</Text>
-              <Text style={styles.paragraph}>
-                This data is stored securely on our servers and used only to provide features such as saving and syncing data across devices.
-              </Text>
-
-              <Text style={styles.subsectionTitle}>Future Optional Integrations</Text>
-              <Text style={styles.paragraph}>
-                If you choose to connect external services (such as ISA providers), we will only access and use that information with your explicit consent and solely to provide features you request.
-              </Text>
-            </View>
-          </View>
-
-          {/* Section 2 */}
-          <View style={styles.sectionContainer}>
-            <View style={styles.sectionBox}>
-              <Text style={styles.sectionTitle}>2. How We Use Your Information</Text>
-              <Text style={styles.paragraph}>
-                We use the information we collect to:
-              </Text>
-              <Text style={styles.bulletPoint}>• Provide and operate the FinNest service</Text>
-              <Text style={styles.bulletPoint}>• Calculate ISA allowances and contributions</Text>
-              <Text style={styles.bulletPoint}>• Display your contribution history</Text>
-              <Text style={styles.bulletPoint}>• Improve our app and fix bugs</Text>
-              <Text style={styles.bulletPoint}>• Provide customer support</Text>
-
-              <Text style={styles.paragraph}>
-                We process personal data based on your consent, our legitimate interest in operating and improving the app, and to comply with legal obligations where applicable.
-              </Text>
-            </View>
-          </View>
-
-          {/* Section 3 */}
-          <View style={styles.sectionContainer}>
-            <View style={styles.sectionBox}>
-              <Text style={styles.sectionTitle}>3. Data Storage and Security</Text>
-
-              <Text style={styles.subsectionTitle}>Local Storage</Text>
-              <Text style={styles.paragraph}>
-                Financial tracking data (ISA contributions, amounts, dates) for guest users is stored locally on your device. It will be lost if you delete the app or reset your device.
-              </Text>
-
-              <Text style={styles.subsectionTitle}>Server Storage</Text>
-              <Text style={styles.paragraph}>
-                For registered users, account and financial tracking data is stored securely on our servers with encryption and access controls.
-              </Text>
-
-              <Text style={styles.subsectionTitle}>Security Measures</Text>
-              <Text style={styles.paragraph}>
-                We implement appropriate technical and organizational measures to protect your data. Where data is transmitted (such as analytics or optional integrations), it is encrypted in transit.
-              </Text>
-            </View>
-          </View>
-
-          {/* Section 4 */}
-          <View style={styles.sectionContainer}>
-            <View style={styles.sectionBox}>
-              <Text style={styles.sectionTitle}>4. Your Rights</Text>
-              <Text style={styles.paragraph}>
-                You have the following rights regarding your personal information:
-              </Text>
-              <Text style={styles.bulletPoint}>• Right of Access – Request a copy of your data</Text>
-              <Text style={styles.bulletPoint}>• Right to Rectification – Correct inaccurate information</Text>
-              <Text style={styles.bulletPoint}>• Right to Erasure – Request deletion of your data</Text>
-              <Text style={styles.bulletPoint}>• Right to Data Portability – Receive your data in a portable format</Text>
-              <Text style={styles.bulletPoint}>• Right to Object – Object to certain processing activities</Text>
-              <Text style={styles.bulletPoint}>• Right to Lodge a Complaint – Contact the ICO</Text>
-
-              <Text style={styles.paragraph}>
-                Note: For data stored only on your device, you may need to manage or delete it directly in the app. Registered users may request deletion of account data through the app or by contacting us.
-              </Text>
-            </View>
-          </View>
-
-          {/* Section 5 */}
-          <View style={styles.sectionContainer}>
-            <View style={styles.sectionBox}>
-              <Text style={styles.sectionTitle}>5. Data Sharing</Text>
-              <Text style={styles.paragraph}>
-                We may share limited data with trusted third-party service providers who assist us with analytics, hosting, authentication, or app performance monitoring.
-              </Text>
-              <Text style={styles.paragraph}>
-                We will never sell, rent, or trade your personal information for marketing purposes.
-              </Text>
-
-              <Text style={styles.subsectionTitle}>Future Optional Integrations</Text>
-              <Text style={styles.paragraph}>
-                Any connection to external financial services will only occur with your explicit consent, and you may revoke access at any time.
-              </Text>
-            </View>
-          </View>
-
-          {/* Section 6 */}
-          <View style={styles.sectionContainer}>
-            <View style={styles.sectionBox}>
-              <Text style={styles.sectionTitle}>6. Children's Privacy</Text>
-              <Text style={styles.paragraph}>
-                FinNest is not intended for use by anyone under the age of 18. We do not knowingly collect personal information from children.
-              </Text>
-            </View>
-          </View>
-
-          {/* Section 7 */}
-          <View style={styles.sectionContainer}>
-            <View style={styles.sectionBox}>
-              <Text style={styles.sectionTitle}>7. Changes to This Policy</Text>
-              <Text style={styles.paragraph}>
-                We may update this Privacy Policy from time to time. The "Last Updated" date will reflect the most recent version, and for material changes we will post a clear notice in the app. Continued use of FinNest after an update indicates your acceptance of the revised Privacy Policy.
-              </Text>
-            </View>
-          </View>
-
-          {/* Section 8 */}
-          <View style={styles.sectionContainer}>
-            <View style={styles.sectionBox}>
-              <Text style={styles.sectionTitle}>8. Contact Us</Text>
-              <Text style={styles.paragraph}>
-                If you have questions about this Privacy Policy or your personal information, please contact us at:
-              </Text>
-              <Text style={styles.contactText}>Email: privacy@finnest.app</Text>
-            </View>
-          </View>
-
-          {/* Section 9 */}
-          <View style={styles.sectionContainer}>
-            <View style={styles.sectionBox}>
-              <Text style={styles.sectionTitle}>9. Information Commissioner's Office</Text>
-              <Text style={styles.paragraph}>
-                You have the right to lodge a complaint with the UK's data protection authority:
-              </Text>
-              <Text style={styles.bulletPoint}>Website: https://ico.org.uk</Text>
-              <Text style={styles.bulletPoint}>Helpline: 0303 123 1113</Text>
-            </View>
-          </View>
+      <View style={styles.content}>
+        {/* Header Section */}
+        <View style={styles.headerSection}>
+          <Text style={styles.lastUpdated}>Last Updated: January 2026</Text>
+          <Text style={styles.introText}>
+            This Privacy Policy explains how FinNest collects, uses, stores, and protects your personal information. We are committed to protecting your privacy and complying with UK GDPR.
+          </Text>
         </View>
-      </ScrollView>
+
+        {/* Section 1 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>1. Information We Collect</Text>
+
+          <Text style={styles.subsectionTitle}>Financial Tracking Data (Stored Locally)</Text>
+          <Text style={styles.paragraph}>
+            When you use FinNest to track your ISA contributions, you may enter:
+          </Text>
+          <Text style={styles.bulletPoint}>• ISA contribution amounts</Text>
+          <Text style={styles.bulletPoint}>• Contribution dates</Text>
+          <Text style={styles.bulletPoint}>• ISA provider names</Text>
+          <Text style={styles.bulletPoint}>• ISA account types</Text>
+
+          <Text style={styles.paragraph}>
+            This data is stored locally on your device. Because it is stored only on your device, FinNest cannot access, retrieve, or delete this information on your behalf. You control this data directly within the app.
+          </Text>
+
+          <Text style={styles.subsectionTitle}>Device Information</Text>
+          <Text style={styles.paragraph}>
+            We may collect device type, operating system version, and app version for analytics purposes only.
+          </Text>
+
+          <Text style={styles.subsectionTitle}>Registered User Accounts</Text>
+          <Text style={styles.paragraph}>
+            If you create a FinNest account, we may collect:
+          </Text>
+          <Text style={styles.bulletPoint}>• Email address and login credentials</Text>
+          <Text style={styles.bulletPoint}>• Financial tracking data associated with your account</Text>
+          <Text style={styles.paragraph}>
+            This data is stored securely on our servers and used only to provide features such as saving and syncing data across devices.
+          </Text>
+
+          <Text style={styles.subsectionTitle}>Future Optional Integrations</Text>
+          <Text style={styles.paragraph}>
+            If you choose to connect external services (such as ISA providers), we will only access and use that information with your explicit consent and solely to provide features you request.
+          </Text>
+        </View>
+
+        {/* Section 2 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>2. How We Use Your Information</Text>
+          <Text style={styles.paragraph}>
+            We use the information we collect to:
+          </Text>
+          <Text style={styles.bulletPoint}>• Provide and operate the FinNest service</Text>
+          <Text style={styles.bulletPoint}>• Calculate ISA allowances and contributions</Text>
+          <Text style={styles.bulletPoint}>• Display your contribution history</Text>
+          <Text style={styles.bulletPoint}>• Improve our app and fix bugs</Text>
+          <Text style={styles.bulletPoint}>• Provide customer support</Text>
+
+          <Text style={styles.paragraph}>
+            We process personal data based on your consent, our legitimate interest in operating and improving the app, and to comply with legal obligations where applicable.
+          </Text>
+        </View>
+
+        {/* Section 3 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>3. Data Storage and Security</Text>
+
+          <Text style={styles.subsectionTitle}>Local Storage</Text>
+          <Text style={styles.paragraph}>
+            Financial tracking data (ISA contributions, amounts, dates) for guest users is stored locally on your device. It will be lost if you delete the app or reset your device.
+          </Text>
+
+          <Text style={styles.subsectionTitle}>Server Storage</Text>
+          <Text style={styles.paragraph}>
+            For registered users, account and financial tracking data is stored securely on our servers with encryption and access controls.
+          </Text>
+
+          <Text style={styles.subsectionTitle}>Security Measures</Text>
+          <Text style={styles.paragraph}>
+            We implement appropriate technical and organizational measures to protect your data. Where data is transmitted (such as analytics or optional integrations), it is encrypted in transit.
+          </Text>
+        </View>
+
+        {/* Section 4 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>4. Your Rights</Text>
+          <Text style={styles.paragraph}>
+            You have the following rights regarding your personal information:
+          </Text>
+          <Text style={styles.bulletPoint}>• Right of Access – Request a copy of your data</Text>
+          <Text style={styles.bulletPoint}>• Right to Rectification – Correct inaccurate information</Text>
+          <Text style={styles.bulletPoint}>• Right to Erasure – Request deletion of your data</Text>
+          <Text style={styles.bulletPoint}>• Right to Data Portability – Receive your data in a portable format</Text>
+          <Text style={styles.bulletPoint}>• Right to Object – Object to certain processing activities</Text>
+          <Text style={styles.bulletPoint}>• Right to Lodge a Complaint – Contact the ICO</Text>
+
+          <Text style={styles.paragraph}>
+            Note: For data stored only on your device, you may need to manage or delete it directly in the app. Registered users may request deletion of account data through the app or by contacting us.
+          </Text>
+        </View>
+
+        {/* Section 5 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>5. Data Sharing</Text>
+          <Text style={styles.paragraph}>
+            We may share limited data with trusted third-party service providers who assist us with analytics, hosting, authentication, or app performance monitoring.
+          </Text>
+          <Text style={styles.paragraph}>
+            We will never sell, rent, or trade your personal information for marketing purposes.
+          </Text>
+
+          <Text style={styles.subsectionTitle}>Future Optional Integrations</Text>
+          <Text style={styles.paragraph}>
+            Any connection to external financial services will only occur with your explicit consent, and you may revoke access at any time.
+          </Text>
+        </View>
+
+        {/* Section 6 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>6. Children's Privacy</Text>
+          <Text style={styles.paragraph}>
+            FinNest is not intended for use by anyone under the age of 18. We do not knowingly collect personal information from children.
+          </Text>
+        </View>
+
+        {/* Section 7 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>7. Changes to This Policy</Text>
+          <Text style={styles.paragraph}>
+            We may update this Privacy Policy from time to time. The "Last Updated" date will reflect the most recent version, and for material changes we will post a clear notice in the app. Continued use of FinNest after an update indicates your acceptance of the revised Privacy Policy.
+          </Text>
+        </View>
+
+        {/* Section 8 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>8. Contact Us</Text>
+          <Text style={styles.paragraph}>
+            If you have questions about this Privacy Policy or your personal information, please contact us at:
+          </Text>
+          <Text style={styles.contactText}>Email: privacy@finnest.app</Text>
+        </View>
+
+        {/* Section 9 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>9. Information Commissioner's Office</Text>
+          <Text style={styles.paragraph}>
+            You have the right to lodge a complaint with the UK's data protection authority:
+          </Text>
+          <Text style={styles.bulletPoint}>Website: https://ico.org.uk</Text>
+          <Text style={styles.bulletPoint}>Helpline: 0303 123 1113</Text>
+        </View>
+      </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollView: {
-    maxHeight: 500,
-  },
   content: {
-    paddingBottom: Spacing.xl,
+    paddingBottom: Spacing.lg,
   },
   headerSection: {
     paddingBottom: Spacing.lg,
-    marginBottom: Spacing.xl,
-    borderBottomWidth: 2,
-    borderBottomColor: Colors.gold + '30',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: Colors.borderStrong,
   },
   lastUpdated: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.mediumGray,
-    fontStyle: 'italic',
-    textAlign: 'center',
-    marginBottom: Spacing.md,
+    ...Type.caption,
+    color: Colors.textTertiary,
   },
   introText: {
-    fontSize: Typography.sizes.md,
-    color: Colors.lightGray,
-    textAlign: 'center',
-    lineHeight: 22,
-    paddingHorizontal: Spacing.sm,
+    ...Type.body,
+    color: Colors.textSecondary,
+    marginTop: Spacing.sm,
   },
-  sectionContainer: {
-    // Outer transparent/glass box
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 16,
-    padding: Spacing.sm,
-    marginBottom: Spacing.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  sectionBox: {
-    // Inner grey-blue box
-    backgroundColor: 'rgba(89, 103, 125, 0.5)',
-    borderRadius: 12,
-    padding: Spacing.lg,
+  section: {
+    marginTop: Spacing.xl,
   },
   sectionTitle: {
-    fontSize: Typography.sizes.lg,
-    color: Colors.gold,
-    fontWeight: Typography.weights.bold,
-    marginBottom: Spacing.md,
-    letterSpacing: 0.5,
-    textAlign: 'left',
+    ...Type.headline,
   },
   subsectionTitle: {
-    fontSize: Typography.sizes.md,
-    color: Colors.white,
-    fontWeight: Typography.weights.semibold,
-    marginTop: Spacing.md,
-    marginBottom: Spacing.sm,
+    ...Type.bodyStrong,
+    marginTop: 20,
   },
   paragraph: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    lineHeight: 22,
-    marginBottom: Spacing.md,
+    ...Type.body,
+    color: Colors.textSecondary,
+    marginTop: Spacing.sm,
   },
   bulletPoint: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    lineHeight: 22,
-    marginBottom: Spacing.xs,
-    paddingLeft: Spacing.sm,
-  },
-  highlight: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.gold,
-    fontWeight: Typography.weights.bold,
-    lineHeight: 22,
-    marginBottom: Spacing.md,
-    textAlign: 'left',
+    ...Type.body,
+    color: Colors.textSecondary,
+    marginTop: 6,
+    paddingLeft: Spacing.xs,
   },
   contactText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.lightGray,
-    lineHeight: 22,
-    marginTop: Spacing.xs,
-    paddingLeft: Spacing.md,
+    ...Type.body,
+    color: Colors.textSecondary,
+    marginTop: 6,
   },
 });
